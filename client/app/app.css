@@ -6,6 +6,30 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  --animate-popup-enter: popup-enter 0.7s;
+  @keyframes popup-enter {
+    0% {
+      opacity: 0;
+      transform: translate(0%, -10%)
+    },
+    100% {
+      opacity: 100;
+      transform: translate(0%, -20%)
+    }
+  }
+
+  --animate-popup-exit: popup-exit 0.7s;
+  @keyframes popup-exit {
+    0% {
+      opacity: 100;
+      transform: translate(0%, 0%)
+    },
+    100% {
+      opacity: 0;
+      transform: translate(0%, 10%)
+    }
+  }
 }
 
 html,
@@ -132,3 +156,4 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
