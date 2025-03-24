@@ -21,7 +21,7 @@ export default function LoginForm() {
   }
 
   return (
-    <div className={`flex absolute items-center justify-center min-h-screen min-w-screen backdrop-blur-xs bg-black/50`}>
+    <div className={`flex z-1 absolute items-center justify-center min-h-screen min-w-screen backdrop-blur-xs bg-black/50`}>
       <Card className={`relative w-full max-w-sm p-6 bg-white rounded-2xl shadow-lg ${isLoginClicked && "animate-popup-enter"}`}>
         <button 
           onClick={handleLoginClick} 
