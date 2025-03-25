@@ -1,0 +1,1 @@
+export const formattNumber = (num: number) => num.toString().padStart(2, "0");
