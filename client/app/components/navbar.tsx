@@ -23,7 +23,7 @@ export default function Navbar() {
 
   return (
     <header className="w-full text-gray-700 bg-white shadow-sm">
-      <div className="mx-15 px-4 flex flex-col justify-between md:flex-row items-center py-5">
+      <div className="mx-15 flex flex-col justify-between md:flex-row items-center py-5">
         <div className="flex flex-col md:flex-row items-center">
           <NavLink to="/" className="flex items-center mb-5 md:mb-0">
             <span className="text-4xl font-black text-gray-900 select-none">
