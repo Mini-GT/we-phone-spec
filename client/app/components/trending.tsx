@@ -20,8 +20,6 @@ export default function Trending() {
   return (
     <div 
       className="my-10 w-full relative py-4 text-white"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       <h2 className="text-pink-400 text-2xl font-bold font-bold">Trending</h2>
       <div className="relative flex">
