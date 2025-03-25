@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import type { Route } from "./+types/home";
 import PhoneCardSlider from "~/components/phoneCardSlider";
+import Trending from "~/components/trending";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -11,8 +12,9 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Home() {
   return (
-    <div className="mx-auto overflow-x-hidden">
+    <div className=" mx-15 overflow-x-hidden">
       <PhoneCardSlider />
+      <Trending />
     </div>
   );
 }
