@@ -1,37 +1,8 @@
+import { phones } from "mockData";
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router";
 
 export default function PhoneCardSlider() {
-  const phones = [
-    {
-      id: 1,
-      title: "Iphone 16 Pro",
-      spotlight: "#1 Spotlight",
-      announced: "2024, September 09",
-      released: "2024, September 20",
-      description: "iPhone 16 Pro features a Grade 5 titanium design with a new, refined microblasted texture. Titanium has one of the highest strength-to-weight ratios of any metal, making these models incredibly strong and impressively light. iPhone 16 Pro comes in four stunning finishes — including new Desert Titanium.",
-      image: "imgs/phones/iphone_16_pro.png"
-    },
-    {
-      id: 2,
-      title: "Poco F3",
-      spotlight: "#2 Spotlight",
-      announced: "2021, March 22",
-      released: "2021, March 27",
-      description: "BEAST-LIKE PERFORMANCE. With flagship 7nm process technology, the performance has been massively improved. When watching videos, playing games or surfing the webs, the processor will be one step ahead, letting you enjoy the new generation of speed.",
-      image: "imgs/phones/poco_f3.png"
-    },
-    {
-      id: 3,
-      title: "Galaxy S25 | S25+",
-      spotlight: "#3 Spotlight",
-      announced: "2025, January 22",
-      released: "2025, February 03",
-      description: "Meet Galaxy S25 and S25+. A sleek, premium design wrapped in a strong aluminum frame with an immersive screen, sophisticated camera and now slimmed down for a more comfortable grip",
-      image: "imgs/phones/samsung_s25.png"
-    }
-  ];
-
   const [counter, setCounter] = useState(0);
   const [isAutoSliding, setIsAutoSliding] = useState(true);
   const intervalRef = useRef<number | null>(null);
@@ -77,7 +48,7 @@ export default function PhoneCardSlider() {
   };
 
   return (
-    <div className="mt-6 bg-white m-15">
+    <div className="mt-6 bg-white">
       <div 
         className="relative w-full overflow-hidden" 
         style={{ height: "500px" }}
@@ -92,8 +63,8 @@ export default function PhoneCardSlider() {
                 index === counter ? "translate-x-0" : index < counter ? "-translate-x-full" : "translate-x-full"
               }`}
             >
-              <div className="phonecard flex flex-wrap items-end h-full px-4">
-                <div className="w-full md:w-1/2 md:px-3">
+              <div className="phonecard flex flex-wrap items-end h-full">
+                <div className="w-full md:w-1/2">
                   <div className="space-y-6 sm:max-w-md lg:max-w-10/11">
                     <h1 className="text-xl">{phone.spotlight}</h1>
                     <h1 className="font-extrabold tracking-tight text-gray-900 sm:text-5xl">
@@ -153,12 +124,12 @@ export default function PhoneCardSlider() {
           ))}
         </div>
       </div>
-      <div className="relative top-5 left-1/2 items-center space-x-2">
+      <div className="flex justify-center items-cenrter relative top-5 space-x-2">
         {phones.map((_, index) => (
           <button
             key={index}
             onClick={() => switchImage(index)}
-            className={`w-3 h-3 rounded-full border border-gray-400 ${
+            className={`w-3 h-3 rounded-full border cursor-pointer border-gray-400 ${
               counter === index ? "bg-gray-600" : "bg-transparent"
             }`}
           ></button>
