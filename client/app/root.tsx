@@ -12,6 +12,7 @@ import "./app.css";
 import Navbar from "./components/navbar";
 import LoginForm from "./components/loginForm";
 import { LoginProvider, useLogin } from "./context/loginContext";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -26,6 +27,8 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
+const queryClient = new QueryClient()
+
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -36,9 +39,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <LoginProvider>
-          {children}
-        </LoginProvider>
+        <QueryClientProvider client={queryClient}>
+          <LoginProvider>
+            {children}
+          </LoginProvider>
+        </QueryClientProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
