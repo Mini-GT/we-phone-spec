@@ -6,4 +6,5 @@ export default [
   route("smartphones", "routes/smartphones.tsx"),
   route("mostpopular", "routes/mostPopular.tsx"),
   route("login", "routes/login.tsx"),
+  route(":smartphoneName", "routes/smartphone.tsx"),
 ] satisfies RouteConfig;
