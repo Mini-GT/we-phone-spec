@@ -17,7 +17,7 @@ type Smartphone = {
   specs: Specs;
 }
 
-export interface Specs {
+type Specs = {
   body: {
     dimensions: string;
     weight: string;
@@ -78,7 +78,20 @@ export interface Specs {
   };
 }
 
+type SpecItem = {
+  label: string;
+  value: string | boolean | string[] | undefined;
+};
+
+type DeviceSpecProps = {
+  title: string;
+  data: SpecItem[];
+}
+
 export type {
   LoginFormProps,
-  Smartphone
+  Smartphone,
+  DeviceSpecProps,
+  Specs,
+  SpecItem
 }
