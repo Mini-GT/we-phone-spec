@@ -157,3 +157,6 @@ body {
   }
 }
 
+.vertical_text {
+  writing-mode: sideways-lr;
+}
