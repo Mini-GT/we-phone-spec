@@ -1,5 +1,7 @@
-type LoginFormProps = {
-  isLoginClicked: boolean;
+import type { Dispatch, SetStateAction } from "react";
+
+type LoginRegisterFormProps = {
+  handleAuthMode: Dispatch<SetStateAction<"login" | "register" | "verify">>;
 }
 
 type Smartphone = {
@@ -88,10 +90,18 @@ type DeviceSpecProps = {
   data: SpecItem[];
 }
 
+type RegisterFormType = {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
 export type {
-  LoginFormProps,
+  LoginRegisterFormProps,
   Smartphone,
   DeviceSpecProps,
   Specs,
-  SpecItem
+  SpecItem,
+  RegisterFormType
 }
