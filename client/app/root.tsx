@@ -10,9 +10,9 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import Navbar from "./components/navbar";
-import LoginForm from "./components/loginForm";
 import { LoginProvider, useLogin } from "./context/loginContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import LoginRegister from "./components/loginRegister";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -56,7 +56,7 @@ export default function App() {
 
   return (
     <div>
-      {isLoginClicked && <LoginForm />}
+      {isLoginClicked && <LoginRegister />}
       <Navbar />
       <Outlet />
     </div>
