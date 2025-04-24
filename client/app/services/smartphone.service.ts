@@ -1,9 +1,9 @@
 // api/smartphoneService.ts
-import axios from 'axios';
+import axios, { type AxiosInstance } from 'axios';
 import type { Smartphone } from '~/types/globals.type';
 
 class SmartphoneService {
-  private api = axios.create({
+  private api: AxiosInstance = axios.create({
     baseURL: import.meta.env.VITE_SMARTPHONE_API_URL || 'http://localhost:3000/api/v1',
     headers: {
       'Content-Type': 'application/json'
