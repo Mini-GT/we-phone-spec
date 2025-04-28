@@ -1,10 +1,17 @@
 {
   "scripts": {
-    "start": "bun ./src/server.ts"
+    "start": "bun ./src/server.ts",
+    "dev": "bun --watch --env-file=.env ./src/server.ts"
   },
   "dependencies": {
+    "@prisma/client": "^6.6.0",
+    "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.15.6",
+    "prisma": "^6.6.0",
+    "zod": "^3.24.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
