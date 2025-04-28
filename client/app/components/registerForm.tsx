@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CardContent } from "./ui/card";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
@@ -26,8 +26,25 @@ export default function RegisterForm({ handleAuthMode }: LoginRegisterFormProps)
     setError("");
     setSuccess("");
 
-    if (!registerFormData.name || !registerFormData.email || !registerFormData.password) {
+    // 
+    if (!registerFormData.name || !registerFormData.email || !registerFormData.password || !registerFormData.confirmPassword) {
       setError("All fields are required.");
+      return;
+    }
+
+    if (registerFormData.password !== registerFormData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (registerFormData.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
+    // optional: password complexity
+    if (!/[A-Z]/.test(registerFormData.password)) {
+      setError("Password must contain at least one uppercase letter");
       return;
     }
 
@@ -43,6 +60,16 @@ export default function RegisterForm({ handleAuthMode }: LoginRegisterFormProps)
       setError("Failed to create account.");
     }
   };
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError("");
+      }, 3000);
+  
+      return () => clearTimeout(timer)
+    }
+  }, [error]);
 
   return (
     <CardContent>
@@ -100,7 +127,7 @@ export default function RegisterForm({ handleAuthMode }: LoginRegisterFormProps)
           <Input
             id="confirmPassword"
             name="confirmPassword"
-            type="confirmPassword"
+            type="password"
             value={registerFormData.confirmPassword}
             onChange={handleChange}
             required
@@ -108,6 +135,7 @@ export default function RegisterForm({ handleAuthMode }: LoginRegisterFormProps)
             placeholder="Confirm Password"
           />
         </div>
+        {error && <p className="text-[red] text-sm">{error}</p>}
         <Button type="submit" className="w-full mb-4 cursor-pointer">Register</Button>
       </form>
       <div className="mt-4 flex justify-center gap-2 text-sm text-nowrap">
