@@ -1,24 +1,55 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CardContent } from "./ui/card";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import type { LoginRegisterFormProps } from "~/types/globals.type";
+import type { ApiError, LoginRegisterFormProps } from "~/types/globals.type";
+import authService from "~/services/auth.service";
+import { useLogin } from "~/context/loginContext";
+import { AxiosError } from 'axios';
 
 export default function LoginForm({ handleAuthMode }: LoginRegisterFormProps) {
   const [loginFormData, setLoginFormData] = useState({
     email: "",
     password: "",
   });
+  const [error, setError] = useState<string | null>(null);
+  const { setIsLoginClicked } = useLogin()
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    console.log("Logging in with:", loginFormData.email, loginFormData.password );
+    setError(null);
+
+    try {
+      const response = await authService.login({ ...loginFormData });
+      console.log(response)
+      const { token } = response.data;
+      
+      localStorage.setItem('authToken', token);
+      setIsLoginClicked(false)
+
+      setLoginFormData({ email: "", password: "" });
+    } catch (error) {
+      if(error instanceof AxiosError) {
+        setError(error.response?.data.message)
+      }
+      console.error
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLoginFormData({ ...loginFormData, [e.target.name]: e.target.value });
   };
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError("");
+      }, 3000);
+  
+      return () => clearTimeout(timer)
+    }
+  }, [error]);
 
   return (
     <CardContent>
@@ -59,6 +90,7 @@ export default function LoginForm({ handleAuthMode }: LoginRegisterFormProps) {
             Forgot Password?
           </a>
         </div>
+        {error && <p className="text-[red] text-sm ">{error}</p>}
         <Button type="submit" className="w-full mb-4 cursor-pointer">Login</Button>
 
         
