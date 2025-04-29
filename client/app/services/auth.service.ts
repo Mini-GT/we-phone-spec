@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance } from "axios";
-import type { RegisterFormType } from "~/types/globals.type";
+import type { loginFormType, RegisterFormType } from "~/types/globals.type";
 
 class AuthService {
   private api: AxiosInstance = axios.create({
@@ -7,16 +7,14 @@ class AuthService {
     withCredentials: true, // if using cookies
   });;
 
-  async login(email: string, password: string) {
-    const response = await this.api.post("/login", { email, password });
-    return response.data;
+  async login(loginFormData: loginFormType) {
+    const response = await this.api.post("/login", { ...loginFormData });
+    return response;
   }
 
   async register(registerFormData: RegisterFormType) {
-    const response = await this.api.post("/register", {
-      ...registerFormData
-    });
-    return response.data;
+    const response = await this.api.post("/register", { ...registerFormData });
+    return response;
   }
 
   async logout() {
