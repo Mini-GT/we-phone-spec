@@ -1,7 +1,8 @@
 {
   "scripts": {
     "start": "bun ./src/server.ts",
-    "dev": "bun --watch --env-file=.env ./src/server.ts"
+    "dev": "bun --watch --env-file=.env ./src/server.ts",
+    "test": "bun ./src/tests/test-db.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.6.0",
@@ -16,6 +17,7 @@
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.1",
+    "@types/jsonwebtoken": "^9.0.9",
     "typescript": "^5.8.2"
   }
 }
