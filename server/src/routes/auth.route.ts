@@ -1,5 +1,6 @@
-import { login, register } from "@/controllers/auth.controller"
+import { getCurrentUser, login, register } from "@/controllers/auth.controller"
 import { asyncWrapper } from "@/middlewares/asyncWrapper.middleware"
+import { requireAuth } from "@/middlewares/auth.middleware"
 import express from "express"
 
 const router = express.Router()
@@ -9,5 +10,8 @@ router.route("/login")
 
 router.route("/register")
 .post(asyncWrapper(register))
+
+router.route("/me")
+.get(requireAuth ,asyncWrapper(getCurrentUser))
 
 export default router
