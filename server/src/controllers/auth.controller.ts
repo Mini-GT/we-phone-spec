@@ -135,8 +135,17 @@ const getCurrentUser = async (req: Request, res: Response) => {
   // res.json(req.isAuthenticated())
 }
 
+const logout = async (req: Request, res: Response) => {
+  req.logOut((error) => {
+    if(error) return res.status(500).json({ message: "Something went wrong" })
+    
+    res.status(204).send()
+  })
+}
+
 export {
   register,
   login,
-  getCurrentUser
+  getCurrentUser,
+  logout
 }
