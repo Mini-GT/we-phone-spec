@@ -1,25 +1,25 @@
-import { Link, NavLink } from "react-router"
-// import { Button } from "./ui/button"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { NavLink } from "react-router"
 import { z } from "zod"
-import LoginForm from "./loginForm"
 import { Button } from "./ui/button"
 import { useLogin } from "~/context/loginContext"
-
-const formSchema = z.object({
-  email: z.string()
-    .email({ message: "Invalid email address" })
-    .min(6, { message: "Must be 6 or more characters long" })
-    .max(254 , { message: "Must be 254  or fewer characters long" })
-})
+import authService from "~/services/auth.service"
+import { useState } from "react"
+import { useQuery } from "@tanstack/react-query"
+import UserMenu from "./userMenu";
 
 export default function Navbar() {
-   const { setIsLoginClicked } = useLogin()
+  const { setIsLoginClicked } = useLogin()
+  const {data, isLoading} = useQuery({
+    queryFn: () => authService.getMe(),
+    queryKey: ["me"],
+    retry: false
+  })
+  const user = data?.data
 
-   function handleLoginClick() {
+  async function handleLoginClick() {
     setIsLoginClicked(prevState => ((!prevState)))
   }
+  // console.log(user)
 
   return (
     <header className="w-full text-gray-700 bg-white shadow-sm">
@@ -72,12 +72,20 @@ export default function Navbar() {
             </NavLink>
           </nav>
         </div>
+
+        {user ? 
+        <UserMenu 
+          userId={user.user}
+          name={user.name}
+          email={user.email}
+        /> :
         <Button 
-          className="cursor-pointer"
-          onClick={handleLoginClick}
-        >
-          Login
-        </Button>
+        className="cursor-pointer"
+        onClick={handleLoginClick}
+      >
+        Login
+      </Button>}
+        
       </div>
     </header>
   )
