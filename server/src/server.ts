@@ -30,6 +30,16 @@ app.use("/api/v1/auth", authRouter)
 
 app.use("/api/v1/", userRouter)
 
+app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }))
+
+app.get("/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "http://localhost:5173" }),
+  (req, res) => {
+    // success handler
+    res.redirect("http://localhost:5173");
+  }
+);
+
 app.get('/api/v1', (req: Request, res: Response): void => {
   res.json({ message: 'Hello from Express!' })
 })
