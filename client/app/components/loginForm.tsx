@@ -7,14 +7,16 @@ import type { ApiError, LoginRegisterFormProps } from "~/types/globals.type";
 import authService from "~/services/auth.service";
 import { useLogin } from "~/context/loginContext";
 import { AxiosError } from 'axios';
+import { NavLink, useNavigate } from "react-router";
 
 export default function LoginForm({ handleAuthMode }: LoginRegisterFormProps) {
   const [loginFormData, setLoginFormData] = useState({
     email: "",
-    password: "",
+      password: "",
   });
   const [error, setError] = useState<string | null>(null);
   const { setIsLoginClicked } = useLogin()
+  const navigate = useNavigate()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -22,13 +24,13 @@ export default function LoginForm({ handleAuthMode }: LoginRegisterFormProps) {
 
     try {
       const response = await authService.login({ ...loginFormData });
-      console.log(response)
+      // console.log(response)
       const { token } = response.data;
       
       localStorage.setItem('authToken', token);
       setIsLoginClicked(false)
-
       setLoginFormData({ email: "", password: "" });
+      navigate(0);
     } catch (error) {
       if(error instanceof AxiosError) {
         setError(error.response?.data.message)
@@ -91,8 +93,19 @@ export default function LoginForm({ handleAuthMode }: LoginRegisterFormProps) {
           </a>
         </div>
         {error && <p className="text-[red] text-sm ">{error}</p>}
-        <Button type="submit" className="w-full mb-4 cursor-pointer">Login</Button>
-
+        <Button 
+          type="submit" 
+          className="w-full mb-4 cursor-pointer"
+        >
+          Login
+        </Button>
+        <a href="http://localhost:3000/auth/google">Login with Google</a>
+        {/* <a
+          to="/api/v1/auth/google"
+          className="mr-5 font-medium text-gray-600 hover:text-gray-900"
+        >
+          Login with Google
+        </NavLink> */}
         
       </form>
       <div className="mt-4 flex justify-center gap-2 text-sm text-nowrap">
