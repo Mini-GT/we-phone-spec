@@ -1,4 +1,4 @@
-import type { Dispatch, SetStateAction } from "react";
+import type { Dispatch, ReactNode, SetStateAction } from "react";
 
 type LoginRegisterFormProps = {
   handleAuthMode: Dispatch<SetStateAction<"login" | "register" | "verify">>;
@@ -90,11 +90,30 @@ type DeviceSpecProps = {
   data: SpecItem[];
 }
 
-type RegisterFormType = {
-  name: string;
+interface loginFormType {
   email: string;
   password: string;
+}
+
+interface RegisterFormType extends loginFormType {
+  name: string;
   confirmPassword: string;
+}
+
+type ApiError = {
+  message: string;
+  statusCode?: number;
+  error?: string;
+}
+
+type ContextProviderProps = {
+  children: ReactNode;
+}
+
+type UserMenuProps = {
+  userId: string,
+  name?: string,
+  email: string
 }
 
 export type {
@@ -103,5 +122,9 @@ export type {
   DeviceSpecProps,
   Specs,
   SpecItem,
-  RegisterFormType
+  RegisterFormType,
+  loginFormType,
+  ApiError,
+  ContextProviderProps,
+  UserMenuProps
 }
