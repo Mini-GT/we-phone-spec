@@ -3,7 +3,7 @@ import { z } from "zod"
 import { Button } from "./ui/button"
 import { useLogin } from "~/context/loginContext"
 import authService from "~/services/auth.service"
-import { useState } from "react"
+import { use, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import UserMenu from "./userMenu";
 
@@ -78,6 +78,7 @@ export default function Navbar() {
           userId={user.user}
           name={user.name}
           email={user.email}
+          profileImage={user.profileImage}
         /> :
         <Button 
         className="cursor-pointer"

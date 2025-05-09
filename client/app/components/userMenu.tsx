@@ -6,7 +6,8 @@ import { useNavigate } from "react-router";
 export default function UserMenu({
   userId,
   name,
-  email
+  email,
+  profileImage
 }: UserMenuProps) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate()
@@ -28,7 +29,7 @@ export default function UserMenu({
           className="flex items-center justify-center cursor-pointer w-10 h-10 rounded-full bg-gray-700 hover:opacity-80 focus:outline-none"
         >
           <img
-            src="imgs/profile/gojo.png"
+            src={profileImage ?? "userIcon.svg"}
             alt="User Avatar"
             className="w-full h-full rounded-full object-cover"
           />
@@ -45,7 +46,6 @@ export default function UserMenu({
 
           <div className="flex flex-col gap-2">
             <button className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white">Profile</button>
-            <button className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white">Continue Watching</button>
             <button className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white">Watch List</button>
             <button className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white">Notification</button>
             <button className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white">Settings</button>
