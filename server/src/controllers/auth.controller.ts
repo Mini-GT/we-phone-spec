@@ -27,7 +27,7 @@ const register = async (req: Request, res: Response) => {
 
   const existingUser = await prisma.user.findUnique({ 
     where: { 
-      email 
+      email, 
     } 
   })
 
@@ -73,7 +73,8 @@ const login = async (req: Request, res: Response) => {
       return res.status(200).json({ 
         user: user.id, 
         name: user.name, 
-        email: user.email
+        email: user.email,
+        profileImage: user.profileImage
       })
     })
   })(req, res)
@@ -130,7 +131,8 @@ const getCurrentUser = async (req: Request, res: Response) => {
   return res.status(200).json({
     user: user.id,
     name: user.name,
-    email: user.email
+    email: user.email,
+    profileImage: user.profileImage
   });
   // res.json(req.isAuthenticated())
 }
@@ -138,7 +140,6 @@ const getCurrentUser = async (req: Request, res: Response) => {
 const logout = async (req: Request, res: Response) => {
   req.logOut((error) => {
     if(error) return res.status(500).json({ message: "Something went wrong" })
-    
     res.status(204).send()
   })
 }
@@ -147,5 +148,5 @@ export {
   register,
   login,
   getCurrentUser,
-  logout
+  logout,
 }

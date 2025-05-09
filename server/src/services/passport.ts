@@ -38,7 +38,8 @@ passport.use(new GoogleStrategy({
   callbackURL: "http://localhost:3000/auth/google/callback"
 }, async (accessToken, refreshToken, profile, done) => {
   try {
-    const email = profile.emails?.[0]?.value;
+    const email = profile.emails?.[0]?.value
+    const profileImage = profile.photos?.[0]?.value
 
     // check if we have an email
     if (!email) {
@@ -60,7 +61,10 @@ passport.use(new GoogleStrategy({
         // update existing user with Google ID
         user = await prisma.user.update({
           where: { id: user.id },
-          data: { googleId: profile.id }
+          data: { 
+            googleId: profile.id,
+            profileImage
+          }
         });
       } else {
         // create new user with Google account info
@@ -69,6 +73,7 @@ passport.use(new GoogleStrategy({
             googleId: profile.id,
             name: profile.displayName ?? "Google User",
             email,
+            profileImage
           }
         });
       }
