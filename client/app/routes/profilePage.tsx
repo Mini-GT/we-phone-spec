@@ -1,44 +1,100 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Mail, Lock, AlertTriangle, Edit2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import userService from '~/services/user.service';
+import { toReadableDate } from '~/utils/formatDate';
+import { NavLink, redirect, useNavigate } from 'react-router';
+
+
 
 export default function ProfilePage() {
-  const [email, setEmail] = useState('danieltare07@gmail.com');
-  const [name, setName] = useState('MiniGT');
-  const [joinDate] = useState('2025-03-26');
-  const [isVerified] = useState(false);
+  const navigate = useNavigate()
+  const [userData, setUserData] = useState({
+    email: "",
+    name: "",
+    joinDate: "",
+    profileImage: "",
+  })
+  const {data, isLoading, error} = useQuery({
+    queryFn: () => userService.getUser(),
+    queryKey: ["profile"],
+  })
+  
+  useEffect(() => {
+    console.log(data)
+    if (data?.data) {
+      setUserData({
+        email: data.data.email || "",
+        name: data.data.name || "",
+        joinDate: data.data.createdAt || "",
+        profileImage: data.data.profileImage || "",
+      });
+    }
+  }, [data]);
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      // await userService.updateUser(userData);
+      // Show success message
+    } catch (error) {
+      // Handle error
+      console.error("Failed to update profile:", error);
+    }
+  };
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-800 flex items-center justify-center">
+        <p className="text-white">Loading profile...</p>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-800 flex items-center justify-center">
+        <p className="text-red-400">Error loading profile. Please try again.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-800 bg-opacity-90 flex flex-col items-center py-12 px-4">
       {/* Header */}
       <div className="w-full max-w-4xl mb-8">
-        <h1 className="text-white text-3xl font-bold text-center mb-6">Hi, MiniGT</h1>
+        <h1 className="text-white text-3xl font-bold text-center mb-6">Hi, {userData.name}</h1>
         
         {/* Navigation */}
         <div className="flex justify-center border-b border-gray-700 pb-1">
-          <button className="flex items-center text-pink-300 mx-4 pb-2 border-b-2 border-pink-300">
+          <NavLink 
+            to="/user/profile"
+            className="flex items-center text-gray-400 mx-4 pb-2 cursor-pointer hover:text-pink-300 hover:border-pink-300"
+          >
             <span className="mr-2">👤</span>
             <span>Profile</span>
-          </button>
-          <button className="flex items-center text-gray-400 mx-4 pb-2">
-            <span className="mr-2">🔄</span>
-            <span>Continue Watching</span>
-          </button>
-          <button className="flex items-center text-gray-400 mx-4 pb-2">
+          </NavLink>
+          <NavLink 
+            to="/user/like-list"
+            className="flex items-center text-gray-400 mx-4 pb-2 cursor-pointer hover:text-pink-300 hover:border-pink-300"
+          >
             <span className="mr-2">❤️</span>
-            <span>Watch List</span>
-          </button>
-          <button className="flex items-center text-gray-400 mx-4 pb-2">
+            <span>Like List</span>
+          </NavLink>
+          <NavLink 
+            to="/user/notification"
+            className="flex items-center text-gray-400 mx-4 pb-2 cursor-pointer hover:text-pink-300 hover:border-pink-300"
+          >
             <span className="mr-2">🔔</span>
             <span>Notification</span>
-          </button>
-          <button className="flex items-center text-gray-400 mx-4 pb-2">
+          </NavLink>
+          <NavLink 
+            to="/user/settings"
+            className="flex items-center text-gray-400 mx-4 pb-2 cursor-pointer hover:text-pink-300 hover:border-pink-300"
+          >
             <span className="mr-2">⚙️</span>
             <span>Settings</span>
-          </button>
-          <button className="flex items-center text-gray-400 mx-4 pb-2">
-            <span className="mr-2">📝</span>
-            <span>MAL</span>
-          </button>
+          </NavLink>
         </div>
       </div>
 
@@ -61,8 +117,8 @@ export default function ProfilePage() {
                 </label>
                 <input
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={userData.email}
+                  onChange={handleSubmit}
                   className="w-full bg-gray-800 rounded px-4 py-3 text-white"
                 />
               </div>
@@ -87,8 +143,8 @@ export default function ProfilePage() {
                 </label>
                 <input
                   type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={userData.name}
+                  onChange={handleSubmit}
                   className="w-full bg-gray-800 rounded px-4 py-3 text-white"
                 />
               </div>
@@ -100,7 +156,7 @@ export default function ProfilePage() {
                 </label>
                 <input
                   type="text"
-                  value={joinDate}
+                  value={toReadableDate(userData.joinDate)}
                   disabled
                   className="w-full bg-gray-800 rounded px-4 py-3 text-white"
                 />
@@ -125,7 +181,7 @@ export default function ProfilePage() {
               <div className="relative">
                 <div className="w-32 h-32 rounded-full bg-purple-700 flex items-center justify-center overflow-hidden border-4 border-purple-600">
                   <img 
-                    src="/api/placeholder/150/150" 
+                    src={userData.profileImage || undefined} 
                     alt="Profile" 
                     className="object-cover"
                   />
