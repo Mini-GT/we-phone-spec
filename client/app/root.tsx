@@ -13,6 +13,8 @@ import Navbar from "./components/navbar";
 import { LoginProvider, useLogin } from "./context/loginContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import LoginRegister from "./components/loginRegister";
+import { useEffect, useState } from "react";
+import { AuthProvider, useAuth } from "./context/authContext";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -41,14 +43,27 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body>
         <QueryClientProvider client={queryClient}>
           <LoginProvider>
-            {children}
+            <AuthProvider>
+              {children}
+            </AuthProvider>
           </LoginProvider>
         </QueryClientProvider>
-        <ScrollRestoration />
+        <ScrollRestoration/>
         <Scripts />
       </body>
     </html>
   );
+}
+
+// removes screen y-scroll when login/register form popups
+function BodyStyles() {
+  const { isLoginClicked } = useLogin()
+  
+  const overflowStyle = isLoginClicked 
+    ? 'body { overflow: hidden; }'
+    : 'body { overflow: auto; }'
+  
+  return <style>{overflowStyle}</style>
 }
 
 export default function App() {
@@ -56,6 +71,8 @@ export default function App() {
 
   return (
     <div>
+      <BodyStyles />
+
       {isLoginClicked && <LoginRegister />}
       <Navbar />
       <Outlet />
