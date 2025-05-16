@@ -1,35 +1,34 @@
 import { useEffect, useState } from 'react';
-import { Mail, Lock, AlertTriangle, Edit2 } from 'lucide-react';
+import { Mail, Lock, AlertTriangle, Edit2, UserCheck } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { toReadableDate } from '~/utils/formatDate';
 import { NavLink, redirect, useNavigate } from 'react-router';
-import Profile from '~/components/profile';
 import type { MenuNav, UserMenuProps } from '~/types/globals.type';
 import LikeList from '~/routes/likeList';
 import UserMenuNav from '~/components/userMenuNav';
 import { useAuth } from '~/context/authContext';
+import { AnimatePresence, motion } from "motion/react"
+import EmailService from '../services/email.service';
 
-
-
-export default function UserSettings() {
-  const navigate = useNavigate()
+export default function Profile() {
   const [userData, setUserData] = useState<Omit<UserMenuProps, "userId">>({
     email: "",
     name: "",
     createdAt: "",
     profileImage: "",
+    isVerified: false,
   })
   const { user, isLoading, error } = useAuth()
-  const [userMenu, setUserMenu] = useState<MenuNav>("profile");
+  const [showFields, setShowFields] = useState(false);
   
   useEffect(() => {
-    console.log(user)
     if (user) {
       setUserData({
         email: user.email || "",
         name: user.name || "",
         createdAt: user.createdAt || "",
         profileImage: user.profileImage || "",
+        isVerified: user.isVerified || false,
       });
     }
   }, [user]);
@@ -37,6 +36,7 @@ export default function UserSettings() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+
       // await userService.updateUser(userData);
       // Show success message
     } catch (error) {
@@ -44,6 +44,15 @@ export default function UserSettings() {
       console.error("Failed to update profile:", error);
     }
   };
+
+  const sendEmailVerification = async () => {
+    try {
+      const res = await EmailService.sendEmailVerification()
+      console.log(res)
+    } catch (error) {
+      console.error(error)
+    }
+  }
   
   if (isLoading) {
     return (
@@ -86,22 +95,37 @@ export default function UserSettings() {
                   type="email"
                   value={userData.email}
                   onChange={handleSubmit}
-                  className="w-full bg-gray-800 rounded px-4 py-3 text-white"
+                  className="w-full bg-gray-800 rounded px-4 py-3 text-white focus:outline-none"
+                  readOnly
                 />
               </div>
 
               {/* Verification Status */}
+              {userData.isVerified ? 
+              // verified
+              <div className="mb-6 inline-flex items-center gap-2 border border-pink-300 text-pink-300 px-4 py-2 rounded-full text-md font-medium">
+                <UserCheck className="w-6 h-6" />
+                <span>Verified</span>
+              </div> :
+              // not verified
               <div className="mb-6 bg-gray-900 border border-gray-800 rounded p-4">
                 <div className="flex items-start">
                   <AlertTriangle className="text-yellow-500 mr-2 h-5 w-5" />
                   <div>
                     <p className="text-white">
-                      Your account has not been verified. <span className="text-pink-400 cursor-pointer hover:underline">Click here</span> to
+                      Your account has not been verified. 
+                      <button 
+                        className="text-pink-400 cursor-pointer hover:underline"
+                        onClick={sendEmailVerification}
+                      >
+                        Click here
+                      </button> to
                       resend verification email.
                     </p>
                   </div>
                 </div>
               </div>
+              }
 
               {/* Name */}
               <div className="mb-6">
@@ -126,19 +150,64 @@ export default function UserSettings() {
                   value={toReadableDate(userData.createdAt)}
                   disabled
                   className="w-full bg-gray-800 rounded px-4 py-3 text-white"
+                  readOnly
                 />
               </div>
 
               {/* Change Password */}
               <div className="mb-6">
-                <button className="text-gray-400 flex items-center hover:text-gray-300">
+                <button 
+                  className="text-gray-400 text-lg flex items-center hover:text-gray-300 cursor-pointer mb-6"
+                  onClick={() => setShowFields(!showFields)}
+                >
                   <Lock className="h-4 w-4 mr-2" />
                   Change password
                 </button>
+                <AnimatePresence initial={false}>
+                  {showFields && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="overflow-hidden mt-4"
+                    >
+                      <div className="space-y-3">
+                        <div className="mb-6">
+                          <label className="block text-gray-400 text-sm mb-2 uppercase tracking-wide">
+                            CURRENT PASSWORD
+                          </label>
+                          <input
+                            type="password"
+                            className="w-full bg-gray-800 rounded px-4 py-3 text-white"
+                          />
+                        </div>
+                        <div className="mb-6">
+                          <label className="block text-gray-400 text-sm mb-2 uppercase tracking-wide">
+                            NEW PASSWORD
+                          </label>
+                          <input
+                            type="password"
+                            className="w-full bg-gray-800 rounded px-4 py-3 text-white"
+                          />
+                        </div>
+                        <div className="mb-6">
+                          <label className="block text-gray-400 text-sm mb-2 uppercase tracking-wide">
+                            CONFIRM PASSWORD
+                          </label>
+                          <input
+                            type="password"
+                            className="w-full bg-gray-800 rounded px-4 py-3 text-white"
+                          />
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Save Button */}
-              <button className="w-full bg-pink-300 hover:bg-pink-400 text-gray-900 font-medium py-3 px-4 rounded transition-colors">
+              <button className="w-full bg-pink-300 hover:bg-pink-400 text-gray-900 font-medium py-3 px-4 rounded transition-colors cursor-pointer">
                 Save
               </button>
             </div>
@@ -146,16 +215,18 @@ export default function UserSettings() {
             {/* Profile Picture */}
             <div className="mt-8 md:mt-0 flex justify-center">
               <div className="relative">
-                <div className="w-32 h-32 rounded-full bg-purple-700 flex items-center justify-center overflow-hidden border-4 border-purple-600">
-                  <img 
-                    src={userData.profileImage || "/userIcon.svg"} 
-                    alt="Profile" 
-                    className="object-cover w-full"
-                  />
+                <div className="relative">
+                  <div className="relative overflow-hidden z-0 w-32 h-32 rounded-full bg-purple-700 flex items-center justify-center border-4 border-purple-600">
+                    <img 
+                      src={userData.profileImage || "/userIcon.svg"} 
+                      alt="Profile" 
+                      className="object-cover w-full"
+                    />
+                  </div>
+                  <button className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-lg cursor-pointer hover:opacity-90">
+                    <Edit2 className="h-4 w-4 text-gray-800" />
+                  </button>
                 </div>
-                <button className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-lg">
-                  <Edit2 className="h-4 w-4 text-gray-800" />
-                </button>
               </div>
             </div>
           </div>
