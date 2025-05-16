@@ -7,6 +7,8 @@ import { connectMongoDB } from './db/connect'
 import cookieParser from 'cookie-parser' 
 import session from 'express-session'
 import passport from './services/passport'
+import emailRouter from "./routes/email.route"
+import path from "path"
 
 const app = express()
 
@@ -23,12 +25,15 @@ app.use(session({
 }))
 app.use(passport.initialize())
 app.use(passport.session())
+// app.use("/avatars", express.static(path.join(__dirname, "public", "avatars")));
 
 app.use("/api/v1/smartphones", smartphonesRouter)
 
 app.use("/api/v1/auth", authRouter)
 
-app.use("/api/v1/", userRouter)
+app.use("/api/v1/user", userRouter)
+
+app.use("/api/v1/user", emailRouter)
 
 app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }))
 
