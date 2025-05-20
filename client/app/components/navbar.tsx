@@ -1,25 +1,24 @@
 import { NavLink } from "react-router"
-import { z } from "zod"
 import { Button } from "./ui/button"
 import { useLogin } from "~/context/loginContext"
-import authService from "~/services/auth.service"
+// import authService from "~/services/auth.service"
 import { use, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
-import UserMenu from "./userMenu";
+import UserMenu from "./userMenu"
+import { useAuth } from "~/context/authContext"
 
 export default function Navbar() {
   const { setIsLoginClicked } = useLogin()
-  const {data, isLoading} = useQuery({
-    queryFn: () => authService.getMe(),
-    queryKey: ["me"],
-    retry: false
-  })
-  const user = data?.data
-
+  const { user } = useAuth()
+  // const {data, isLoading} = useQuery({
+  //   queryFn: () => authService.getMe(),
+  //   queryKey: ["me"],
+  //   retry: false
+  // })
+  // const user = data?.data
   async function handleLoginClick() {
     setIsLoginClicked(prevState => ((!prevState)))
   }
-  // console.log(user)
 
   return (
     <header className="w-full text-gray-700 bg-white shadow-sm">
@@ -40,7 +39,7 @@ export default function Navbar() {
                   placeholder="Search smartphone..."
                 />
                 <button type="submit" className="p-2">
-                  <img src="search.svg" alt="search" className="w-5 h-5" />
+                  <img src="/search.svg" alt="search" className="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -75,7 +74,6 @@ export default function Navbar() {
 
         {user ? 
         <UserMenu 
-          userId={user.user}
           name={user.name}
           email={user.email}
           profileImage={user.profileImage}
