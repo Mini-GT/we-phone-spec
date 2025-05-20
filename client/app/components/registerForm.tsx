@@ -51,7 +51,6 @@ export default function RegisterForm({ handleAuthMode }: LoginRegisterFormProps)
     // backend API call
     try {
       const data = await authService.register({...registerFormData});
-      console.log(registerFormData)
       if (!data) throw new Error("Something went wrong");
 
       setSuccess("Account created successfully!");
