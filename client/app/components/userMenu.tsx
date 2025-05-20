@@ -1,17 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import type { UserMenuProps } from "~/types/globals.type";
 import authService from "~/services/auth.service";
-import { NavLink, useNavigate } from "react-router";
+import { NavLink, redirect, useNavigate } from "react-router";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function UserMenu({
-  userId,
   name,
   email,
   profileImage
-}: UserMenuProps) {
+}: Omit<UserMenuProps, "createdAt" | "isVerified">) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   
   // Handle clicks outside of the dropdown
   useEffect(() => {
@@ -36,9 +37,10 @@ export default function UserMenu({
     setOpen((prev) => !prev);
   };
   
-  const handleLogout = () => {
-    authService.logout();
-    navigate(0);
+  const handleLogout = async () => {
+    await authService.logout();
+    queryClient.clear()
+    window.location.href = "/";
   };
 
   return (
@@ -52,9 +54,9 @@ export default function UserMenu({
           aria-haspopup="true"
         >
           <img
-            src={profileImage ?? "userIcon.svg"}
+            src={profileImage ?? "/userIcon.svg"}
             alt="User Avatar"
-            className="w-full h-full rounded-full object-cover"
+            className="w-full h-full rounded-full object-cover border-1 border-gray-600"
           />
         </button>
       </div>
@@ -78,17 +80,29 @@ export default function UserMenu({
           >
             Profile
           </NavLink>
-          <button className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white">
-            Watch List
-          </button>
-          <button className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white">
+          <NavLink
+            to="/user/like-list"
+            className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white"
+            onClick={() => setOpen(false)} // Close the dropdown when navigating
+          >
+            Like List
+          </NavLink>
+          <NavLink
+            to="/user/notification"
+            className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white"
+            onClick={() => setOpen(false)} // Close the dropdown when navigating
+          >
             Notification
-          </button>
-          <button className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white">
+          </NavLink>
+          <NavLink
+            to="/user/settings"
+            className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white"
+            onClick={() => setOpen(false)} // Close the dropdown when navigating
+          >
             Settings
-          </button>
+          </NavLink>
           <button 
-            className="text-left px-4 py-2 rounded hover:bg-gray-700 text-red-400"
+            className="text-left px-4 py-2 rounded hover:bg-gray-700 text-red-400 cursor-pointer "
             onClick={handleLogout}
           >
             Logout
