@@ -1,8 +1,5 @@
 import { useState } from "react";
-import { Card, CardContent } from "./ui/card";
-import { Label } from "./ui/label";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
+import { Card } from "./ui/card";
 import { X } from "lucide-react";
 import { useLogin } from "~/context/loginContext";
 import LoginForm from "./loginForm";
@@ -19,14 +16,14 @@ export default function LoginRegister() {
   const { isLoginClicked ,setIsLoginClicked } = useLogin();
   const [authMode, setAuthMode] = useState<"login" | "register" | "verify">("login");
 
-  function handleSubmit(e: React.FormEvent) {
+  /* function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     console.log("Logging in with:", loginFormData.email, loginFormData.password );
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLoginFormData({ ...loginFormData, [e.target.name]: e.target.value });
-  };
+  }; */
 
   function handleLoginClick() {
     setIsLoginClicked(prevState => ((!prevState)))
