@@ -15,6 +15,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import LoginRegister from "./components/loginRegister";
 import { useEffect, useState } from "react";
 import { AuthProvider, useAuth } from "./context/authContext";
+import Footer from "./components/footer";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -76,6 +77,7 @@ export default function App() {
       {isLoginClicked && <LoginRegister />}
       <Navbar />
       <Outlet />
+      <Footer />
     </div>
   );
 }
