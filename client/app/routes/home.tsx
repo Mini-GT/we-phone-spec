@@ -1,4 +1,3 @@
-import { Link } from "react-router";
 import type { Route } from "./+types/home";
 import PhoneCardSlider from "~/components/phoneCardSlider";
 import Trending from "~/components/trending";
