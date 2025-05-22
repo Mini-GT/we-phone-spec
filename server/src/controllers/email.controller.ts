@@ -26,12 +26,15 @@ const updateUserEmailVerification = async (req: Request, res: Response) => {
   console.log(user)
   await emailService.sendVerificationEmail(user.email, verificationToken)
 
-  res.json({ message: "Email Verification Sent. Please check your email."})
+  res.json({ message: "Email Verification Sent. Please check your inbox/spambox."})
 }
 
 const verifyEmail = async (req: Request, res: Response) => {
   const { token } = req.query;
-  console.log(token)
+  if(!token || typeof token !== 'string') {
+    return res.status(400).json({ error: 'Invalid token' })
+  }
+  
   const user = await prisma.user.findFirst({
     where: {
       verifyToken: token,
