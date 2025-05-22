@@ -1,7 +1,29 @@
+import { useState } from "react";
 import { NavLink } from "react-router";
 
 export default function Footer() {
   const alphabet = ["#", "0-9", ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
+  const brands = [
+  "SAMSUNG", "APPLE", "HUAWEI", "NOKIA", "SONY", "LG", "HTC", "MOTOROLA", "LENOVO",
+  "XIAOMI", "GOOGLE", "HONOR", "OPPO", "REALME", "ONEPLUS", "NOTHING", "VIVO", "MEIZU",
+  "ASUS", "ALCATEL", "ZTE", "MICROSOFT", "UMIDIGI", "COOLPAD", "OSCAL", "SHARP", "MICROMAX",
+  "INFINIX", "ULEFONE", "TECNO", "DOOGEE", "BLACKVIEW", "CUBOT", "OUKITEL", "ITEL", "TCL"
+  ];
+
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+
+  const toggleBrand = (brand: string): void => {
+    setSelectedBrands((prevSelected) => {
+      const alreadySelected = prevSelected.includes(brand);
+      const updated = alreadySelected
+        ? prevSelected.filter((b) => b !== brand)
+        : [...prevSelected, brand];
+
+      console.log("Selected Brands:", updated);
+      return updated;
+    });
+  };
+
   
   return (
     <div className="mx-15 mt-15 text-white">
@@ -18,16 +40,16 @@ export default function Footer() {
           </div>
           <div className="flex gap-2">
             <button className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer">
-              <img className="object-cover" src="imgs/discord.png" alt="Discord" />
+              <img className="object-cover" src="/imgs/discord.png" alt="Discord" />
             </button>
             <button className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer">
-              <img className="object-cover" src="imgs/reddit.png" alt="Reddit" />
+              <img className="object-cover" src="/imgs/reddit.png" alt="Reddit" />
             </button>
             <button className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer">
-              <img className="object-cover" src="imgs/twitter.png" alt="Twitter" />
+              <img className="object-cover" src="/imgs/twitter.png" alt="Twitter" />
             </button>
             <button className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer">
-              <img className="object-cover" src="imgs/telegram.png" alt="Telegram" />
+              <img className="object-cover" src="/imgs/telegram.png" alt="Telegram" />
             </button>
           </div>
         </div>
@@ -37,10 +59,18 @@ export default function Footer() {
         <h2 className="text-xl font-semibold mb-3 text-gray-600">A-Z LIST</h2>
         <p className="mb-4 text-gray-600">Searching device order by alphabet name A to Z.</p>
         <div className="flex flex-wrap gap-2">
-          <button className="bg-white text-black px-4 py-1 rounded">All</button>
-          {alphabet.map((char) => (
-            <button key={char} className="bg-[#3b3a50] hover:bg-[#555] px-4 py-1 rounded text-white font-semibold cursor-pointer">
-              {char}
+          {/* <button className="bg-gray-800 text-white hover:bg-blue-700 font-semibold transition cursor-pointer px-4 py-2 rounded">All</button> */}
+          {brands.map((brand) => (
+            <button
+              key={brand}
+              onClick={() => toggleBrand(brand)}
+              className={`px-4 py-2 rounded font-semibold transition cursor-pointer ${
+                selectedBrands.includes(brand)
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-700 text-white hover:bg-blue-700"
+              }`}
+            >
+              {brand}
             </button>
           ))}
         </div>
