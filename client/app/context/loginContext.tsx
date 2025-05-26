@@ -1,17 +1,14 @@
 import { createContext, useContext, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
+import type { ContextProviderProps } from '~/types/globals.type';
 
 type LoginContextType = {
   isLoginClicked: boolean;
   setIsLoginClicked: Dispatch<SetStateAction<boolean>>;
 }
 
-type LoginProviderProps = {
-  children: ReactNode;
-}
-
 const LoginContext = createContext<LoginContextType | undefined>(undefined);
 
-export function LoginProvider({ children }: LoginProviderProps) {
+export function LoginProvider({ children }: ContextProviderProps) {
   const [isLoginClicked, setIsLoginClicked] = useState(false);
   
   return (
