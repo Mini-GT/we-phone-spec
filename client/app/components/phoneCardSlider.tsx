@@ -66,9 +66,9 @@ export default function PhoneCardSlider() {
               <div className="phonecard flex flex-wrap items-end h-full">
                 <div className="w-full md:w-1/2">
                   <div className="space-y-6 sm:max-w-md lg:max-w-10/11">
-                    <h1 className="text-xl">{phone.spotlight}</h1>
+                    <h1 className="text-xl">#{index+1} Spotlight</h1>
                     <h1 className="font-extrabold tracking-tight text-gray-900 sm:text-5xl">
-                      <span className="block xl:inline">{phone.title}</span>
+                      <span className="block xl:inline">{phone.name}</span>
                     </h1>
                     <div className="flex w-full space-x-10 text-gray-500 text-nowrap">
                       <div className="flex justify-center items-center">
@@ -77,7 +77,7 @@ export default function PhoneCardSlider() {
                           src="megaphone.svg" 
                           alt="Date Announced" 
                         />
-                        <h1>{phone.announced}</h1>
+                        <h1>{phone.launch.announced}</h1>
                       </div>
                       <div className="flex justify-center items-center">
                         <img 
@@ -85,7 +85,7 @@ export default function PhoneCardSlider() {
                           src="calendarRelease.svg" 
                           alt="Date Released" 
                         />
-                        <h1>{phone.released}</h1>
+                        <h1>{phone.launch.released}</h1>
                       </div>
                     </div>
                     <p className="text-base text-gray-500 text-xl">
@@ -116,7 +116,7 @@ export default function PhoneCardSlider() {
                 </div>
                 <div className="bg-white flex justify-end md:w-1/2">
                   <div className="overflow-hidden rounded-md">
-                    <img src={phone.image} alt={phone.title} className="w-[400px]" />
+                    <img src={phone.image} alt={phone.name} className="w-[400px]" />
                   </div>
                 </div>
               </div>
