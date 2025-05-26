@@ -8,10 +8,11 @@ import DeviceSpec from "~/components/deviceSpecs";
 import type { Smartphone } from "~/types/globals.type";
 import { useLoaderData } from "react-router";
 
-export async function clientLoader({params}: Route.LoaderArgs) {
-  const smartphoneName = params.smartphoneName
-  return smartphoneName
-}
+export async function clientLoader({params}: Route.ClientLoaderArgs) {
+  const data = params.smartphoneData
+  const id = data?.split("-").pop();
+  return id;
+} 
 
 export function HydrateFallback() {
   return <p>Loading Data...</p>;
@@ -19,6 +20,11 @@ export function HydrateFallback() {
 
 export default function Smartphone() {
   const id = useLoaderData<typeof clientLoader>();
+  if (!id) {
+    return <div>Cannot get Smartphone Id</div>; 
+  }
+  // we are using this approach instead of doing loader function because useQuery is not supported in loader function
+  // and we want to use react-query for data fetching
   const {data: smartphone , isLoading, isError} = useQuery({
     queryFn: () => smartphoneService.getSmartphoneById(id),
     queryKey: ["smartphone"],
@@ -149,7 +155,7 @@ export default function Smartphone() {
       <div className="flex bg-white rounded-b-2xl shadow-md">
         <div className="p-4 flex flex-col gap-6">
           <img
-            src={smartphone.image}
+            src={`/${smartphone.image}`}
             alt={smartphone.name}
             className="w-1/5 h-1/4 max-w-xs mx-auto rounded-lg"
           />
