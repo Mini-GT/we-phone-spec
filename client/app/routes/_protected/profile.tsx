@@ -4,11 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import { toReadableDate } from '~/utils/formatDate';
 import { NavLink, redirect, useNavigate } from 'react-router';
 import type { MenuNav, UserMenuProps } from '~/types/globals.type';
-import LikeList from '~/routes/likeList';
+import LikeList from '~/routes/_protected/likeList';
 import UserMenuNav from '~/components/userMenuNav';
 import { useAuth } from '~/context/authContext';
 import { AnimatePresence, motion } from "motion/react"
-import EmailService from '../services/email.service';
+import EmailService from '../../services/email.service';
 
 export default function Profile() {
   const [userData, setUserData] = useState<Omit<UserMenuProps, "userId">>({
@@ -20,6 +20,10 @@ export default function Profile() {
   })
   const { user, isLoading, error } = useAuth()
   const [showFields, setShowFields] = useState(false);
+  const navigate = useNavigate();
+  if(!user) {
+    return navigate("/unauthorized");
+  }
   
   useEffect(() => {
     if (user) {

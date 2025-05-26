@@ -1,8 +1,13 @@
+import { useNavigate } from "react-router";
 import UserMenuNav from "~/components/userMenuNav";
 import { useAuth } from "~/context/authContext";
 
 export default function Notification() {
   const { user } = useAuth()
+  const navigate = useNavigate()
+  if(!user) {
+    return navigate("/unauthorized");
+  }
 
   return (
     <div className="min-h-screen bg-gray-800 bg-opacity-90 flex flex-col items-center py-12 px-4">
