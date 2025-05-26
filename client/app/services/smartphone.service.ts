@@ -11,7 +11,7 @@ class SmartphoneService {
   });
 
   // error handler
-  private handleError(error: any): never {
+  private handleError(error: unknown): never {
     if (axios.isAxiosError(error)) {
       if (error.response) {
         console.error('API Error:', error.response.data);
