@@ -111,10 +111,14 @@ type ContextProviderProps = {
 }
 
 type UserMenuProps = {
-  userId: string,
   name?: string,
   email: string
+  profileImage?: string
+  createdAt: string
+  isVerified: boolean
 }
+
+type MenuNav = "profile" | "likelist" | "notificaton" | "settings"
 
 export type {
   LoginRegisterFormProps,
@@ -126,5 +130,6 @@ export type {
   loginFormType,
   ApiError,
   ContextProviderProps,
-  UserMenuProps
+  UserMenuProps,
+  MenuNav
 }
