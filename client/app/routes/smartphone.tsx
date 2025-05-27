@@ -12,7 +12,9 @@ export async function clientLoader({params}: Route.ClientLoaderArgs) {
   const data = params.smartphoneData
   const id = data?.split("-").pop();
   return id;
-} 
+}
+
+clientLoader.hydrate = true;
 
 export function HydrateFallback() {
   return <p>Loading Data...</p>;
