@@ -1,13 +1,14 @@
-import { useNavigate } from "react-router";
+import { useNavigate, type LoaderFunctionArgs } from "react-router";
 import UserMenuNav from "~/components/userMenuNav";
 import { useAuth } from "~/context/authContext";
+import { requireAuthCookie } from "~/utils/auth";
+
+export async function loader({request}: LoaderFunctionArgs) {
+  const userId = await requireAuthCookie(request);
+}
 
 export default function Settings() {
   const { user } = useAuth()
-  const navigate = useNavigate()
-  if(!user) {
-    return navigate("/unauthorized");
-  }
 
   return (
     <div className="min-h-screen bg-gray-800 bg-opacity-90 flex flex-col items-center py-12 px-4">

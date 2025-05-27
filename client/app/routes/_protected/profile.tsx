@@ -2,13 +2,18 @@ import { useEffect, useState } from 'react';
 import { Mail, Lock, AlertTriangle, Edit2, UserCheck } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { toReadableDate } from '~/utils/formatDate';
-import { NavLink, redirect, useNavigate } from 'react-router';
+import { NavLink, redirect, useNavigate, type LoaderFunctionArgs } from 'react-router';
 import type { MenuNav, UserMenuProps } from '~/types/globals.type';
 import LikeList from '~/routes/_protected/likeList';
 import UserMenuNav from '~/components/userMenuNav';
 import { useAuth } from '~/context/authContext';
 import { AnimatePresence, motion } from "motion/react"
 import EmailService from '../../services/email.service';
+import { requireAuthCookie } from '~/utils/auth';
+
+export async function loader({request}: LoaderFunctionArgs) {
+  const userId = await requireAuthCookie(request);
+}
 
 export default function Profile() {
   const [userData, setUserData] = useState<Omit<UserMenuProps, "userId">>({
@@ -20,10 +25,6 @@ export default function Profile() {
   })
   const { user, isLoading, error } = useAuth()
   const [showFields, setShowFields] = useState(false);
-  const navigate = useNavigate();
-  if(!user) {
-    return navigate("/unauthorized");
-  }
   
   useEffect(() => {
     if (user) {
