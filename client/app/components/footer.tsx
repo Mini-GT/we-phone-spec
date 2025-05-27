@@ -2,7 +2,6 @@ import { useState } from "react";
 import { NavLink } from "react-router";
 
 export default function Footer() {
-  const alphabet = ["#", "0-9", ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
   const brands = [
   "SAMSUNG", "APPLE", "HUAWEI", "NOKIA", "SONY", "LG", "HTC", "MOTOROLA", "LENOVO",
   "XIAOMI", "GOOGLE", "HONOR", "OPPO", "REALME", "ONEPLUS", "NOTHING", "VIVO", "MEIZU",
@@ -10,21 +9,8 @@ export default function Footer() {
   "INFINIX", "ULEFONE", "TECNO", "DOOGEE", "BLACKVIEW", "CUBOT", "OUKITEL", "ITEL", "TCL"
   ];
 
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [selectedBrand] = useState<string>("");
 
-  const toggleBrand = (brand: string): void => {
-    setSelectedBrands((prevSelected) => {
-      const alreadySelected = prevSelected.includes(brand);
-      const updated = alreadySelected
-        ? prevSelected.filter((b) => b !== brand)
-        : [...prevSelected, brand];
-
-      console.log("Selected Brands:", updated);
-      return updated;
-    });
-  };
-
-  
   return (
     <div className="mx-15 mt-15 text-white">
       <header className="flex items-center gap-8 border-b border-gray-300 pb-4 mb-4">
@@ -56,22 +42,22 @@ export default function Footer() {
       </header>
 
       <section>
-        <h2 className="text-xl font-semibold mb-3 text-gray-600">A-Z LIST</h2>
-        <p className="mb-4 text-gray-600">Searching device order by alphabet name A to Z.</p>
+        <h2 className="text-xl font-semibold mb-3 text-gray-600">BRAND LIST</h2>
+        <p className="mb-4 text-gray-600">Search device by brand name.</p>
         <div className="flex flex-wrap gap-2">
           {/* <button className="bg-gray-800 text-white hover:bg-blue-700 font-semibold transition cursor-pointer px-4 py-2 rounded">All</button> */}
           {brands.map((brand) => (
-            <button
+            <NavLink
+              to={`/brand-list/${brand.toLowerCase()}`}
               key={brand}
-              onClick={() => toggleBrand(brand)}
               className={`px-4 py-2 rounded font-semibold transition cursor-pointer ${
-                selectedBrands.includes(brand)
+                selectedBrand === brand
                   ? "bg-blue-600 text-white"
                   : "bg-gray-700 text-white hover:bg-blue-700"
               }`}
             >
               {brand}
-            </button>
+            </NavLink>
           ))}
         </div>
       </section>
