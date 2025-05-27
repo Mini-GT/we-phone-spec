@@ -34,12 +34,9 @@ class SmartphoneService {
   }
 
   // fetch all smartphones with optional filters
-  async getSmartphones(filters: Partial<Smartphone> = {}): Promise<Smartphone[]> {
+  async getSmartphones(): Promise<Smartphone[]> {
     try {
-      const response = await this.api.get('/smartphones', { 
-        params: filters 
-      });
-      console.log(response)
+      const response = await this.api.get('/smartphones');
       return response.data.msg;
     } catch (error) {
       this.handleError(error);
@@ -85,9 +82,14 @@ class SmartphoneService {
     }
   }
 
-  // advanced filtering
+  // get smartphone by brand
   async getSmartphonesByBrand(brand: string): Promise<Smartphone[]> {
-    return this.getSmartphones({ brand });
+    try {
+      const response = await this.api.get(`/smartphones/brand-list/${brand}`);
+      return response.data.result;
+    } catch (error) {
+      this.handleError(error);
+    }
   }
 
   // Price range filter
