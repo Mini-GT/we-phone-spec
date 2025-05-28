@@ -5,6 +5,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useNavigation,
 } from "react-router";
 
 import type { Route } from "./+types/root";
@@ -16,6 +17,8 @@ import LoginRegister from "./components/loginRegister";
 import { useEffect, useState } from "react";
 import { AuthProvider, useAuth } from "./context/authContext";
 import Footer from "./components/footer";
+import Unauthorized from "./routes/unauthorized";
+import { AlertTriangle } from "lucide-react";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -73,7 +76,6 @@ export default function App() {
   return (
     <div>
       <BodyStyles />
-
       {isLoginClicked && <LoginRegister />}
       <Navbar />
       <Outlet />
@@ -99,9 +101,25 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   return (
+    // the error boundary component that will display an error page
     <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4 text-center">
+        <div className="bg-white shadow-lg rounded-2xl p-8 max-w-md">
+          <div className="flex flex-col items-center gap-4">
+            <AlertTriangle className="text-red-500 w-12 h-12" />
+            <h1 className="text-2xl font-semibold text-gray-800">{message}</h1>
+            <p className="text-gray-600">
+              {details}
+            </p>
+            <a
+              href="/"
+              className="mt-4 inline-block bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+            >
+              Go Home
+            </a>
+          </div>
+        </div>
+      </div>
       {stack && (
         <pre className="w-full p-4 overflow-x-auto">
           <code>{stack}</code>
