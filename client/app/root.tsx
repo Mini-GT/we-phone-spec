@@ -19,6 +19,7 @@ import { AuthProvider, useAuth } from "./context/authContext";
 import Footer from "./components/footer";
 import Unauthorized from "./routes/unauthorized";
 import { AlertTriangle } from "lucide-react";
+import Spinner from "./components/spinner";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -72,10 +73,13 @@ function BodyStyles() {
 
 export default function App() {
   const {isLoginClicked} = useLogin()
+  const navigation = useNavigation()
+  const isNavigating = Boolean(navigation.location)
 
   return (
     <div>
       <BodyStyles />
+      {isNavigating && <Spinner />}
       {isLoginClicked && <LoginRegister />}
       <Navbar />
       <Outlet />

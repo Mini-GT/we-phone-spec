@@ -4,12 +4,12 @@ import { useQuery } from '@tanstack/react-query';
 import { toReadableDate } from '~/utils/formatDate';
 import { NavLink, redirect, useNavigate, type LoaderFunctionArgs } from 'react-router';
 import type { MenuNav, UserMenuProps } from '~/types/globals.type';
-import LikeList from '~/routes/_protected/likeList';
 import UserMenuNav from '~/components/userMenuNav';
 import { useAuth } from '~/context/authContext';
 import { AnimatePresence, motion } from "motion/react"
 import EmailService from '../../services/email.service';
 import { requireAuthCookie } from '~/utils/auth';
+import Spinner from '~/components/spinner';
 
 export async function loader({request}: LoaderFunctionArgs) {
   const userId = await requireAuthCookie(request);
@@ -61,9 +61,7 @@ export default function Profile() {
   
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-800 flex items-center justify-center">
-        <p className="text-white">Loading profile...</p>
-      </div>
+      <Spinner />
     );
   }
   
