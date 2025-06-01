@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken"
 import { loginSchema, registerSchema } from "@/schemas/auth.schemas"
 import passport from "../services/passport"
 import type { User } from "@prisma/client"
+import { signJwt } from "@/utils/jwt"
 
 const jwtSecretKey = process.env.JWT_SECRET
 if(!jwtSecretKey) throw new Error("JWT secret key is empty")
@@ -23,7 +24,6 @@ const register = async (req: Request, res: Response) => {
   }
 
   const { name, email, password } = result.data;
-  console.log(name, email, password)
 
   const existingUser = await prisma.user.findUnique({ 
     where: { 
@@ -41,22 +41,29 @@ const register = async (req: Request, res: Response) => {
     data: {
       name,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      role: "USER",
     }
   })
 
-  const token = jwt.sign(
+  const token = signJwt(
     { id: user.id },
-    jwtSecretKey, 
-    { expiresIn: "24h" }
+    { expiresIn: "7d" }
   )
+
+  // const token = jwt.sign(
+  //   { id: user.id },
+  //   jwtSecretKey, 
+  //   { expiresIn: "24h" }
+  // )
 
   res.status(201).json({ message: "User created", token, id: user.id, name: user.name, email: user.email });
 }
 
 const login = async (req: Request, res: Response) => {
   passport.authenticate(
-    "local", 
+    "local",
+    { session: false }, 
     (error: Error | null, user: User, info: PassportInfo) => {
     if(error) {
       console.error("Authentication error:", error);
@@ -66,17 +73,27 @@ const login = async (req: Request, res: Response) => {
     if (!user) {
       return res.status(401).json({ message: info?.message || "Authentication failed" });
     }
+    
+    // req.logIn(user, (error) => {
+    //   if(error) return res.status(500).json({ message: "Login failed" })
 
-    req.logIn(user, (error) => {
-      if(error) return res.status(500).json({ message: "Login failed" })
+    //   return res.status(200).json({ message: "Logged In" })
+    // })
 
-      return res.status(200).json({ 
-        user: user.id, 
-        name: user.name, 
-        email: user.email,
-        profileImage: user.profileImage
+    const token = jwt.sign(
+      { id: user.id },
+      jwtSecretKey, 
+      { expiresIn: "7d" }
+    )
+
+    res
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       })
-    })
+      .status(200)
+      .json({ message: "Logged in" });
   })(req, res)
 
   // const result = loginSchema.safeParse(req.body)
@@ -129,19 +146,58 @@ const getCurrentUser = async (req: Request, res: Response) => {
   const user = req.user as User;
   
   return res.status(200).json({
-    user: user.id,
+    createdAt: user.createdAt,
     name: user.name,
     email: user.email,
-    profileImage: user.profileImage
+    profileImage: user.profileImage,
+    isVerified: user.isVerified,
+    role: user.role,
   });
   // res.json(req.isAuthenticated())
 }
 
+const updateCurrentUser = async (req: Request, res: Response) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: 'Not authenticated' });
+  }
+
+  const user = req.user as User;
+
+  // await prisma.user.update({
+  //   where: { id: user.id },
+  //   data: {
+  //     isVerified: true,
+  //     verifyToken: null,
+  //     verifyTokenExpiry: null,
+  //   },
+  // });
+  // console.log(user)
+  // return res.status(200).json({
+  //   createdAt: user.createdAt,
+  //   name: user.name,
+  //   email: user.email,
+  //   profileImage: user.profileImage,
+  //   isVerified: user.isVerified
+  // });
+  // res.json(req.isAuthenticated())
+}
+
 const logout = async (req: Request, res: Response) => {
-  req.logOut((error) => {
-    if(error) return res.status(500).json({ message: "Something went wrong" })
-    res.status(204).send()
-  })
+  res.clearCookie("token").json({ message: "Logged out" })
+  // req.logOut((error) => {
+  //   if(error) return res.status(500).json({ message: "Something went wrong" })
+
+      
+  //   req.session?.destroy(() => {
+  //     res.clearCookie("connect.sid", {
+  //       httpOnly: true,
+  //       sameSite: "lax",
+  //       secure: process.env.NODE_ENV === "production",
+  //     });
+
+  //     return res.status(204).send(); // No content
+  //   });
+  // })
 }
 
 export {
@@ -149,4 +205,5 @@ export {
   login,
   getCurrentUser,
   logout,
+  updateCurrentUser
 }

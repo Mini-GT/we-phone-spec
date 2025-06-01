@@ -1,6 +1,8 @@
 import type { Request, Response, NextFunction } from "express"
 import jwt, { type JwtPayload } from "jsonwebtoken"
 import { CustomAPIError } from "@/errors/customError";
+import { verifyJwt } from "@/utils/jwt";
+import prisma from "@/prismaClient";
 
 const jwtSecretKey = process.env.JWT_SECRET
 if(!jwtSecretKey) throw new Error("JWT secret key is empty")
@@ -18,7 +20,6 @@ export const authentication = async (req: AuthenticatedRequest, res: Response, n
     // Verify token
     jwt.verify(token, jwtSecretKey, (err, decoded) => {
       if (err) {
-        console.log(err)
         throw new CustomAPIError("Not authorized", 403)
       }
 
@@ -33,10 +34,26 @@ export const authentication = async (req: AuthenticatedRequest, res: Response, n
   }
 }
 
-export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
-  if(req.isAuthenticated()) {
-    return next()
-  }
+export const requireAuth = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  // if(req.isAuthenticated()) {
+  //   return next()
+  // }
 
-  res.status(401).json({ message: "Unauthorized"})
+  // res.status(401).json({ message: "Unauthorized"})
+
+  try {
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ message: "No token provided" })
+
+    // Verify token
+    const decoded = verifyJwt(token) as { id: string }
+    const user = await prisma.user.findUnique({ where: { id: decoded.id } })
+
+    if (!user) return res.status(401).json({ message: "User not found" })
+
+     req.user = user
+    next()
+  } catch (err) {
+    res.status(401).json({ message: "Invalid token" });
+  }
 }

@@ -19,13 +19,13 @@ app.use(cors({
 }))
 app.use(express.json())
 app.use(cookieParser())
-app.use(session({
-  secret: process.env.SESSION_SECRET || "my-secret-key",
-  resave: false,
-  saveUninitialized: false,
-}))
+// app.use(session({
+//   secret: process.env.SESSION_SECRET || "my-secret-key",
+//   resave: false,
+//   saveUninitialized: false,
+// }))
 app.use(passport.initialize())
-app.use(passport.session())
+// app.use(passport.session())
 // app.use("/avatars", express.static(path.join(__dirname, "public", "avatars")));
 
 app.use("/api/v1/smartphones", smartphonesRouter)

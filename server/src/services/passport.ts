@@ -114,24 +114,24 @@ passport.use(new GoogleStrategy({
   }
 }))
 
-passport.serializeUser((user, done) => {
-  done(null, (user as User).id)
-})
+// passport.serializeUser((user, done) => {
+//   done(null, (user as User).id)
+// })
 
-passport.deserializeUser(async (id: string, done) => {
-  try {
-    const user = await prisma.user.findUnique({ 
-      where: { id } 
-    })
+// passport.deserializeUser(async (id: string, done) => {
+//   try {
+//     const user = await prisma.user.findUnique({ 
+//       where: { id } 
+//     })
 
-    if (!user) {
-      return done(new Error("User not found"));
-    }
+//     if (!user) {
+//       return done(new Error("User not found"));
+//     }
 
-    done(null, user)
-  } catch (error) {
-    done(error)
-  }
-})
+//     done(null, user)
+//   } catch (error) {
+//     done(error)
+//   }
+// })
 
 export default passport;
