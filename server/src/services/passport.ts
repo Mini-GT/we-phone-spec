@@ -3,7 +3,11 @@ import { Strategy as LocalStrategy } from "passport-local"
 import { Strategy as GoogleStrategy} from "passport-google-oauth20"
 import bcrypt from "bcryptjs"
 import prisma from "@/prismaClient"
-import type { User } from '@prisma/client'
+import fs from "fs"
+import path from "path"
+import { v4 as uuidv4 } from "uuid"
+import axios from "axios"
+import type { User } from "@prisma/client"
 
 const googleClientId = process.env.GOOGLE_CLIENT_ID
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET
@@ -39,12 +43,36 @@ passport.use(new GoogleStrategy({
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     const email = profile.emails?.[0]?.value
-    const profileImage = profile.photos?.[0]?.value
-
+    const profileImage  = profile.photos?.[0]?.value
+    
     // check if we have an email
     if (!email) {
       return done(new Error('Email is required from Google authentication'));
     }
+
+    // download and save the Google profile image
+    // let profileImage = null;
+
+    // if (googleImageUrl) {
+    //   const filename = `${uuidv4()}.jpg`
+    //   const avatarDir = path.join(__dirname, "../public/avatars")
+    //   const filepath = path.join(avatarDir, filename)
+
+    //   // ensure avatars directory exists
+    //   fs.mkdirSync(avatarDir, { recursive: true });
+
+    //   try {
+    //     const response = await axios.get(googleImageUrl, { responseType: "arraybuffer" });
+    //     fs.writeFileSync(filepath, response.data)
+    //     profileImage = `/avatars/${filename}`; // public path served by Express
+    //   } catch (err) {
+    //     if (err instanceof Error) {
+    //       console.error("Failed to download profile image:", err.message);
+    //     } else {
+    //       console.error("Unknown error while downloading profile image:", err);
+    //     }
+    //   }
+    // }
 
     // find a user with the Google ID
     let user = await prisma.user.findUnique({ 
@@ -63,7 +91,7 @@ passport.use(new GoogleStrategy({
           where: { id: user.id },
           data: { 
             googleId: profile.id,
-            profileImage
+            profileImage,
           }
         });
       } else {
@@ -73,7 +101,8 @@ passport.use(new GoogleStrategy({
             googleId: profile.id,
             name: profile.displayName ?? "Google User",
             email,
-            profileImage
+            profileImage,
+            role: "USER",
           }
         });
       }
