@@ -3,11 +3,14 @@ import type { UserMenuProps } from "~/types/globals.type";
 import authService from "~/services/auth.service";
 import { NavLink, redirect, useNavigate } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
+import { ProtectedRoute } from "./protectedRoute";
+import { PERMISSIONS } from "~/utils/permissions";
 
 export default function UserMenu({
   name,
   email,
-  profileImage
+  profileImage,
+  role = "USER",
 }: Omit<UserMenuProps, "createdAt" | "isVerified">) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -94,6 +97,24 @@ export default function UserMenu({
           >
             Notification
           </NavLink>
+          <ProtectedRoute requiredPermission={PERMISSIONS.VIEW_USERS} >
+            <NavLink
+              to="/users"
+              className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white"
+              onClick={() => setOpen(false)} // Close the dropdown when navigating
+            >
+              Users
+            </NavLink>
+          </ProtectedRoute>
+          <ProtectedRoute requiredPermission={PERMISSIONS.VIEW_DEVICES} >
+            <NavLink
+              to="/devices"
+              className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white"
+              onClick={() => setOpen(false)} // Close the dropdown when navigating
+            >
+              Devices
+            </NavLink>
+          </ProtectedRoute>
           <NavLink
             to="/user/settings"
             className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white"
