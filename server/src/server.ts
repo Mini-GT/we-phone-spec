@@ -11,6 +11,7 @@ import emailRouter from "./routes/email.route"
 import path from "path"
 
 const app = express()
+const PORT = process.env.PORT || 3000
 
 app.use(cors({
   origin: 'http://localhost:5173',
@@ -49,7 +50,7 @@ app.get('/api/v1', (req: Request, res: Response): void => {
   res.json({ message: 'Hello from Express!' })
 })
 
-app.listen(process.env.PORT, () => {
+app.listen(PORT, () => {
   // connectMongoDB()
   console.log(`Server running on port ${process.env.PORT}`)
 })
