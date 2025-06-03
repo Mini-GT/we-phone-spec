@@ -9,6 +9,11 @@ import session from 'express-session'
 import passport from './services/passport'
 import emailRouter from "./routes/email.route"
 import path from "path"
+import { sign } from 'crypto'
+import { signJwt } from './utils/jwt'
+import type { User } from '@prisma/client'
+import { requireAuth } from './middlewares/auth.middleware'
+import { asyncWrapper } from './middlewares/asyncWrapper.middleware'
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -36,11 +41,22 @@ app.use("/api/v1/user", userRouter)
 
 app.use("/api/v1/user", emailRouter)
 
-app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }))
+app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"], session: false }))
 
 app.get("/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "http://localhost:5173" }),
+  passport.authenticate("google", { failureRedirect: "http://localhost:5173", session: false }),
   (req, res) => {
+    const user = req.user as User
+
+    const token = signJwt({ id: user.id }, { expiresIn: "5s" })
+    
+    res.cookie("token", token, {
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production"
+    });
+
     // success handler
     res.redirect("http://localhost:5173");
   }
