@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { phones } from "mockData";
-import { useRef, useState } from "react";
-import { formattNumber } from "~/lib/formatNumber";
+import { useRef } from "react";
+import { formattNumber } from "~/utils/formatNumber";
 
 
 export default function Trending() {
@@ -28,15 +28,15 @@ export default function Trending() {
           className="flex gap-2 overflow-x-hidden no-scrollbar scroll-smooth"
         >
           {phones.map((phone, index) => (
-            <div className="py-4 pr-4">
-              <div key={phone.id} className="flex items-end max-w-[20rem]">
+            <div key={phone.id} className="py-4 pr-4">
+              <div className="flex items-end max-w-[20rem]">
                 <div className="text-black">
-                  <span className="vertical_text text-sm text-black mt-2 text-center">{phone.title}</span>
+                  <span className="vertical_text text-sm text-black mt-2 text-center">{phone.name}</span>
                   <div>{formattNumber(index + 1)}</div>
                 </div>
                 <img
-                  src={phone.image}
-                  alt={phone.title}
+                  src={`/${phone.image}`}
+                  alt={phone.name}
                   className="min-w-34 m-2"
                 />
               </div>
