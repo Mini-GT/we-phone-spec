@@ -12,7 +12,7 @@ router.route("/register")
 .post(asyncWrapper(register))
 
 router.route("/me")
-.get(requireAuth ,asyncWrapper(getCurrentUser))
+.get(asyncWrapper(requireAuth) ,asyncWrapper(getCurrentUser))
 
 router.route("/logout")
 .get(asyncWrapper(logout))

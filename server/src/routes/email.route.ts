@@ -6,9 +6,9 @@ import express from "express"
 const router = express.Router()
 
 router.route("/send-email-verification")
-.post(requireAuth ,asyncWrapper(updateUserEmailVerification))
+.post(asyncWrapper(requireAuth), asyncWrapper(updateUserEmailVerification))
 
 router.route("/verify-email")
-.get(requireAuth ,asyncWrapper(verifyEmail))
+.get(asyncWrapper(requireAuth), asyncWrapper(verifyEmail))
 
 export default router

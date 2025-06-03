@@ -7,6 +7,6 @@ import express from "express"
 const router = express.Router()
 
 router.route("/me")
-.patch(requireAuth ,asyncWrapper(updateCurrentUser))
+.patch(asyncWrapper(requireAuth) ,asyncWrapper(updateCurrentUser))
 
 export default router
