@@ -7,6 +7,10 @@ export default [
   // route("mostpopular", "routes/mostPopular.tsx"),
   route("login", "routes/login.tsx"),
 
+  // Protected Routes by role and permission
+  route("users", "routes/_protected/users.tsx"),
+  route("devices", "routes/_protected/devices.tsx"),
+
   ...prefix("brand-list", [
     route(":brandName", "routes/brandList.tsx"),
   ]),
@@ -21,6 +25,8 @@ export default [
     route("like-list", "routes/_protected/likeList.tsx"),
     route("notification", "routes/_protected/notification.tsx"),
     route("settings", "routes/_protected/settings.tsx"),
-  ])
+  ]),
+
+  route("*", "routes/notFound.tsx"),
   
 ] satisfies RouteConfig;
