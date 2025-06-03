@@ -5,13 +5,28 @@ import UserMenuNav from "~/components/userMenuNav";
 import { useAuth } from "~/context/authContext";
 import type { Route } from "../_protected/+types/likeList";
 import { requireAuthCookie } from "~/utils/auth";
+import Spinner from "~/components/spinner";
 
 export async function loader({request}: LoaderFunctionArgs) {
   const userId = await requireAuthCookie(request);
 }
 
 export default function LikeList() {
-  const { user } = useAuth()
+  const { user, isLoading, error } = useAuth()
+
+  if (isLoading) {
+    return (
+      <Spinner />
+    )
+  }
+  
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-800 flex items-center justify-center">
+        <p className="text-red-400">Error loading profile. Please try again.</p>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-800 bg-opacity-90 flex flex-col items-center py-12 px-4">
