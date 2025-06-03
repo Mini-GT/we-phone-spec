@@ -3,19 +3,21 @@ import { CardContent } from "./ui/card";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import type { ApiError, LoginRegisterFormProps } from "~/types/globals.type";
+import type { LoginRegisterFormProps } from "~/types/globals.type";
 import authService from "~/services/auth.service";
-import { useLogin } from "~/context/loginContext";
+import { useLoginButton } from "~/context/loginButtonContext";
 import { AxiosError } from 'axios';
-import { NavLink, useNavigate } from "react-router";
+import { NavLink, redirect, useNavigate } from "react-router";
+import { requireAuthCookie } from "~/utils/auth";
+import { useAuth } from "~/context/authContext";
 
 export default function LoginForm({ handleAuthMode }: LoginRegisterFormProps) {
   const [loginFormData, setLoginFormData] = useState({
     email: "",
-      password: "",
+    password: "",
   });
   const [error, setError] = useState<string | null>(null);
-  const { setIsLoginClicked } = useLogin()
+  const { setIsLoginClicked } = useLoginButton()
   const navigate = useNavigate()
 
   async function handleSubmit(e: React.FormEvent) {
@@ -23,6 +25,7 @@ export default function LoginForm({ handleAuthMode }: LoginRegisterFormProps) {
     setError(null);
 
     try {
+      // handleLogin(loginFormData);
       const response = await authService.login({ ...loginFormData });
       // console.log(response)
       const { token } = response.data;
@@ -99,13 +102,13 @@ export default function LoginForm({ handleAuthMode }: LoginRegisterFormProps) {
         >
           Login
         </Button>
-        <a href="http://localhost:3000/auth/google">Login with Google</a>
-        {/* <a
-          to="/api/v1/auth/google"
-          className="mr-5 font-medium text-gray-600 hover:text-gray-900"
-        >
-          Login with Google
-        </NavLink> */}
+        <div className="flex items-center border-1 rounded-md cursor-pointer gap-2">
+          <img className="w-9 rounded-full" src="/imgs/google.png" alt="google" />
+          <a href="http://localhost:3000/auth/google">
+            Continue with Google
+          </a>
+          
+        </div>
         
       </form>
       <div className="mt-4 flex justify-center gap-2 text-sm text-nowrap">

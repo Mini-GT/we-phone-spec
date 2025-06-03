@@ -1,6 +1,6 @@
 import { NavLink } from "react-router"
 import { Button } from "./ui/button"
-import { useLogin } from "~/context/loginContext"
+import { useLoginButton } from "~/context/loginButtonContext"
 // import authService from "~/services/auth.service"
 import { use, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
@@ -8,7 +8,7 @@ import UserMenu from "./userMenu"
 import { useAuth } from "~/context/authContext"
 
 export default function Navbar() {
-  const { setIsLoginClicked } = useLogin()
+  const { setIsLoginClicked } = useLoginButton()
   const { user } = useAuth()
   // const {data, isLoading} = useQuery({
   //   queryFn: () => authService.getMe(),
@@ -31,7 +31,7 @@ export default function Navbar() {
           </NavLink>
           <nav className="flex flex-wrap items-center ml-0 md:ml-8 md:border-l md:pl-8">
             
-            <div className="mr-5 font-medium text-gray-600 hover:text-gray-900">
+            {/* <div className="mr-5 font-medium text-gray-600 hover:text-gray-900">
               <div className="flex items-center border border-gray-400 rounded-lg focus-within:border-gray-900">
                 <input
                   type="text"
@@ -42,7 +42,7 @@ export default function Navbar() {
                   <img src="/search.svg" alt="search" className="w-5 h-5" />
                 </button>
               </div>
-            </div>
+            </div> */}
 
             <NavLink
               to="/"
@@ -77,6 +77,7 @@ export default function Navbar() {
           name={user.name}
           email={user.email}
           profileImage={user.profileImage}
+          role={user.role}
         /> :
         <Button 
         className="cursor-pointer"

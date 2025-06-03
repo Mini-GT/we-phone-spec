@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card } from "./ui/card";
 import { X } from "lucide-react";
-import { useLogin } from "~/context/loginContext";
+import { useLoginButton } from "~/context/loginButtonContext";
 import LoginForm from "./loginForm";
 import RegisterForm from "./registerForm";
 import VerifyForm from "./verifyForm";
@@ -13,7 +13,7 @@ export default function LoginRegister() {
   });
   // const [email, setEmail] = useState("");
   // const [password, setPassword] = useState("");
-  const { isLoginClicked ,setIsLoginClicked } = useLogin();
+  const { isLoginClicked ,setIsLoginClicked } = useLoginButton();
   const [authMode, setAuthMode] = useState<"login" | "register" | "verify">("login");
 
   /* function handleSubmit(e: React.FormEvent) {
