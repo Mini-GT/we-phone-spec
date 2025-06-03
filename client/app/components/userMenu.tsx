@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, use } from "react";
 import type { UserMenuProps } from "~/types/globals.type";
 import authService from "~/services/auth.service";
 import { NavLink, redirect, useNavigate } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { ProtectedRoute } from "./protectedRoute";
 import { PERMISSIONS } from "~/utils/permissions";
+import { useAuth } from "~/context/authContext";
 
 export default function UserMenu({
   name,
@@ -16,6 +17,7 @@ export default function UserMenu({
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { handleLogout} = useAuth();
   
   // Handle clicks outside of the dropdown
   useEffect(() => {
@@ -40,11 +42,11 @@ export default function UserMenu({
     setOpen((prev) => !prev);
   };
   
-  const handleLogout = async () => {
-    await authService.logout();
-    queryClient.clear()
-    window.location.href = "/";
-  };
+  // const handleLogout = async () => {
+  //   await authService.logout();
+  //   queryClient.clear()
+  //   window.location.href = "/";
+  // };
 
   return (
     <div className="relative inline-block text-left" ref={menuRef}>
@@ -97,7 +99,7 @@ export default function UserMenu({
           >
             Notification
           </NavLink>
-          <ProtectedRoute requiredPermission={PERMISSIONS.VIEW_USERS} >
+          <ProtectedRoute requiredRoles={["ADMIN", "MODERATOR"]} requiredPermission={PERMISSIONS.VIEW_USERS} >
             <NavLink
               to="/users"
               className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white"
@@ -106,7 +108,7 @@ export default function UserMenu({
               Users
             </NavLink>
           </ProtectedRoute>
-          <ProtectedRoute requiredPermission={PERMISSIONS.VIEW_DEVICES} >
+          <ProtectedRoute requiredRoles={["ADMIN", "MODERATOR"]} requiredPermission={PERMISSIONS.VIEW_DEVICES} >
             <NavLink
               to="/devices"
               className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white"
