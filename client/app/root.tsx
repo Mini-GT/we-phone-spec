@@ -11,7 +11,7 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import Navbar from "./components/navbar";
-import { LoginProvider, useLogin } from "./context/loginContext";
+import { LoginProvider, useLoginButton } from "./context/loginButtonContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import LoginRegister from "./components/loginRegister";
 import { useEffect, useState } from "react";
@@ -20,6 +20,7 @@ import Footer from "./components/footer";
 import Unauthorized from "./routes/unauthorized";
 import { AlertTriangle } from "lucide-react";
 import Spinner from "./components/spinner";
+import NotFound from "./routes/notFound";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -62,7 +63,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 // removes screen y-scroll when login/register form popups
 function BodyStyles() {
-  const { isLoginClicked } = useLogin()
+  const { isLoginClicked } = useLoginButton()
   
   const overflowStyle = isLoginClicked 
     ? 'body { overflow: hidden; }'
@@ -72,7 +73,7 @@ function BodyStyles() {
 }
 
 export default function App() {
-  const {isLoginClicked} = useLogin()
+  const {isLoginClicked} = useLoginButton()
   const navigation = useNavigation()
   const isNavigating = Boolean(navigation.location)
 
@@ -106,24 +107,11 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 
   return (
     // the error boundary component that will display an error page
-    <main className="pt-16 p-4 container mx-auto">
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4 text-center">
-        <div className="bg-white shadow-lg rounded-2xl p-8 max-w-md">
-          <div className="flex flex-col items-center gap-4">
-            <AlertTriangle className="text-red-500 w-12 h-12" />
-            <h1 className="text-2xl font-semibold text-gray-800">{message}</h1>
-            <p className="text-gray-600">
-              {details}
-            </p>
-            <a
-              href="/"
-              className="mt-4 inline-block bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
-            >
-              Go Home
-            </a>
-          </div>
-        </div>
-      </div>
+    <main className="container mx-auto">
+      <NotFound 
+        details={details}
+        message={message}
+      />
       {stack && (
         <pre className="w-full p-4 overflow-x-auto">
           <code>{stack}</code>
