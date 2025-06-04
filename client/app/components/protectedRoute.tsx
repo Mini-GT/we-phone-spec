@@ -11,17 +11,17 @@ export function ProtectedRoute({
   const { user } = useAuth();
 
   if (!user) {
-    return <>{fallback}</>;
+    return fallback
   }
 
   // check role-based access
-  if (requiredRoles && !requiredRoles.includes(user.role || "USER")) {
-    return <>{fallback}</>;
+  if (requiredRoles && !requiredRoles.includes(user.role)) {
+    return fallback
   }
 
   // check permission-based access
-  if (requiredPermission && !hasPermission(user.role || "USER", requiredPermission)) {
-    return <>{fallback}</>;
+  if (requiredPermission && !hasPermission(user.role, requiredPermission)) {
+    return fallback
   }
 
   return <>{children}</>;
