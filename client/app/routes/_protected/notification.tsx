@@ -4,6 +4,7 @@ import { useAuth } from "~/context/authContext";
 import { requireAuthCookie } from "~/utils/auth";
 import type { Route } from "../_protected/+types/notification";
 import Spinner from "~/components/spinner";
+import { Bell } from "lucide-react";
 
 export async function loader({request}: LoaderFunctionArgs) {
   const userId = await requireAuthCookie(request);
@@ -37,7 +38,9 @@ export default function Notification() {
         <div className="p-8">
           <div className="flex items-center mb-8">
             <div className="text-3xl font-bold text-white flex items-center">
-              <span className="mr-3">👤</span>
+              {/* <span className="mr-3">👤</span> */}
+              {/* <Bell className="mr-3 h-6 w-6" /> */}
+              <Bell fill="yellow" strokeWidth={0} className="mr-3 h-6 w-6" />
               Notification
             </div>
           </div>

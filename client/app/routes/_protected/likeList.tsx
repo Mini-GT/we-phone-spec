@@ -1,5 +1,5 @@
 import { NavLink, useLoaderData, useNavigate, type LoaderFunctionArgs } from "react-router";
-import { Mail, Lock, AlertTriangle, Edit2 } from 'lucide-react';
+import { Mail, Lock, AlertTriangle, Edit2, Heart } from 'lucide-react';
 import { toReadableDate } from "~/utils/formatDate";
 import UserMenuNav from "~/components/userMenuNav";
 import { useAuth } from "~/context/authContext";
@@ -36,10 +36,12 @@ export default function LikeList() {
       />
 
       <div className="w-full max-w-3xl bg-gray-900 rounded-lg overflow-hidden">
-        <div className="p-8 h-screen">
+        <div className="p-8 h-[70vh]">
           <div className="flex items-center mb-8">
             <div className="text-3xl font-bold text-white flex items-center">
-              <span className="mr-3">👤</span>
+              {/* <span className="mr-3">👤</span> */}
+              {/* <Heart className="mr-3 h-6 w-6" /> */}
+              <Heart fill="#e74c3c" strokeWidth={0} className="mr-3 h-7 w-7" />
               Like List
             </div>
           </div>

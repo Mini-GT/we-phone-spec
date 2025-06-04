@@ -2,8 +2,8 @@ import { useNavigate, type LoaderFunctionArgs } from "react-router";
 import UserMenuNav from "~/components/userMenuNav";
 import { useAuth } from "~/context/authContext";
 import { requireAuthCookie } from "~/utils/auth";
-import type { Route } from "../_protected/+types/settings";
 import Spinner from "~/components/spinner";
+import { Settings2, SettingsIcon } from "lucide-react";
 
 export async function loader({request}: LoaderFunctionArgs) {
   const userId = await requireAuthCookie(request);
@@ -37,7 +37,9 @@ export default function Settings() {
         <div className="p-8">
           <div className="flex items-center mb-8">
             <div className="text-3xl font-bold text-white flex items-center">
-              <span className="mr-3">👤</span>
+              {/* <span className="mr-3">👤</span> */}
+              {/* <SettingsIcon className="mr-3 h-6 w-6" /> */}
+              <SettingsIcon fill="white" strokeWidth={1} className="mr-3 h-7 w-7 text-gray-400" />
               Settings
             </div>
           </div>
