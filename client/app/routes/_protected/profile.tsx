@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Mail, Lock, AlertTriangle, Edit2, UserCheck } from 'lucide-react';
+import { Mail, Lock, AlertTriangle, Edit2, UserCheck, UserRound } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { toReadableDate } from '~/utils/formatDate';
 import { NavLink, redirect, useNavigate, type LoaderFunctionArgs } from 'react-router';
@@ -10,33 +10,36 @@ import { AnimatePresence, motion } from "motion/react"
 import EmailService from '../../services/email.service';
 import { requireAuthCookie } from '~/utils/auth';
 import Spinner from '~/components/spinner';
+import authService from '~/services/auth.service';
 
 export async function loader({request}: LoaderFunctionArgs) {
   const userId = await requireAuthCookie(request);
 }
 
 export default function Profile() {
-  const [userData, setUserData] = useState<Omit<UserMenuProps, "userId">>({
-    email: "",
-    name: "",
-    createdAt: "",
-    profileImage: "",
-    isVerified: false,
-  })
+  // const [userData, setUserData] = useState<Omit<UserMenuProps, "userId">>({
+  //   email: "",
+  //   name: "",
+  //   createdAt: "",
+  //   profileImage: "",
+  //   isVerified: false,
+  //   role: "USER",
+  // })
   const { user, isLoading, error } = useAuth()
   const [showFields, setShowFields] = useState(false);
   
-  useEffect(() => {
-    if (user) {
-      setUserData({
-        email: user.email || "",
-        name: user.name || "",
-        createdAt: user.createdAt || "",
-        profileImage: user.profileImage || "",
-        isVerified: user.isVerified || false,
-      });
-    }
-  }, [user]);
+  // useEffect(() => {
+  //   if (user) {
+  //     setUserData({
+  //       email: user.email || "",
+  //       name: user.name || "",
+  //       createdAt: user.createdAt || "",
+  //       profileImage: user.profileImage || "",
+  //       isVerified: user.isVerified || false,
+  //       role: user.role || "USER",
+  //     });
+  //   }
+  // }, [user]);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,31 +61,33 @@ export default function Profile() {
       console.error(error)
     }
   }
-  
+
   if (isLoading) {
     return (
       <Spinner />
-    );
+    )
   }
   
-  if (error) {
+  if (error || !user) {
     return (
       <div className="min-h-screen bg-gray-800 flex items-center justify-center">
         <p className="text-red-400">Error loading profile. Please try again.</p>
       </div>
-    );
+    )
   }
 
   return (
     <div className="min-h-screen bg-gray-800 bg-opacity-90 flex flex-col items-center py-12 px-4">
       {/* Header */}
-      <UserMenuNav tab={"profile"} name={userData.name} />
+      <UserMenuNav tab={"profile"} name={user.name} />
 
       <div className="w-full max-w-3xl bg-gray-900 rounded-lg overflow-hidden">
         <div className="p-8">
           <div className="flex items-center mb-8">
             <div className="text-3xl font-bold text-white flex items-center">
-              <span className="mr-3">👤</span>
+              {/* <span className="mr-3">👤</span> */}
+              {/* <UserRound className="mr-3 h-6 w-6" /> */}
+              <UserRound fill="#8e44ad" strokeWidth={0} className="mr-3 h-7 w-7" />
               Edit Profile
             </div>
           </div>
@@ -96,7 +101,7 @@ export default function Profile() {
                 </label>
                 <input
                   type="email"
-                  value={userData.email}
+                  value={user.email}
                   onChange={handleSubmit}
                   className="w-full bg-gray-800 rounded px-4 py-3 text-white focus:outline-none"
                   readOnly
@@ -104,7 +109,7 @@ export default function Profile() {
               </div>
 
               {/* Verification Status */}
-              {userData.isVerified ? 
+              {user.isVerified ? 
               // verified
               <div className="mb-6 inline-flex items-center gap-2 border border-pink-300 text-pink-300 px-4 py-2 rounded-full text-md font-medium">
                 <UserCheck className="w-6 h-6" />
@@ -137,7 +142,7 @@ export default function Profile() {
                 </label>
                 <input
                   type="text"
-                  value={userData.name}
+                  value={user.name}
                   onChange={handleSubmit}
                   className="w-full bg-gray-800 rounded px-4 py-3 text-white"
                 />
@@ -150,7 +155,7 @@ export default function Profile() {
                 </label>
                 <input
                   type="text"
-                  value={toReadableDate(userData.createdAt)}
+                  value={toReadableDate(user.createdAt)}
                   disabled
                   className="w-full bg-gray-800 rounded px-4 py-3 text-white"
                   readOnly
@@ -221,7 +226,7 @@ export default function Profile() {
                 <div className="relative">
                   <div className="relative overflow-hidden z-0 w-32 h-32 rounded-full bg-purple-700 flex items-center justify-center border-4 border-purple-600">
                     <img 
-                      src={userData.profileImage || "/userIcon.svg"} 
+                      src={user.profileImage || "/userIcon.svg"} 
                       alt="Profile" 
                       className="object-cover w-full"
                     />
