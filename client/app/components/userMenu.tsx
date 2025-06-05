@@ -11,7 +11,6 @@ export default function UserMenu({
   name,
   email,
   profileImage,
-  role = "USER",
 }: Omit<UserMenuProps, "createdAt" | "isVerified">) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -78,6 +77,24 @@ export default function UserMenu({
         </div>
 
         <div className="flex flex-col gap-2">
+          <ProtectedRoute requiredRoles={["ADMIN", "MODERATOR"]} requiredPermission={PERMISSIONS.VIEW_USERS} >
+            <NavLink
+              to="/users"
+              className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white"
+              onClick={() => setOpen(false)} // Close the dropdown when navigating
+            >
+              Users
+            </NavLink>
+          </ProtectedRoute>
+          <ProtectedRoute requiredRoles={["ADMIN", "MODERATOR"]} requiredPermission={PERMISSIONS.VIEW_DEVICES} >
+            <NavLink
+              to="/devices"
+              className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white"
+              onClick={() => setOpen(false)} // Close the dropdown when navigating
+            >
+              Devices
+            </NavLink>
+          </ProtectedRoute>
           <NavLink
             to="/user/profile"
             className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white"
@@ -99,24 +116,6 @@ export default function UserMenu({
           >
             Notification
           </NavLink>
-          <ProtectedRoute requiredRoles={["ADMIN", "MODERATOR"]} requiredPermission={PERMISSIONS.VIEW_USERS} >
-            <NavLink
-              to="/users"
-              className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white"
-              onClick={() => setOpen(false)} // Close the dropdown when navigating
-            >
-              Users
-            </NavLink>
-          </ProtectedRoute>
-          <ProtectedRoute requiredRoles={["ADMIN", "MODERATOR"]} requiredPermission={PERMISSIONS.VIEW_DEVICES} >
-            <NavLink
-              to="/devices"
-              className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white"
-              onClick={() => setOpen(false)} // Close the dropdown when navigating
-            >
-              Devices
-            </NavLink>
-          </ProtectedRoute>
           <NavLink
             to="/user/settings"
             className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white"
