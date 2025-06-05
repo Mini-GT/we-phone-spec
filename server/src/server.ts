@@ -3,6 +3,7 @@ import cors from 'cors'
 import smartphonesRouter from "./routes/smartphones.route"
 import authRouter from "./routes/auth.route"
 import userRouter from "./routes/user.route"
+import usersRouter from "./routes/users.route"
 import { connectMongoDB } from './db/connect'
 import cookieParser from 'cookie-parser' 
 import session from 'express-session'
@@ -15,7 +16,7 @@ import type { User } from '@prisma/client'
 import { requireAuth } from './middlewares/auth.middleware'
 import { asyncWrapper } from './middlewares/asyncWrapper.middleware'
 
-const app = express()
+export const app = express()
 const PORT = process.env.PORT || 3000
 
 app.use(cors({
@@ -38,6 +39,8 @@ app.use("/api/v1/smartphones", smartphonesRouter)
 app.use("/api/v1/auth", authRouter)
 
 app.use("/api/v1/user", userRouter)
+
+app.use("/api/v1/users", usersRouter)
 
 app.use("/api/v1/user", emailRouter)
 
