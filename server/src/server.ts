@@ -15,6 +15,8 @@ import { signJwt } from './utils/jwt'
 import type { User } from '@prisma/client'
 import { requireAuth } from './middlewares/auth.middleware'
 import { asyncWrapper } from './middlewares/asyncWrapper.middleware'
+import notFound from './middlewares/notFound.middleware'
+import errorHandlerMiddleware from './middlewares/errorHandler.middleware'
 
 export const app = express()
 const PORT = process.env.PORT || 3000
@@ -25,6 +27,7 @@ app.use(cors({
 }))
 app.use(express.json())
 app.use(cookieParser())
+
 // app.use(session({
 //   secret: process.env.SESSION_SECRET || "my-secret-key",
 //   resave: false,
@@ -69,7 +72,10 @@ app.get('/api/v1', (req: Request, res: Response): void => {
   res.json({ message: 'Hello from Express!' })
 })
 
+app.use(notFound)
+app.use(errorHandlerMiddleware)
+
 app.listen(PORT, () => {
-  // connectMongoDB()
+  connectMongoDB()
   console.log(`Server running on port ${process.env.PORT}`)
 })
