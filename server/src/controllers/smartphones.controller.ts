@@ -1,7 +1,8 @@
 import type { Request, Response } from "express"
 import { phones } from "mockData";
+import deviceModel from "@/models/device.model";
 
-const getSmartphones = async (req: Request, res: Response)=> {
+const getAllSmartphones = async (req: Request, res: Response)=> {
   res.json({ phones: phones })
 }
 
@@ -33,12 +34,14 @@ const getSmartphonesByBrand = async (req: Request, res: Response) => {
 }
 
 const createSmartphone = async (req: Request, res: Response) => {
-  const { name } = req.params
-  console.log(name)
+  // console.log(req.body)
+  const device = new deviceModel(req.body)
+  const saveSmartphone = await device.save()
+  res.status(201).json(saveSmartphone)
 }
 
 export {
-  getSmartphones,
+  getAllSmartphones,
   getSmartphone,
   createSmartphone,
   getSmartphonesByBrand
