@@ -1,8 +1,11 @@
 import mongoose, { type InferSchemaType } from 'mongoose';
 
 const deviceSchema = new mongoose.Schema({
-    name: {type: String, required: true},
-    brand: {type: String, required: true},
+    name: {type: String, required: true, trim: true},
+    brand: {type: String, required: true, trim: true},
+    views: {type: Number, default: 0},
+    likes: {type: Number, default: 0},
+    description: {type: String, required: true},
     launch: {
       announced: {type: String, required: true},
       released: {type: String, required: true},
@@ -68,6 +71,12 @@ const deviceSchema = new mongoose.Schema({
         }
     },
 }, { timestamps: true });
+
+// indexes for better query performance
+deviceSchema.index({ brand: 1 })
+deviceSchema.index({ name: 1 })
+deviceSchema.index({ views: -1 })
+deviceSchema.index({ likes: -1 })
 
 type Device = InferSchemaType<typeof deviceSchema>
 
