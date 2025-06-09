@@ -46,8 +46,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
   // }
 
   // res.status(401).json({ message: "Unauthorized"})
-
-    const token = req.cookies.token
+    const token = req.cookies.token || req.headers.cookie
     if (!token) {
       return res.status(401).json({ message: "No token provided" });
     }
