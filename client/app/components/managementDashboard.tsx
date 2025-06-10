@@ -11,10 +11,12 @@ type TableSortConfig = {
 
 type ManagementDashoardProps = {
   users: UserMenuProps[];
+  handleAddUser: () => void;
 };
 
 const ManagementDashoard = ({
-  users
+  users,
+  handleAddUser
 }: ManagementDashoardProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
@@ -153,7 +155,10 @@ const ManagementDashoard = ({
 
           <div className="flex gap-2 ml-auto">
             {/* Add User Button */}
-            <button className="flex items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">
+            <button 
+              className="flex items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+              onClick={handleAddUser}
+            >
               <Plus className="h-4 w-4" />
               Add User
             </button>
