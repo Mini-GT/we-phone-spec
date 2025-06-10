@@ -33,7 +33,7 @@ export default function LoginRegister() {
   }
 
   return (
-    <div className={`flex z-1 absolute items-center justify-center min-h-screen min-w-screen backdrop-blur-xs bg-black/50`}>
+    <div className={`flex z-1 fixed inset-0 absolute items-center justify-center backdrop-blur-xs bg-black/50`}>
       <Card className={`relative w-full max-w-sm p-6 bg-white rounded-2xl shadow-lg ${popupButton.isLoginClicked ? "animate-popup-enter" : ""}`}>
         <button 
           onClick={handleLoginClick} 
