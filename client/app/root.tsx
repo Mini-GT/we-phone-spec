@@ -11,7 +11,7 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import Navbar from "./components/navbar";
-import { LoginProvider, useLoginButton } from "./context/loginButtonContext";
+import { PopupButtonProvider, usePopupButton } from "./context/popupButtonContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import LoginRegister from "./components/loginRegister";
 import { useEffect, useState } from "react";
@@ -21,6 +21,7 @@ import Unauthorized from "./routes/unauthorized";
 import { AlertTriangle } from "lucide-react";
 import Spinner from "./components/spinner";
 import NotFound from "./routes/notFound";
+import AddUser from "./components/addUser";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -48,11 +49,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <QueryClientProvider client={queryClient}>
-          <LoginProvider>
+          <PopupButtonProvider>
             <AuthProvider>
               {children}
             </AuthProvider>
-          </LoginProvider>
+          </PopupButtonProvider>
         </QueryClientProvider>
         <ScrollRestoration/>
         <Scripts />
@@ -63,9 +64,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 // removes screen y-scroll when login/register form popups
 function BodyStyles() {
-  const { isLoginClicked } = useLoginButton()
+  const { popupButton } = usePopupButton()
   
-  const overflowStyle = isLoginClicked 
+  const overflowStyle = popupButton.isLoginClicked || popupButton.isAddUserClicked || popupButton.isAddDeviceClicked 
     ? 'body { overflow: hidden; }'
     : 'body { overflow: auto; }'
   
@@ -73,15 +74,16 @@ function BodyStyles() {
 }
 
 export default function App() {
-  const {isLoginClicked} = useLoginButton()
+  const {popupButton} = usePopupButton()
   const navigation = useNavigation()
   const isNavigating = Boolean(navigation.location)
-
+  
   return (
     <div>
       <BodyStyles />
       {isNavigating && <Spinner />}
-      {isLoginClicked && <LoginRegister />}
+      {popupButton.isLoginClicked && <LoginRegister />}
+      {popupButton.isAddUserClicked && <AddUser />}
       <Navbar />
       <Outlet />
       <Footer />

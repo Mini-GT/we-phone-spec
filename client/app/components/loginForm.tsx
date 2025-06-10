@@ -5,7 +5,7 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import type { LoginRegisterFormProps } from "~/types/globals.type";
 import authService from "~/services/auth.service";
-import { useLoginButton } from "~/context/loginButtonContext";
+import { usePopupButton } from "~/context/popupButtonContext";
 import { AxiosError } from 'axios';
 import { NavLink, redirect, useNavigate } from "react-router";
 import { requireAuthCookie } from "~/utils/auth";
@@ -17,7 +17,7 @@ export default function LoginForm({ handleAuthMode }: LoginRegisterFormProps) {
     password: "",
   });
   const [error, setError] = useState<string | null>(null);
-  const { setIsLoginClicked } = useLoginButton()
+  const { setPopupButton } = usePopupButton()
   const navigate = useNavigate()
 
   async function handleSubmit(e: React.FormEvent) {
@@ -31,7 +31,10 @@ export default function LoginForm({ handleAuthMode }: LoginRegisterFormProps) {
       const { token } = response.data;
       
       localStorage.setItem('authToken', token);
-      setIsLoginClicked(false)
+      setPopupButton(prevState => ({
+        ...prevState,
+        isLoginClicked: false,
+      }))
       setLoginFormData({ email: "", password: "" });
       navigate(0);
     } catch (error) {

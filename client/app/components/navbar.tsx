@@ -1,6 +1,6 @@
 import { NavLink } from "react-router"
 import { Button } from "./ui/button"
-import { useLoginButton } from "~/context/loginButtonContext"
+import { usePopupButton } from "~/context/popupButtonContext"
 // import authService from "~/services/auth.service"
 import { use, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
@@ -8,7 +8,7 @@ import UserMenu from "./userMenu"
 import { useAuth } from "~/context/authContext"
 
 export default function Navbar() {
-  const { setIsLoginClicked } = useLoginButton()
+  const { setPopupButton } = usePopupButton()
   const { user } = useAuth()
   // const {data, isLoading} = useQuery({
   //   queryFn: () => authService.getMe(),
@@ -17,7 +17,10 @@ export default function Navbar() {
   // })
   // const user = data?.data
   async function handleLoginClick() {
-    setIsLoginClicked(prevState => ((!prevState)))
+    setPopupButton(prevState => ({
+      ...prevState,
+      isLoginClicked: !prevState.isLoginClicked,
+    }))
   }
 
   return (
