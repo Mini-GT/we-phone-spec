@@ -18,6 +18,8 @@ export function AuthProvider({ children }: ContextProviderProps) {
   const { data: user, isLoading, error } = useQuery({
     queryFn: () => AuthService.getMe(),
     queryKey: ["user"],
+    staleTime: 1000 * 60 * 1, // keeps data fresh for 1 minute
+    refetchOnWindowFocus: false, // dont refetch on tab switch
   })
 
   async function handleLogout() {
