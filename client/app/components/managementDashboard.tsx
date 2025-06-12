@@ -1,13 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { Search, ChevronDown, Plus, Edit2, Trash2, ChevronLeft, ChevronRight, Upload } from 'lucide-react';
-import type { UserMenuProps } from '~/types/globals.type';
-import { toReadableDate } from '~/utils/formatDate';
+import type { TableSortConfig, UserMenuProps } from '~/types/globals.type';
 import _ from 'lodash';
+import StatusFilter from './dashboard/usersManagement/statusFilter';
+import RoleFilter from './dashboard/usersManagement/roleFilter';
+import DateFilter from './dashboard/usersManagement/dateFilter';
+import UsersTable from './dashboard/usersManagement/userTable';
+import Pagination from './pagination';
 
-type TableSortConfig = {
-  key: 'id' | 'name' | 'email' | 'status' | 'role' | 'joinedDate' | null; 
-  direction: 'asc' | 'desc';
-};
+
 
 type ManagementDashoardProps = {
   users: UserMenuProps[];
@@ -105,53 +106,22 @@ const ManagementDashoard = ({
           </div>
 
           {/* Status Filter */}
-          <div className="relative">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">Status</option>
-              <option value="Verified">Verified</option>
-              <option value="Unverified">Unverified</option>
-              <option value="Banned">Banned</option>
-              <option value="Pending">Pending</option>
-              <option value="Suspended">Suspended</option>
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
-          </div>
+          <StatusFilter
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+          />
 
           {/* Role Filter */}
-          <div className="relative">
-            <select
-              value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-              className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">Role</option>
-              <option value="Admin">Admin</option>
-              <option value="User">User</option>
-              <option value="Moderator">Moderator</option>
-              {/* <option value="Guest">Guest</option> */}
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
-          </div>
+          <RoleFilter
+            roleFilter={roleFilter}
+            setRoleFilter={setRoleFilter}
+          />
 
           {/* Date Filter */}
-          <div className="relative">
-            <select
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">Joined Date</option>
-              <option value="today">Today</option>
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-              <option value="year">This Year</option>
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
-          </div>
+          <DateFilter
+            dateFilter={dateFilter}
+            setDateFilter={setDateFilter}
+          />
 
           <div className="flex gap-2 ml-auto">
             {/* Add User Button */}
@@ -167,96 +137,12 @@ const ManagementDashoard = ({
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="text-left p-4">
-                <input type="checkbox" className="rounded border-gray-300" />
-              </th>
-              <th 
-                className="text-left p-4 font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
-                onClick={() => handleSort('id')}
-              >
-                ID <span className="text-xs ml-1">{getSortIcon('id')}</span>
-              </th>
-              <th 
-                className="text-left p-4 font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
-                onClick={() => handleSort('name')}
-              >
-                Full Name <span className="text-xs ml-1">{getSortIcon('name')}</span>
-              </th>
-              <th 
-                className="text-left p-4 font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
-                onClick={() => handleSort('email')}
-              >
-                Email <span className="text-xs ml-1">{getSortIcon('email')}</span>
-              </th>
-              <th 
-                className="text-left p-4 font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
-              >
-                Status
-              </th>
-              <th 
-                className="text-left p-4 font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
-              >
-                Role
-              </th>
-              <th 
-                className="text-left p-4 font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
-              >
-                Joined Date
-              </th>
-              {/* <th 
-                className="text-left p-4 font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
-                onClick={() => handleSort('lastActive')}
-              >
-                Last Active <span className="text-xs ml-1">{getSortIcon('lastActive')}</span>
-              </th> */}
-              <th className="text-left p-4 font-medium text-gray-700">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {currentUsers.map((user) => (
-              <tr key={user.id} className="hover:bg-gray-50">
-                <td className="p-4">
-                  <input type="checkbox" className="rounded border-gray-300" />
-                </td>
-                <td className="p-4 text-gray-700">{user.id}</td>
-                <td className="p-4">
-                  <div className="flex items-center gap-3">
-                    <img 
-                      src={user.profileImage ?? "/userIcon.svg"} 
-                      alt={user.name}
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                    <span className="font-medium text-gray-900">{user.name}</span>
-                  </div>
-                </td>
-                <td className="p-4 text-gray-700">{user.email}</td>
-                {/* <td className="p-4 text-gray-700">{user.username}</td> */}
-                <td className="p-4">
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(user.isVerified)}`}>
-                    {user.isVerified ? 'Verified' : 'Unverified'}
-                  </span>
-                </td>
-                <td className="p-4 text-gray-700">{_.capitalize(user.role)}</td>
-                <td className="p-4 text-gray-700">{toReadableDate(user.createdAt)}</td>
-                <td className="p-4">
-                  <div className="flex items-center gap-2">
-                    <button className="p-1 text-gray-500 hover:text-blue-600 transition-colors">
-                      <Edit2 className="h-4 w-4" />
-                    </button>
-                    <button className="p-1 text-gray-500 hover:text-red-600 transition-colors">
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <UsersTable
+        getStatusColor={getStatusColor}
+        handleSort={handleSort}
+        getSortIcon={getSortIcon}
+        currentUsers={currentUsers}
+      />
 
       {/* Pagination */}
       <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
