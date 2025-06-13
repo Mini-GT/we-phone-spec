@@ -3,27 +3,36 @@ import type { TableSortConfig, UserMenuProps } from "~/types/globals.type";
 import { toReadableDate } from "~/utils/formatDate";
 import _ from "lodash";
 
-type UsersTableProps = {
+type UsersTableLayoutProps = {
   getSortIcon: (iconTpe: TableSortConfig["key"]) => React.ReactNode;
-  getStatusColor: (isVerified: boolean) => string;
   handleSort: (sortType: TableSortConfig["key"]) => void;
   currentUsers: UserMenuProps[];
 };
 
-export default function UsersTable({
+export default function UsersTableLayout({
   getSortIcon,
-  getStatusColor,
   handleSort,
   currentUsers,
-}: UsersTableProps) {
+}: UsersTableLayoutProps) {
+  const getStatusColor = (status: boolean) => {
+    switch (status) {
+      case true: return 'bg-green-100 text-green-800';
+      // case 'inactive': return 'bg-gray-100 text-gray-800';
+      case false: return 'bg-red-100 text-red-800';
+      // case 'pending': return 'bg-blue-100 text-blue-800';
+      // case 'suspended': return 'bg-orange-100 text-orange-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead className="bg-gray-50 border-b border-gray-200">
           <tr>
-            <th className="text-left p-4">
+            {/* <th className="text-left p-4">
               <input type="checkbox" className="rounded border-gray-300" />
-            </th>
+            </th> */}
             <th 
               className="text-left p-4 font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
               onClick={() => handleSort('id')}
@@ -69,9 +78,9 @@ export default function UsersTable({
         <tbody className="divide-y divide-gray-200">
           {currentUsers.map((user) => (
             <tr key={user.id} className="hover:bg-gray-50">
-              <td className="p-4">
+              {/* <td className="p-4">
                 <input type="checkbox" className="rounded border-gray-300" />
-              </td>
+              </td> */}
               <td className="p-4 text-gray-700">{user.id}</td>
               <td className="p-4">
                 <div className="flex items-center gap-3">
