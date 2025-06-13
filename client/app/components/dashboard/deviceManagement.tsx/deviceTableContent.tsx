@@ -2,12 +2,13 @@ import React, { useState, useMemo } from 'react';
 import { Search, ChevronDown, Plus, Edit2, Trash2, ChevronLeft, ChevronRight, Upload, User } from 'lucide-react';
 import type { Smartphone, TableSortConfig, UserMenuProps } from '~/types/globals.type';
 import _ from 'lodash';
-import UsersTable from '../usersManagement/userTable';
+import UsersTable from '../usersManagement/userTableLayout';
 import DeviceTable from './deviceTable';
 import BrandFilter from './brandFilter';
 import OperatingSystemFilter from './operatingSystemFilter';
-import DevicePagination from './devicePagination';
 import DeviceTableLayout from './deviceTable';
+import { usePopupButton } from '~/context/popupButtonContext';
+import PaginationComponent from '~/components/pagination/paginationComponent';
 
 type DeviceTableContentProps = {
   devices: Smartphone[];
@@ -50,8 +51,14 @@ export default function DeviceTableContent({
   endIndex,
   items
 }: DeviceTableContentProps) {
-  function handleDevice() {
-    console.log("add")
+  const { setPopupButton } = usePopupButton()
+
+  function handleAddDevice() {
+    // Logic to add a new user
+    setPopupButton(prevState => ({
+      ...prevState,
+      isAddDeviceClicked: true,
+    }));
   }
 
   return (
@@ -84,17 +91,11 @@ export default function DeviceTableContent({
             setOperatingSystemFilter={setOperatingSystemFilter}
           />
 
-          {/* Date Filter */}
-          {/* <DateFilter
-            dateFilter={dateFilter}
-            setDateFilter={setDateFilter}
-          /> */}
-
           <div className="flex gap-2 ml-auto">
             {/* Add User Button */}
             <button 
               className="flex items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
-              onClick={handleDevice}
+              onClick={handleAddDevice}
             >
               <Plus className="h-4 w-4" />
               Add Device
@@ -113,7 +114,7 @@ export default function DeviceTableContent({
 
       {/* Pagination */}
       <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
-        <DevicePagination
+        <PaginationComponent
           setCurrentPage={setCurrentPage}
           currentPage={currentPage}
           totalPages={totalPages}
