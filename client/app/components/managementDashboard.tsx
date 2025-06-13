@@ -97,6 +97,7 @@ const ManagementDashoard = ({
           <div className="relative flex-1 min-w-64">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <input
+              name="user-search"
               type="text"
               placeholder="Search"
               value={searchTerm}
@@ -149,6 +150,7 @@ const ManagementDashoard = ({
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-700">Rows per page</span>
           <select
+            name="select-page-row"
             value={rowsPerPage}
             onChange={(e) => {
               setRowsPerPage(Number(e.target.value));
