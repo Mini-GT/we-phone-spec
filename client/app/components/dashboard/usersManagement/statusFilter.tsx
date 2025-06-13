@@ -12,6 +12,7 @@ export default function StatusFilter({
   return (
     <div className="relative">
       <select
+        name="select-status"
         value={statusFilter}
         onChange={(e) => setStatusFilter(e.target.value)}
         className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
