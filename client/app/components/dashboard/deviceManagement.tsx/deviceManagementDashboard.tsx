@@ -1,138 +1,105 @@
-import React, { useState, useMemo } from 'react';
-import { Search, ChevronDown, Plus, Edit2, Trash2, ChevronLeft, ChevronRight, Upload, User } from 'lucide-react';
-import type { Smartphone, TableSortConfig, UserMenuProps } from '~/types/globals.type';
-import _ from 'lodash';
-import UsersTable from '../usersManagement/userTable';
-import DeviceTable from './deviceTable';
-import BrandFilter from './brandFilter';
-import OperatingSystemFilter from './operatingSystemFilter';
+import { phones } from 'mockData';
+import { useMemo, useState } from 'react';
+import { Link } from 'react-router';
+import TopTenSection from '~/components/topTenSection';
+import type { Smartphone, TableSortConfig } from '~/types/globals.type';
+import { getFirstWord } from '~/utils/getFirstWord';
+import DeviceTableContent from './deviceTableContent';
 
-type ManagementDashoardProps = {
-  devices: Smartphone[];
-  rowsPerPage: number;
-  setRowsPerPage: (rows: number) => void;
-  searchTerm: string;
-  setSearchTerm: (term: string) => void;
-  handleSort: (sortType: TableSortConfig["key"]) => void;
-  getSortIcon: (iconType: TableSortConfig["key"]) => React.ReactNode;
-  totalRows: number;
-  setCurrentPage: (page: number) => void;
-  brandFilter: string;
-  setBrandFilter: (brand: string) => void;
-  operatingSystemFilter: string;
-  setOperatingSystemFilter: (os: string) => void;
+type DeviceManagementDashboardProps = {
+  items: Smartphone[];
 };
 
-const DeviceManagementDashboard = ({
-  devices,
-  rowsPerPage,
-  setRowsPerPage,
-  searchTerm,
-  setSearchTerm,
-  handleSort,
-  getSortIcon,
-  totalRows,
-  setCurrentPage,
-  brandFilter,
-  setBrandFilter,
-  operatingSystemFilter,
-  setOperatingSystemFilter
-}: ManagementDashoardProps) => {
-  const getStatusColor = (status: boolean) => {
-    switch (status) {
-      case true: return 'bg-green-100 text-green-800';
-      // case 'inactive': return 'bg-gray-100 text-gray-800';
-      case false: return 'bg-red-100 text-red-800';
-      // case 'pending': return 'bg-blue-100 text-blue-800';
-      // case 'suspended': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
+export default function DeviceManagementDashboard({
+  items,
+}: DeviceManagementDashboardProps) {
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const itemsPerPage = rowsPerPage;
+  
+  // Calculate total pages
+  // const totalPages = Math.ceil(items.length / itemsPerPage);
+  
+  // Get current items
+  // const indexOfLastItem = currentPage * itemsPerPage;
+  // const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  // const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
+
+  // 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [brandFilter, setBrandFilter] = useState('');
+  const [operatingSystemFilter, setOperatingSystemFilter] = useState('');
+  const [dateFilter, setDateFilter] = useState('');
+  const [sortConfig, setSortConfig] = useState<TableSortConfig>({ key: null, direction: 'asc' });
+
+  const handleSort = (key: TableSortConfig["key"]) => {
+    let direction: TableSortConfig["direction"] = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
     }
+    setSortConfig({ key, direction });
   };
+  const filteredAndSorted = useMemo(() => {
+    let filtered = items.filter(device => {
+      const matchesSearch = 
+        device.name.toLowerCase().includes(searchTerm.toLowerCase())
+        // device.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      // user.username.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesBrand = brandFilter === '' || device.brand.toLowerCase() === brandFilter.toLowerCase();
+      const matchesOS = operatingSystemFilter === '' || getFirstWord(device.specs.platform.os).toLowerCase() === operatingSystemFilter.toLowerCase();
+      
+      return matchesSearch && matchesBrand && matchesOS;
+    });
+    
+    if (sortConfig.key) {
+      //  console.log(filtered)
+      filtered.sort((a, b) => {
+        const key = sortConfig.key as keyof Smartphone;
+        // console.log(a[key])
+        const aVal = a[key] ?? '';
+        const bVal = b[key] ?? '';
+       
+        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return filtered;
+  }, [searchTerm, brandFilter, operatingSystemFilter, sortConfig]);
 
+  const totalRows = filteredAndSorted.length;
+  const totalPages = Math.ceil(totalRows / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentDevices = filteredAndSorted.slice(startIndex, endIndex);
+
+  const getSortIcon = (columnKey: TableSortConfig["key"]) => {
+    if (sortConfig.key !== columnKey) {
+      return '↕️';
+    }
+    return sortConfig.direction === 'asc' ? '↑' : '↓';
+  };
   return (
-    <div className="bg-white w-full min-h-screen border rounded-md overflow-hidden shadow-lg">
-      {/* Header with filters */}
-      <div className="bg-white border-b border-gray-200 p-6">
-        <div className="flex flex-wrap items-center gap-4">
-          {/* Search */}
-          <div className="relative flex-1 min-w-64">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <input
-              type="text"
-              placeholder="Search"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          {/* Brand Filter */}
-          <BrandFilter
-            brandFilter={brandFilter}
-            setBrandFilter={setBrandFilter}
-          />
-
-          {/* Operating System Filter */}
-          <OperatingSystemFilter
-            operatingSystemFilter={operatingSystemFilter}
-            setOperatingSystemFilter={setOperatingSystemFilter}
-          />
-
-          {/* Date Filter */}
-          {/* <DateFilter
-            dateFilter={dateFilter}
-            setDateFilter={setDateFilter}
-          /> */}
-
-          <div className="flex gap-2 ml-auto">
-            {/* Add User Button */}
-            <button 
-              className="flex items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
-              // onClick={handleAddUser}
-            >
-              <Plus className="h-4 w-4" />
-              Add User
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Table */}
-      <DeviceTable
-        getStatusColor={getStatusColor}
-        handleSort={handleSort}
-        getSortIcon={getSortIcon}
-        currentDevices={devices}
-      />
-      {/* <UsersTable
-
-      {/* Pagination */}
-      <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-700">Rows per page</span>
-          <select
-            value={rowsPerPage}
-            onChange={(e) => {
-              setRowsPerPage(Number(e.target.value));
-              setCurrentPage(1);
-            }}
-            className="border border-gray-300 rounded px-2 py-1 text-sm"
-          >
-            <option value={1}>1</option>
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={25}>25</option>
-            <option value={50}>50</option>
-          </select>
-          <span className="text-sm text-gray-700 ml-4">
-            of {totalRows} rows
-          </span>
-        </div>
-
-
-      </div>
-    </div>
+    <DeviceTableContent
+      devices={currentDevices}
+      rowsPerPage={rowsPerPage}
+      totalPages={totalPages}
+      setRowsPerPage={setRowsPerPage}
+      searchTerm={searchTerm}
+      setSearchTerm={setSearchTerm}
+      handleSort={handleSort}
+      getSortIcon={getSortIcon}
+      totalRows={totalRows}
+      setCurrentPage={setCurrentPage}
+      brandFilter={brandFilter}
+      setBrandFilter={setBrandFilter}
+      operatingSystemFilter={operatingSystemFilter}
+      setOperatingSystemFilter={setOperatingSystemFilter}
+      startIndex={startIndex}
+      endIndex={endIndex}
+      items={items}
+      currentPage={currentPage}
+    />
   );
-};
-
-export default DeviceManagementDashboard;
+}
