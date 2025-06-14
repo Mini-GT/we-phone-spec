@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import TopTenSection from '~/components/topTenSection';
 import type { Smartphone } from '~/types/globals.type';
 import { formatNumberToCompact } from '~/utils/formatNumber';
+import DeviceGridLayout from './deviceGridLayout';
 
 type PaginationProps = {
   data: Smartphone[];
@@ -11,7 +12,7 @@ type PaginationProps = {
 };
 
 export default function Pagination({
-  data = phones,
+  data,
   title
 }: PaginationProps) {
   // const data = phones;
@@ -85,9 +86,9 @@ export default function Pagination({
   
   return (
     <div className="relative">
-        <h1 className="text-xl font-bold my-4">{title}</h1>
+        {/* <h1 className="text-xl font-bold my-4">{title}</h1> */}
         {/* Current items */}
-        <ul className="mb-4 grid grid-cols-[230px_230px_230px_230px_230px] gap-4 rounded">
+        {/* <ul className="mb-4 grid grid-cols-[230px_230px_230px_230px_230px] gap-4 rounded">
           {currentItems.map(item => (
             <div key={item.id} data-id={item.id} className="flex flex-col justify-between items-start max-w-[15rem] cursor-pointer">
               <Link to={`/smartphones/${item.name}-${item.id}`} >
@@ -108,7 +109,11 @@ export default function Pagination({
               </div>
             </div>
           ))}
-        </ul>
+        </ul> */}
+        <DeviceGridLayout
+          items={currentItems}
+          title={title}
+        />
         
         {/* Pagination */}
         <div className="flex items-center gap-2 justify-center mt-6">
