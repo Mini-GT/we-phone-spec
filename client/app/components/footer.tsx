@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { NavLink } from "react-router";
 
-export default function Footer() {
-  const brands = [
+export const brands = [
   "SAMSUNG", "APPLE", "HUAWEI", "NOKIA", "SONY", "LG", "HTC", "MOTOROLA", "LENOVO",
   "XIAOMI", "GOOGLE", "HONOR", "OPPO", "REALME", "ONEPLUS", "NOTHING", "VIVO", "MEIZU",
   "ASUS", "ALCATEL", "ZTE", "MICROSOFT", "UMIDIGI", "COOLPAD", "OSCAL", "SHARP", "MICROMAX",
   "INFINIX", "ULEFONE", "TECNO", "DOOGEE", "BLACKVIEW", "CUBOT", "OUKITEL", "ITEL", "TCL"
   ];
 
+export default function Footer() {
   const [selectedBrand] = useState<string>("");
 
   return (
