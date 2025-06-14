@@ -11,7 +11,7 @@ export default function UserMenu({
   name,
   email,
   profileImage,
-}: Omit<UserMenuProps, "createdAt" | "isVerified">) {
+}: Omit<UserMenuProps, "createdAt" | "isVerified" | "id">) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
