@@ -3,27 +3,25 @@ import type { Smartphone, TableSortConfig, UserMenuProps } from "~/types/globals
 import { toReadableDate } from "~/utils/formatDate";
 import _ from "lodash";
 
-type DeviceTableProps = {
+type DeviceTableLayoutProps = {
   getSortIcon: (iconTpe: TableSortConfig["key"]) => React.ReactNode;
-  getStatusColor: (isVerified: boolean) => string;
   handleSort: (sortType: TableSortConfig["key"]) => void;
   currentDevices: Smartphone[];
 };
 
-export default function DeviceTable({
+export default function DeviceTableLayout({
   getSortIcon,
-  getStatusColor,
   handleSort,
   currentDevices,
-}: DeviceTableProps) {
+}: DeviceTableLayoutProps) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead className="bg-gray-50 border-b border-gray-200">
           <tr>
-            <th className="text-left p-4">
+            {/* <th className="text-left p-4">
               <input type="checkbox" className="rounded border-gray-300" />
-            </th>
+            </th> */}
             <th 
               className="text-left p-4 font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
               onClick={() => handleSort('id')}
@@ -69,16 +67,16 @@ export default function DeviceTable({
         <tbody className="divide-y divide-gray-200">
           {currentDevices.map((device) => (
             <tr key={device.id} className="hover:bg-gray-50">
-              <td className="p-4">
+              {/* <td className="p-4">
                 <input type="checkbox" className="rounded border-gray-300" />
-              </td>
+              </td> */}
               <td className="p-4 text-gray-700">{device.id}</td>
               <td className="p-4">
                 <div className="flex items-center gap-3">
                   <img 
                     src={device.image ?? "/userIcon.svg"} 
                     alt={device.name}
-                    className="w-8 h-8 rounded-full object-cover"
+                    className="w-8 h-8 object-cover"
                   />
                   <span className="font-medium text-gray-900">{device.name}</span>
                 </div>
