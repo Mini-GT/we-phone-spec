@@ -48,25 +48,28 @@ const deviceSchema = new mongoose.Schema({
         },
         sound: {
           loudspeaker: {type: String, required: true},
-          jack: { type: [String], default: [] },
+          jack: {
+            hasJackSlot: {type: Boolean, default: false},
+            jackFeatures: {type: String, required: true}
+          },
         },
         connection: {
           wlan: {type: String, required: true},
           bluetooth: {type: String, required: true},
-          nfc: { type: Boolean, default: false },
+          nfc: { type: String, required: true },
           infraredPort: { type: Boolean, default: false },
           radio: { type: Boolean, default: false },
-          USB: { type: [String], default: [] },
+          USB: { type: String, required: true },
         },
         features: {
-          sensors: { type: [String], default: [] },
+          sensors: { type: String, required: true },
         },
         battery: {
           type: {type: String, required: true},
-          charging: { type: [String], default: [] }
+          charging: { type: String, required: true },
         },
         misc: {
-          colors: { type: [String], default: [] },
+          colors: { type: String, required: true },
           models: {type: String, required: true},
         }
     },
