@@ -1,4 +1,4 @@
-import { NavLink, useLoaderData, useNavigate, type LoaderFunctionArgs } from "react-router";
+import { NavLink, useLoaderData, useNavigate, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import { Mail, Lock, AlertTriangle, Edit2, Heart } from 'lucide-react';
 import { toReadableDate } from "~/utils/formatDate";
 import UserMenuNav from "~/components/userMenuNav";
@@ -6,6 +6,13 @@ import { useAuth } from "~/context/authContext";
 import type { Route } from "../_protected/+types/likeList";
 import { requireAuthCookie } from "~/utils/auth";
 import Spinner from "~/components/spinner";
+
+export function meta({}: MetaFunction) {
+  return [
+    { title: "Like list - WePhoneSpec" },
+    { name: "description", content: "View and manage your like list." },
+  ];
+}
 
 export async function loader({request}: LoaderFunctionArgs) {
   const userId = await requireAuthCookie(request);

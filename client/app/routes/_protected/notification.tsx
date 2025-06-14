@@ -1,10 +1,17 @@
-import { useNavigate, type LoaderFunctionArgs } from "react-router";
+import { useNavigate, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import UserMenuNav from "~/components/userMenuNav";
 import { useAuth } from "~/context/authContext";
 import { requireAuthCookie } from "~/utils/auth";
 import type { Route } from "../_protected/+types/notification";
 import Spinner from "~/components/spinner";
 import { Bell } from "lucide-react";
+
+export function meta({}: MetaFunction) {
+  return [
+    { title: "Notification - WePhoneSpec" },
+    { name: "description", content: "View and manage your notifications." },
+  ];
+}
 
 export async function loader({request}: LoaderFunctionArgs) {
   const userId = await requireAuthCookie(request);

@@ -1,14 +1,23 @@
 import { Smartphone, User } from "lucide-react";
-import { useLoaderData, type LoaderFunctionArgs } from "react-router";
+import { useLoaderData, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import Spinner from "~/components/spinner";
 import { requireAuthCookie } from "~/utils/auth";
 import { ProtectedRoute } from "~/components/protectedRoute";
-import ManagementDashoard from "~/components/managementDashboard";
+import ManagementDashoard from "~/components/dashboard/usersManagement/userManagementDashboard";
 import { useSmartphone } from "~/context/smartphoneContext";
-import DevicePagination from "~/components/dashboard/deviceManagement.tsx/devicePagination";
+import DevicePagination from "~/components/dashboard/deviceManagement.tsx/deviceManagementDashboard";
 import smartphoneService from "~/services/smartphone.service";
 import UserMenuNav from "~/components/userMenuNav";
 import { useAuth } from "~/context/authContext";
+import Unauthorized from "../unauthorized";
+import DeviceManagementDashboard from "~/components/dashboard/deviceManagement.tsx/deviceManagementDashboard";
+
+export function meta({}: MetaFunction) {
+  return [
+    { title: "Devices - WePhoneSpec" },
+    { name: "description", content: "View and manage the devices." },
+  ];
+}
 
 export async function loader({request}: LoaderFunctionArgs) {
   const token = await requireAuthCookie(request);
@@ -45,7 +54,7 @@ export default function Devices() {
   }
 
   return (
-    <ProtectedRoute requiredRoles={["ADMIN", "MODERATOR"]}>
+    <ProtectedRoute requiredRoles={["ADMIN", "MODERATOR"]} fallback={<Unauthorized />}>
       <div className="min-h-screen bg-gray-800 bg-opacity-90 flex flex-col items-center py-12 px-15">
         <UserMenuNav
           tab={"devices"}
@@ -61,7 +70,7 @@ export default function Devices() {
                 <Smartphone fill="#d5dbdb" strokeWidth={2} className="mr-3 w-6 h-6 text-gray-400" />
                 Devices
               </div>
-              <DevicePagination
+              <DeviceManagementDashboard
                 items={devices}
               />
             </div>

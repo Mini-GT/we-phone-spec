@@ -1,4 +1,12 @@
 import { AlertTriangle } from 'lucide-react';
+import type { MetaFunction } from 'react-router';
+
+export function meta({}: MetaFunction) {
+  return [
+    { title: "Unauthorized - WePhoneSpec" },
+    { name: "description", content: "You are not authorized to view the content of this page." },
+  ];
+}
 
 export default function Unauthorized() {
   return (

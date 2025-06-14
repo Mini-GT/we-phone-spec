@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Mail, Lock, AlertTriangle, Edit2, UserCheck, UserRound } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { toReadableDate } from '~/utils/formatDate';
-import { NavLink, redirect, useNavigate, type LoaderFunctionArgs } from 'react-router';
+import { NavLink, redirect, useNavigate, type LoaderFunctionArgs, type MetaFunction } from 'react-router';
 import type { MenuNav, UserMenuProps } from '~/types/globals.type';
 import UserMenuNav from '~/components/userMenuNav';
 import { useAuth } from '~/context/authContext';
@@ -11,6 +11,13 @@ import EmailService from '../../services/email.service';
 import { requireAuthCookie } from '~/utils/auth';
 import Spinner from '~/components/spinner';
 import authService from '~/services/auth.service';
+
+export function meta({}: MetaFunction) {
+  return [
+    { title: "Profile - WePhoneSpec" },
+    { name: "description", content: "View and manage your profile." },
+  ];
+}
 
 export async function loader({request}: LoaderFunctionArgs) {
   const userId = await requireAuthCookie(request);
@@ -121,9 +128,9 @@ export default function Profile() {
                   <AlertTriangle className="text-yellow-500 mr-2 h-5 w-5" />
                   <div>
                     <p className="text-white">
-                      Your account has not been verified. 
+                      Your account has not been verified.
                       <button 
-                        className="text-pink-400 cursor-pointer hover:underline"
+                        className="ml-1 text-pink-400 cursor-pointer hover:underline"
                         onClick={sendEmailVerification}
                       >
                         Click here

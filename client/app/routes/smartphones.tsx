@@ -10,6 +10,7 @@ import smartphoneService from '~/services/smartphone.service';
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "Smartphones - WePhoneSpec" },
+    { name: "description", content: "Check the specification of your favorite smartphone!" },
   ];
 }
 
