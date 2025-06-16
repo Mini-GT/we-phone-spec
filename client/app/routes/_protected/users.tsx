@@ -1,22 +1,23 @@
 import { User, UsersRound } from "lucide-react";
-import { useLoaderData, type LoaderFunctionArgs } from "react-router";
+import { useLoaderData, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import Spinner from "~/components/spinner";
 import UserMenuNav from "~/components/userMenuNav";
 import { useAuth } from "~/context/authContext";
 import { requireAuthCookie } from "~/utils/auth";
 import Unauthorized from "../unauthorized";
 import { ProtectedRoute } from "~/components/protectedRoute";
-import ManagementDashoard from "~/components/managementDashboard";
+import ManagementDashoard from "~/components/dashboard/usersManagement/userManagementDashboard";
 import userService from "~/services/user.service";
 import usersService from "~/services/users.service";
 import type { Route } from "./+types/users";
+import { usePopupButton } from "~/context/popupButtonContext";
+import UserManagementDashoard from "~/components/dashboard/usersManagement/userManagementDashboard";
 
 export async function loader({request}: LoaderFunctionArgs) {
-  // const token = await requireAuthCookie(request);
+  const token = await requireAuthCookie(request);
   try {
-    const cookie = request.headers.get('cookie')?.split("=")[1];
     const response = await usersService.getUsers({
-      cookie: cookie || "",
+      cookie: token || "",
     })
 
     if (!response || !response.data) {
@@ -37,8 +38,18 @@ export async function loader({request}: LoaderFunctionArgs) {
 // }
 
 export default function Users() {
-  const users = useLoaderData<typeof loader>();
+  const users = useLoaderData<typeof loader>()
   const { user, isLoading, error } = useAuth()
+  const { setPopupButton } = usePopupButton()
+
+  function handleAddUser() {
+    // Logic to add a new user
+    setPopupButton(prevState => ({
+      ...prevState,
+      isAddUserClicked: true,
+    }));
+  }
+
   if (isLoading) {
     return (
       <Spinner />
@@ -54,7 +65,7 @@ export default function Users() {
   }
 
   return (
-    <ProtectedRoute requiredRoles={["ADMIN", "MODERATOR"]} >
+    <ProtectedRoute requiredRoles={["ADMIN", "MODERATOR"]} fallback={<Unauthorized />}>
       <div className="min-h-screen bg-gray-800 bg-opacity-90 flex flex-col items-center py-12 px-15">
         <UserMenuNav
           tab={"users"}
@@ -69,8 +80,9 @@ export default function Users() {
                 {/* <span className="mr-3">👤</span> */}
                 Users Management
               </div>
-              <ManagementDashoard
+              <UserManagementDashoard
                 users={users}
+                handleAddUser={handleAddUser}
               />
             </div>
           </div>
