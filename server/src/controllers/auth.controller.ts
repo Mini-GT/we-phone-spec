@@ -139,11 +139,14 @@ const login = async (req: Request, res: Response) => {
 }
 
 const getCurrentUser = async (req: Request, res: Response) => {
-  if (!req.isAuthenticated()) {
-    return res.status(401).json({ message: 'Not authenticated' });
-  }
-
+  // if (!req.isAuthenticated()) {
+  //   return res.status(401).json({ message: 'Not authenticated' });
+  // }
   const user = req.user as User;
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
   
   return res.status(200).json({
     createdAt: user.createdAt,
