@@ -21,7 +21,10 @@ import Unauthorized from "./routes/unauthorized";
 import { AlertTriangle } from "lucide-react";
 import Spinner from "./components/spinner";
 import NotFound from "./routes/notFound";
-import AddUser from "./components/addUser";
+import AddUser from "./components/dashboard/usersManagement/addUserForm";
+import { SmartphoneProvider } from "./context/smartphoneContext";
+import AddDevice from "./components/dashboard/deviceManagement.tsx/addDevice";
+import PhoneSpecsForm from "./components/addDeviceForm";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -51,7 +54,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <QueryClientProvider client={queryClient}>
           <PopupButtonProvider>
             <AuthProvider>
-              {children}
+              <SmartphoneProvider>
+                {children}
+              </SmartphoneProvider>
             </AuthProvider>
           </PopupButtonProvider>
         </QueryClientProvider>
@@ -84,6 +89,7 @@ export default function App() {
       {isNavigating && <Spinner />}
       {popupButton.isLoginClicked && <LoginRegister />}
       {popupButton.isAddUserClicked && <AddUser />}
+      {popupButton.isAddDeviceClicked && <AddDevice />}
       <Navbar />
       <Outlet />
       <Footer />
