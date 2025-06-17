@@ -1,5 +1,5 @@
 import { Smartphone, User } from "lucide-react";
-import { useLoaderData, type LoaderFunctionArgs, type MetaFunction } from "react-router";
+import { useLoaderData, type ActionFunctionArgs, type ClientActionFunctionArgs, type ClientLoaderFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import Spinner from "~/components/spinner";
 import { requireAuthCookie } from "~/utils/auth";
 import { ProtectedRoute } from "~/components/protectedRoute";
@@ -11,6 +11,8 @@ import UserMenuNav from "~/components/userMenuNav";
 import { useAuth } from "~/context/authContext";
 import Unauthorized from "../unauthorized";
 import DeviceManagementDashboard from "~/components/dashboard/deviceManagement.tsx/deviceManagementDashboard";
+import type { Route } from "./+types/devices";
+import { useEffect } from "react";
 
 export function meta({}: MetaFunction) {
   return [
@@ -19,8 +21,22 @@ export function meta({}: MetaFunction) {
   ];
 }
 
-export async function loader({request}: LoaderFunctionArgs) {
-  const token = await requireAuthCookie(request);
+export async function action({
+  request,
+}: Route.ClientActionArgs) {
+  let formData = await request.formData();
+  const id = formData.get("action") as string;
+  let device = await smartphoneService.getSmartphoneById(id)
+  console.log(JSON.stringify(device, null, 2));
+  return device;
+}
+
+export async function loader({ request }: Route.LoaderArgs) {
+  const token = await requireAuthCookie(request)
+}
+
+export async function clientLoader({request}: ClientLoaderFunctionArgs) {
+  // const token = await requireAuthCookie(request);
   try {
     const response = await smartphoneService.getSmartphones()
     if (!response || !response.data) {
@@ -34,11 +50,25 @@ export async function loader({request}: LoaderFunctionArgs) {
   }
 }
 
-export default function Devices() {
-  const devices = useLoaderData<typeof loader>()
+export function HydrateFallback() {
+  return <div>Loading...</div>;
+}
+
+export default function Devices({
+  actionData
+}: Route.ComponentProps) {
+  const devices = useLoaderData<typeof clientLoader>()
+  const { setSmartphoneFormData } = useSmartphone()
   const { user, isLoading, error } = useAuth()
 
-  
+  useEffect(() => {
+    if (actionData) {
+      // exclude `id` and `image`
+      const { id, image, ...formCompatible } = actionData;
+      setSmartphoneFormData(formCompatible);
+    }
+  }, [actionData, setSmartphoneFormData]);
+
   if (isLoading) {
     return (
       <Spinner />
@@ -69,12 +99,10 @@ export default function Devices() {
                 {/* <Smartphone className="mr-3 h-6 w-6" /> */}
                 <Smartphone fill="#d5dbdb" strokeWidth={2} className="mr-3 w-6 h-6 text-gray-400" />
                 Devices
+                
               </div>
-              <DeviceManagementDashboard
-                items={devices}
-              />
+              {devices ? <DeviceManagementDashboard items={devices} /> : null}
             </div>
-
           </div>
         </div>
       </div>
