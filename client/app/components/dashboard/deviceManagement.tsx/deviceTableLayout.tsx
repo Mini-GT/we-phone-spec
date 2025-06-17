@@ -2,6 +2,9 @@ import { Edit2, Trash2 } from "lucide-react";
 import type { Smartphone, TableSortConfig, UserMenuProps } from "~/types/globals.type";
 import { toReadableDate } from "~/utils/formatDate";
 import _ from "lodash";
+import { getFirstWord } from "~/utils/getFirstWord";
+import { usePopupButton } from "~/context/popupButtonContext";
+import { Form, useFetcher } from "react-router";
 
 type DeviceTableLayoutProps = {
   getSortIcon: (iconTpe: TableSortConfig["key"]) => React.ReactNode;
@@ -14,6 +17,17 @@ export default function DeviceTableLayout({
   handleSort,
   currentDevices,
 }: DeviceTableLayoutProps) {
+  let fetcher = useFetcher();
+  let busy = fetcher.state !== "idle";
+  
+  const { setPopupButton } = usePopupButton()
+  function handleEdit(id: Smartphone["id"]) {
+    setPopupButton(prevState => ({
+      ...prevState,
+      isAddDeviceClicked: true, 
+    }));
+    // console.log(id)
+  }
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -36,9 +50,15 @@ export default function DeviceTableLayout({
             </th>
             <th 
               className="text-left p-4 font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
-              onClick={() => handleSort('email')}
+              onClick={() => handleSort('brand')}
             >
-              Brand <span className="text-xs ml-1">{getSortIcon('email')}</span>
+              Brand <span className="text-xs ml-1">{getSortIcon('brand')}</span>
+            </th>
+            <th 
+              className="text-left p-4 font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
+              // onClick={() => handleSort('os')}
+            >
+              Operating System
             </th>
             {/* <th 
               className="text-left p-4 font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
@@ -82,20 +102,38 @@ export default function DeviceTableLayout({
                 </div>
               </td>
               <td className="p-4 text-gray-700">{device. brand}</td>
-              {/* <td className="p-4 text-gray-700">{user.username}</td> */}
+              <td className="p-4 text-gray-700">{getFirstWord(device.specs.platform.os)}</td>
+              {/* <td className="p-4 text-gray-700">{device.specs.platform.os}</td> */}
               {/* <td className="p-4">
                 <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(user.isVerified)}`}>
                   {user.isVerified ? 'Verified' : 'Unverified'}
                 </span>
               </td>
               <td className="p-4 text-gray-700">{_.capitalize(user.role)}</td> */}
-              <td className="p-4 text-gray-700">{toReadableDate(device.specs.createdAt)}</td>
+              <td className="p-4 text-gray-700">{toReadableDate(device.specs.createdAt ?? "")}</td>
               <td className="p-4">
                 <div className="flex items-center gap-2">
-                  <button className="p-1 text-gray-500 hover:text-blue-600 transition-colors">
+                  
+                  <Form method="post">
+                    {/* <input type="text" name="title"/> */}
+                    <button 
+                      name="action" 
+                      value={device.id} 
+                      type="submit" 
+                      onClick={() => handleEdit(device.id)}
+                    >
+                      Edit
+                    </button>
+                  </Form>
+                  {/* <button 
+                    className="p-1 text-gray-500 hover:text-blue-600 transition-colors cursor-pointer"
+                    onClick={() => handleEdit(device.id)}
+                  >
                     <Edit2 className="h-4 w-4" />
-                  </button>
-                  <button className="p-1 text-gray-500 hover:text-red-600 transition-colors">
+                  </button> */}
+                  <button 
+                    className="p-1 text-gray-500 hover:text-red-600 transition-colors cursor-pointer"
+                  >
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
