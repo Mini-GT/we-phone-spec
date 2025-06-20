@@ -8,14 +8,15 @@
 // }
 
 type SpinnerProps = {
-  className?: string;
+  childClassName?: string
+  parentClassName?:  string
 }
 
-export function Spinner({ className = '' }: SpinnerProps) {
+export function Spinner({ parentClassName = 'h-screen fixed inset-0 bg-white z-2', childClassName = ''}: SpinnerProps) {
   return (
-    <div className="w-full h-full flex items-center justify-center">
+    <div className={`flex items-center justify-center ${parentClassName}`}>
       <div
-        className={`animate-spin rounded-full border-t-4 border-blue-500 border-solid aspect-square ${className}`}
+        className={`animate-spin rounded-full border-t-4 border-blue-500 border-solid aspect-square ${childClassName}`}
       />
     </div>
   );
