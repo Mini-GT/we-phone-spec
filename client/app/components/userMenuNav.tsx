@@ -28,7 +28,7 @@ export default function UserMenuNav({
               </div>
               User 
               <div className="ml-1 w-5 h-5">
-                {isPending && <Spinner className="ml-1 w-5 h-5" />}
+                {isPending && <Spinner parentClassName="w-full h-full" childClassName="ml-1 w-5 h-5" />}
               </div>
             </div>
           )}
@@ -46,7 +46,7 @@ export default function UserMenuNav({
               </div>
                 Devices
               <div className="ml-1 w-5 h-5">
-                {isPending && <Spinner className="ml-1 w-5 h-5" />}
+                {isPending && <Spinner parentClassName="w-full h-full" childClassName="ml-1 w-5 h-5" />}
               </div>
             </div>
           )}
@@ -66,7 +66,7 @@ export default function UserMenuNav({
               </div>
                 Profile
               <div className="ml-1 w-5 h-5">
-                {isPending && <Spinner className="ml-1 w-5 h-5" />}
+                {isPending && <Spinner parentClassName="w-full h-full" childClassName="ml-1 w-5 h-5" />}
               </div>
             </div>
           )}
@@ -84,7 +84,7 @@ export default function UserMenuNav({
               </div>
                 Like List
               <div className="ml-1 w-5 h-5">
-                {isPending && <Spinner className="ml-1 w-5 h-5" />}
+                {isPending && <Spinner parentClassName="w-full h-full" childClassName="ml-1 w-5 h-5" />}
               </div>
             </div>
           )}
@@ -102,7 +102,7 @@ export default function UserMenuNav({
               </div>
                 Notification
               <div className="ml-1 w-5 h-5">
-                {isPending && <Spinner className="ml-1 w-5 h-5" />}
+                {isPending && <Spinner parentClassName="w-full h-full" childClassName="ml-1 w-5 h-5" />}
               </div>
             </div>
           )}
@@ -120,7 +120,7 @@ export default function UserMenuNav({
               </div>
                 Settings
               <div className="ml-1 w-5 h-5">
-                {isPending && <Spinner className="ml-1 w-5 h-5" />}
+                {isPending && <Spinner parentClassName="w-full h-full" childClassName="ml-1 w-5 h-5" />}
               </div>
             </div>
           )}
