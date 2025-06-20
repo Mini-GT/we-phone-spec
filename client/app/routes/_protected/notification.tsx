@@ -3,8 +3,8 @@ import UserMenuNav from "~/components/userMenuNav";
 import { useAuth } from "~/context/authContext";
 import { requireAuthCookie } from "~/utils/auth";
 import type { Route } from "../_protected/+types/notification";
-import Spinner from "~/components/spinner";
 import { Bell } from "lucide-react";
+import { Spinner } from "~/components/spinner";
 
 export function meta({}: MetaFunction) {
   return [

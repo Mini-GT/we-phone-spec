@@ -5,7 +5,7 @@ import UserMenuNav from "~/components/userMenuNav";
 import { useAuth } from "~/context/authContext";
 import type { Route } from "../_protected/+types/likeList";
 import { requireAuthCookie } from "~/utils/auth";
-import Spinner from "~/components/spinner";
+import { Spinner } from "~/components/spinner";
 
 export function meta({}: MetaFunction) {
   return [

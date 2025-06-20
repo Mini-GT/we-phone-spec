@@ -9,8 +9,8 @@ import { useAuth } from '~/context/authContext';
 import { AnimatePresence, motion } from "motion/react"
 import EmailService from '../../services/email.service';
 import { requireAuthCookie } from '~/utils/auth';
-import Spinner from '~/components/spinner';
 import authService from '~/services/auth.service';
+import { Spinner } from '~/components/spinner';
 
 export function meta({}: MetaFunction) {
   return [

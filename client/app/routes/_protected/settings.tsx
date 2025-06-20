@@ -2,8 +2,8 @@ import { useNavigate, type LoaderFunctionArgs, type MetaFunction } from "react-r
 import UserMenuNav from "~/components/userMenuNav";
 import { useAuth } from "~/context/authContext";
 import { requireAuthCookie } from "~/utils/auth";
-import Spinner from "~/components/spinner";
 import { Settings2, SettingsIcon } from "lucide-react";
+import { Spinner } from "~/components/spinner";
 
 export function meta({}: MetaFunction) {
   return [
