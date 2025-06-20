@@ -42,8 +42,9 @@ export default function DeviceManagementDashboard({
   const filteredAndSorted = useMemo(() => {
     let filtered = items.filter(device => {
       const matchesSearch = 
-        device.name.toLowerCase().includes(searchTerm.toLowerCase())
-        // device.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        device.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        device.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        device.specs.platform.os.toLowerCase().includes(searchTerm.toLowerCase())
       // user.username.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesBrand = brandFilter === '' || device.brand.toLowerCase() === brandFilter.toLowerCase();
@@ -56,10 +57,22 @@ export default function DeviceManagementDashboard({
       //  console.log(filtered)
       filtered.sort((a, b) => {
         const key = sortConfig.key as keyof Smartphone;
-        // console.log(a[key])
-        const aVal = a[key] ?? '';
-        const bVal = b[key] ?? '';
-       
+      
+        // const aVal = typeof Number(a[key]) === "number" ? Number(a[key]) : a[key];
+        // const bVal = typeof Number(b[key]) === "number" ? Number(b[key]) : b[key];
+
+        let aVal = a[key] ?? '';
+        let bVal = b[key] ?? '';
+        if(key === "id") {
+          aVal = Number(a[key]) ?? '';
+          bVal = Number(b[key]) ?? '';
+        }
+        else if (typeof a[key] === "string" && typeof b[key] === "string") {
+          aVal = a[key].toLowerCase() || '';
+          bVal = b[key].toLowerCase() || '';
+        }
+        
+        // console.log(aVal)
         if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
         if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
         return 0;
