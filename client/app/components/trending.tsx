@@ -1,10 +1,16 @@
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { phones } from "mockData";
 import { useRef } from "react";
+import type { Smartphone } from "~/types/globals.type";
 import { formattNumber } from "~/utils/formatNumber";
 
+type TrendingProps = {
+  smartphones: Smartphone[]
+}
 
-export default function Trending() {
+export default function Trending({
+  smartphones
+}: TrendingProps) {
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: "left" | "right") => {
@@ -27,7 +33,7 @@ export default function Trending() {
           ref={carouselRef}
           className="flex gap-2 overflow-x-hidden no-scrollbar scroll-smooth"
         >
-          {phones.map((phone, index) => (
+          {smartphones.map((phone, index) => (
             <div key={phone.id} className="py-4 pr-4">
               <div className="flex items-end max-w-[20rem]">
                 <div className="text-black">

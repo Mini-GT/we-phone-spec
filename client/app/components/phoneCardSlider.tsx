@@ -1,20 +1,26 @@
-import { phones } from "mockData";
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router";
+import type { Smartphone } from "~/types/globals.type";
 
-export default function PhoneCardSlider() {
+type PhoneCardSliderProps = {
+  smartphones: Smartphone[]
+}
+
+export default function PhoneCardSlider({
+  smartphones
+}: PhoneCardSliderProps ) {
   const [counter, setCounter] = useState(0);
   const [isAutoSliding, setIsAutoSliding] = useState(true);
   const intervalRef = useRef<number | null>(null);
 
   // Handle next slide
   const slideNext = () => {
-    setCounter((prevCounter) => (prevCounter >= phones.length - 1 ? 0 : prevCounter + 1));
+    setCounter((prevCounter) => (prevCounter >= smartphones.length - 1 ? 0 : prevCounter + 1));
   };
 
   // Handle previous slide
   const slidePrev = () => {
-    setCounter((prevCounter) => (prevCounter === 0 ? phones.length - 1 : prevCounter - 1));
+    setCounter((prevCounter) => (prevCounter === 0 ? smartphones.length - 1 : prevCounter - 1));
   };
 
   // Handle dot indicator click
@@ -56,7 +62,7 @@ export default function PhoneCardSlider() {
         onMouseOut={handleMouseOut}
       >
         <div className="w-full h-full relative">
-          {phones.map((phone, index) => (
+          {smartphones.map((phone, index) => (
             <div 
               key={phone.id}
               className={`absolute top-0 left-0 w-full h-full transition-transform duration-500 ease-in-out ${
@@ -125,7 +131,7 @@ export default function PhoneCardSlider() {
         </div>
       </div>
       <div className="flex justify-center items-cenrter relative top-5 space-x-2">
-        {phones.map((_, index) => (
+        {smartphones.map((_, index) => (
           <button
             key={index}
             onClick={() => switchImage(index)}
