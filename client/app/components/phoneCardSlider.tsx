@@ -99,7 +99,7 @@ export default function PhoneCardSlider({
                     </p>
                     <div className="flex flex-col sm:flex-row sm:space-x-4">
                       <Link
-                        to="/smartphones"
+                        to={`/smartphones/${phone.name}-${phone.id}`}
                         className="flex items-center justify-center px-6 py-3 text-lg text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
                       >
                         More Info
