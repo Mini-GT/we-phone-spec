@@ -3,34 +3,49 @@ import type { Route } from "./+types/smartphone";
 import smartphoneService from "~/services/smartphone.service";
 import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
-import { Calendar, Smartphone as SmartphoneCard, Camera, Battery, HardDrive, Cpu, Settings } from "lucide-react";
+import { Calendar, Smartphone as SmartphoneCard, Camera, Battery, HardDrive, Cpu, Settings } from "lucide-react"; 
 import DeviceSpec from "~/components/deviceSpecs";
 import type { Smartphone } from "~/types/globals.type";
 import { useLoaderData } from "react-router";
 
-export async function clientLoader({params}: Route.ClientLoaderArgs) {
+export async function loader({params}: Route.LoaderArgs) {
   const data = params.smartphoneData
-  const id = data?.split("-").pop();
-  return id;
+  const id = data?.split("-").pop()
+  if(!id) throw new Error("No Id Found")
+  const smartphone = await smartphoneService.getSmartphoneById(id)
+  return smartphone
 }
 
-clientLoader.hydrate = true;
-
-export function HydrateFallback() {
-  return <p>Loading Data...</p>;
+export function meta({ data }: { data: Smartphone | undefined }) {
+  return [
+    { title: `${data?.name} – PhoneSpec` },
+    { name: "description", content: data?.description }
+  ];
 }
+
+// export async function clientLoader({params}: Route.ClientLoaderArgs) {
+//   const data = params.smartphoneData
+//   const id = data?.split("-").pop();
+//   return id;
+// }
+
+// clientLoader.hydrate = true;
+
+// export function HydrateFallback() {
+//   return <p>Loading Data...</p>;
+// }
 
 export default function Smartphone() {
-  const id = useLoaderData<typeof clientLoader>();
-  if (!id) {
-    return <div>Cannot get Smartphone Id</div>; 
-  }
+  const smartphone = useLoaderData<typeof loader>();
+  // if (!id) {
+  //   return <div>Cannot get Smartphone Id</div>; 
+  // }
   // we are using this approach instead of doing loader function because useQuery is not supported in loader function
   // and we want to use react-query for data fetching
-  const {data: smartphone , isLoading, isError} = useQuery({
-    queryFn: () => smartphoneService.getSmartphoneById(id),
-    queryKey: ["smartphone"],
-  })
+  // const {data: smartphone , isLoading, isError} = useQuery({
+  //   queryFn: () => smartphoneService.getSmartphoneById(id),
+  //   queryKey: ["smartphone"],
+  // })
 
   const specItems = [
     { icon: <Calendar className="w-5 h-5 text-blue-500" />, label: "Released", value: smartphone?.launch.released },
@@ -108,7 +123,7 @@ export default function Smartphone() {
       title: "Sound",
       data: [
         { label: "Loudspeaker", value: smartphone?.specs.sound.loudspeaker },
-        { label: "3.5mm Jack", value: smartphone?.specs.sound.jack },
+        { label: "3.5mm Jack", value: smartphone?.specs.sound.jack.jackFeatures},
       ],
     },
     {
@@ -144,9 +159,9 @@ export default function Smartphone() {
     },
   ];
 
-  if(isLoading) return <div>Fetching data...</div>;
+  // if(isLoading) return <div>Fetching data...</div>;
   if(!smartphone) return <div>no smartphone</div>;
-  if(isError) return <div>Error loading data</div>;
+  // if(isError) return <div>Error loading data</div>;
 
   return (
     <div className="max-w-5xl mx-auto p-6 text-gray-800">
