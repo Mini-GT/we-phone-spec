@@ -1,6 +1,5 @@
 import { Smartphone, User } from "lucide-react";
 import { useLoaderData, type ActionFunctionArgs, type ClientActionFunctionArgs, type ClientLoaderFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
-import Spinner from "~/components/spinner";
 import { requireAuthCookie } from "~/utils/auth";
 import { ProtectedRoute } from "~/components/protectedRoute";
 import ManagementDashoard from "~/components/dashboard/usersManagement/userManagementDashboard";
@@ -13,6 +12,7 @@ import Unauthorized from "../unauthorized";
 import DeviceManagementDashboard from "~/components/dashboard/deviceManagement.tsx/deviceManagementDashboard";
 import type { Route } from "./+types/devices";
 import { useEffect } from "react";
+import { Spinner } from "~/components/spinner";
 
 export function meta({}: MetaFunction) {
   return [
@@ -26,8 +26,9 @@ export async function action({
 }: Route.ClientActionArgs) {
   let formData = await request.formData();
   const id = formData.get("action") as string;
+  console.log(id)
   let device = await smartphoneService.getSmartphoneById(id)
-  console.log(JSON.stringify(device, null, 2));
+  // console.log(JSON.stringify(device, null, 2));
   return device;
 }
 
@@ -50,16 +51,17 @@ export async function clientLoader({request}: ClientLoaderFunctionArgs) {
   }
 }
 
-export function HydrateFallback() {
-  return <div>Loading...</div>;
-}
+// export function HydrateFallback() {
+//   return <div>Loading...</div>;
+// }
 
 export default function Devices({
   actionData
 }: Route.ComponentProps) {
   const devices = useLoaderData<typeof clientLoader>()
   const { setSmartphoneFormData } = useSmartphone()
-  const { user, isLoading, error } = useAuth()
+  const { user } = useAuth()
+  // const { user, isLoading, error } = useAuth()
 
   useEffect(() => {
     if (actionData) {
@@ -69,19 +71,19 @@ export default function Devices({
     }
   }, [actionData, setSmartphoneFormData]);
 
-  if (isLoading) {
+  if (!user) {
     return (
-      <Spinner />
+      <Spinner childClassName="w-12 h-12" />
     )
   }
   
-  if (error || !user) {
-    return (
-      <div className="min-h-screen bg-gray-800 flex items-center justify-center">
-        <p className="text-red-400">Error loading profile. Please try again.</p>
-      </div>
-    )
-  }
+  // if (error || !user) {
+  //   return (
+  //     <div className="min-h-screen bg-gray-800 flex items-center justify-center">
+  //       <p className="text-red-400">Error loading profile. Please try again.</p>
+  //     </div>
+  //   )
+  // }
 
   return (
     <ProtectedRoute requiredRoles={["ADMIN", "MODERATOR"]} fallback={<Unauthorized />}>

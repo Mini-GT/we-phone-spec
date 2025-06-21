@@ -1,6 +1,5 @@
 import { User, UsersRound } from "lucide-react";
-import { useLoaderData, type LoaderFunctionArgs, type MetaFunction } from "react-router";
-import Spinner from "~/components/spinner";
+import { useLoaderData, type ClientLoaderFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import UserMenuNav from "~/components/userMenuNav";
 import { useAuth } from "~/context/authContext";
 import { requireAuthCookie } from "~/utils/auth";
@@ -12,34 +11,57 @@ import usersService from "~/services/users.service";
 import type { Route } from "./+types/users";
 import { usePopupButton } from "~/context/popupButtonContext";
 import UserManagementDashoard from "~/components/dashboard/usersManagement/userManagementDashboard";
+import { Spinner } from "~/components/spinner";
 
-export async function loader({request}: LoaderFunctionArgs) {
-  const token = await requireAuthCookie(request);
+export function meta({}: MetaFunction) {
+  return [
+    { title: "Users - WePhoneSpec" },
+    { name: "description", content: "View and manage the users." },
+  ];
+}
+
+export async function loader({ request }: Route.LoaderArgs) {
+  // console.log("loader", request) 
+  const token = await requireAuthCookie(request)
   try {
     const response = await usersService.getUsers({
       cookie: token || "",
     })
 
-    if (!response || !response.data) {
-      throw new Error("Failed to fetch users");
-    }
-
-    const users = response.data
-    return users;
+    const users = response?.data
+    return  users
   } catch (error) {
     console.error(error)
-  }
+  } 
 }
+
+// export async function clientLoader({request, serverLoader}: Route.ClientLoaderArgs) {
+//   const serverData = await serverLoader();
+//   console.log("clientloader", serverData) 
+//   const token = await requireAuthCookie(request);
+//   try {
+//     const response = await usersService.getUsers({
+//       cookie: token || "",
+//     })
+
+//     const users = response?.data
+//     return  users
+//   } catch (error) {
+//     console.error(error)
+//   }
+// }
 
 // clientLoader.hydrate = true;
 
 // export function HydrateFallback() {
-//   return <Spinner />
+//   return <div className="h-screen">Loading.ssssssssssssssssssssssasdasda..</div>
 // }
 
 export default function Users() {
+  const { user } = useAuth()
   const users = useLoaderData<typeof loader>()
-  const { user, isLoading, error } = useAuth()
+  // console.log(users)
+  // const { user, isLoading, error } = useAuth()
   const { setPopupButton } = usePopupButton()
 
   function handleAddUser() {
@@ -49,18 +71,10 @@ export default function Users() {
       isAddUserClicked: true,
     }));
   }
-
-  if (isLoading) {
-    return (
-      <Spinner />
-    )
-  }
   
-  if (error) {
+  if (!user) {
     return (
-      <div className="min-h-screen bg-gray-800 flex items-center justify-center">
-        <p className="text-red-400">Error loading profile. Please try again.</p>
-      </div>
+      <Spinner childClassName="w-12 h-12" />
     )
   }
 
@@ -80,10 +94,11 @@ export default function Users() {
                 {/* <span className="mr-3">👤</span> */}
                 Users Management
               </div>
-              <UserManagementDashoard
+              {user ? <UserManagementDashoard users={users} handleAddUser={handleAddUser} /> : null}
+              {/* <UserManagementDashoard
                 users={users}
                 handleAddUser={handleAddUser}
-              />
+              /> */}
             </div>
           </div>
         </div>

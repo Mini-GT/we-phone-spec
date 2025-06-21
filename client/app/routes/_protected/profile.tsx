@@ -32,7 +32,7 @@ export default function Profile() {
   //   isVerified: false,
   //   role: "USER",
   // })
-  const { user, isLoading, error } = useAuth()
+  const { user } = useAuth()
   const [showFields, setShowFields] = useState(false);
   
   // useEffect(() => {
@@ -69,13 +69,13 @@ export default function Profile() {
     }
   }
 
-  if (isLoading) {
-    return (
-      <Spinner />
-    )
-  }
+  // if (isLoading) {
+  //   return (
+  //     <Spinner />
+  //   )
+  // }
   
-  if (error || !user) {
+  if (!user) {
     return (
       <div className="min-h-screen bg-gray-800 flex items-center justify-center">
         <p className="text-red-400">Error loading profile. Please try again.</p>
