@@ -26,7 +26,6 @@ export async function action({
 }: Route.ClientActionArgs) {
   let formData = await request.formData();
   const id = formData.get("action") as string;
-  console.log(id)
   let device = await smartphoneService.getSmartphoneById(id)
   // console.log(JSON.stringify(device, null, 2));
   return device;
@@ -65,9 +64,7 @@ export default function Devices({
 
   useEffect(() => {
     if (actionData) {
-      // exclude `id` and `image`
-      const { id, image, ...formCompatible } = actionData;
-      setSmartphoneFormData(formCompatible);
+      setSmartphoneFormData(actionData);
     }
   }, [actionData, setSmartphoneFormData]);
 
