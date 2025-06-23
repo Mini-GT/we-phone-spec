@@ -2,7 +2,7 @@ import { useAuth } from "~/context/authContext";
 import type { ProtectedRouteProps } from "~/types/globals.type";
 import { hasPermission } from "~/utils/permissions";
 
-export function ProtectedRoute({ 
+export function ProtectedRoute({
   children, 
   requiredPermission, 
   requiredRoles, 
