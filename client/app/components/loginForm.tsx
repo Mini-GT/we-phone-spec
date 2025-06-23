@@ -18,6 +18,7 @@ export default function LoginForm({ handleAuthMode }: LoginRegisterFormProps) {
   });
   const [error, setError] = useState<string | null>(null);
   const { setPopupButton } = usePopupButton()
+  const { user, setUser } = useAuth()
   const navigate = useNavigate()
 
   async function handleSubmit(e: React.FormEvent) {
@@ -27,16 +28,16 @@ export default function LoginForm({ handleAuthMode }: LoginRegisterFormProps) {
     try {
       // handleLogin(loginFormData);
       const response = await authService.login({ ...loginFormData });
-      // console.log(response)
-      const { token } = response.data;
       
-      localStorage.setItem('authToken', token);
+      const { user } = response.data;
+      localStorage.setItem("user", JSON.stringify(user));
+      setUser(user)
       setPopupButton(prevState => ({
         ...prevState,
         isLoginClicked: false,
       }))
       setLoginFormData({ email: "", password: "" });
-      navigate(0);
+      // navigate(0);
     } catch (error) {
       if(error instanceof AxiosError) {
         setError(error.response?.data.message)
