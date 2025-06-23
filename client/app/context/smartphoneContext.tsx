@@ -4,19 +4,21 @@ import type { ContextProviderProps, Smartphone } from "~/types/globals.type";
 import smartphoneService from "~/services/smartphone.service";
 
 type SmartpoheContextType = {
-  smartphoneFormData: Omit<Smartphone, "id" | "image">
-  setSmartphoneFormData: (device: Omit<Smartphone, "id" | "image">) => void
+  smartphoneFormData: Smartphone
+  setSmartphoneFormData: (device: Smartphone) => void
 }
 
 export const SmartphoneContext = createContext<SmartpoheContextType | undefined>(undefined)
 
 export function SmartphoneProvider({ children }: ContextProviderProps) {
-  const [smartphoneFormData, setSmartphoneFormData] = useState<Omit<Smartphone, "id" | "image">>({
+  const [smartphoneFormData, setSmartphoneFormData] = useState<Smartphone>({
+    _id: '',
     name: '',
     brand: '',
     views: 0,
     likes: 0,
     description: '',
+    image: '',
     launch: {
       announced: '',
       released: '',
@@ -42,7 +44,7 @@ export function SmartphoneProvider({ children }: ContextProviderProps) {
         gpu: '',
       },
       memory: {
-        cardSlot: false,
+        cardSlot: '',
         internal: '',
       },
       camera: {
@@ -59,10 +61,7 @@ export function SmartphoneProvider({ children }: ContextProviderProps) {
       },
       sound: {
         loudspeaker: '',
-        jack: {
-          hasJackSlot: false,
-          jackFeatures: '',
-        },
+        jack: '',
       },
       connection: {
         wlan: '',
@@ -85,14 +84,6 @@ export function SmartphoneProvider({ children }: ContextProviderProps) {
       },
     },
   });
-
-  // const [smartphoneForm, setSmartphoneForm] = useState()
-  // const { data: smartphones, isLoading, error } = useQuery({
-  //   queryFn: () => smartphoneService.getSmartphones(),
-  //   queryKey: ["smartphones"],
-  //   staleTime: 1000 * 60 * 1, // keeps data fresh for 1 minute
-  //   refetchOnWindowFocus: false, // dont refetch on tab switch
-  // })
 
   return (
     <SmartphoneContext value={{ smartphoneFormData, setSmartphoneFormData }}>
