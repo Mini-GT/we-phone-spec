@@ -11,6 +11,7 @@ export default {
     if (!response.ok) {
       throw new Error(`Failed to fetch smartphones: ${response.statusText}`);
     }
+
     const data = await response.json()
 
     if (!Array.isArray(data.phones)) {
@@ -19,7 +20,7 @@ export default {
     } 
 
     const dynamicPaths = data.phones.map(
-    (smartphone: Smartphone) => `/smartphones/${smartphone.id}`)
+    (smartphone: Smartphone) => `/smartphones/${smartphone._id}`)
 
     return [
       "/",
