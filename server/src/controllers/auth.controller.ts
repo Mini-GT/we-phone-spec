@@ -61,6 +61,14 @@ const register = async (req: Request, res: Response) => {
 }
 
 const login = async (req: Request, res: Response) => {
+  const result = loginSchema.safeParse(req.body)
+
+  if (!result.success) {
+    return res.status(400).json({
+      error: result.error.format(),
+    });
+  }
+
   passport.authenticate(
     "local",
     { session: false }, 
@@ -81,7 +89,7 @@ const login = async (req: Request, res: Response) => {
     // })
 
     const token = jwt.sign(
-      { id: user.id },
+      { id: user.id, role: user.role },
       jwtSecretKey, 
       { expiresIn: "7d" }
     )
@@ -93,7 +101,18 @@ const login = async (req: Request, res: Response) => {
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       })
       .status(200)
-      .json({ message: "Logged in" });
+      .json({ 
+        message: "Logged in", 
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          profileImage: user.profileImage,
+          createdAt: user.createdAt,
+          isVerified: user.isVerified,
+        }
+      });
   })(req, res)
 
   // const result = loginSchema.safeParse(req.body)
