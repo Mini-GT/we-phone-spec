@@ -34,7 +34,7 @@ export default function Trending({
           className="flex gap-2 overflow-x-hidden no-scrollbar scroll-smooth"
         >
           {smartphones.map((phone, index) => (
-            <div key={phone.id} className="py-4 pr-4">
+            <div key={phone._id} className="py-4 pr-4">
               <div className="flex items-end max-w-[20rem]">
                 <div className="text-black">
                   <span className="vertical_text text-sm text-black mt-2 text-center">{phone.name}</span>

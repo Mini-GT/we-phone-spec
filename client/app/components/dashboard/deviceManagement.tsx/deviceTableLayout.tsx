@@ -17,16 +17,12 @@ export default function DeviceTableLayout({
   handleSort,
   currentDevices,
 }: DeviceTableLayoutProps) {
-  let fetcher = useFetcher();
-  let busy = fetcher.state !== "idle";
-  
   const { setPopupButton } = usePopupButton()
-  function handleEdit(id: Smartphone["id"]) {
+  function handleEdit(id: Smartphone["_id"]) {
     setPopupButton(prevState => ({
       ...prevState,
       isAddDeviceClicked: true, 
     }));
-    // console.log(id)
   }
   return (
     <div className="overflow-x-auto">
@@ -38,9 +34,9 @@ export default function DeviceTableLayout({
             </th> */}
             <th 
               className="text-left p-4 font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
-              onClick={() => handleSort('id')}
+              onClick={() => handleSort('_id')}
             >
-              ID <span className="text-xs ml-1">{getSortIcon('id')}</span>
+              ID <span className="text-xs ml-1">{getSortIcon('_id')}</span>
             </th>
             <th 
               className="text-left p-4 font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
@@ -86,11 +82,11 @@ export default function DeviceTableLayout({
         </thead>
         <tbody className="divide-y divide-gray-200">
           {currentDevices.map((device) => (
-            <tr key={device.id} className="hover:bg-gray-50">
+            <tr key={device._id} className="hover:bg-gray-50">
               {/* <td className="p-4">
                 <input type="checkbox" className="rounded border-gray-300" />
               </td> */}
-              <td className="p-4 text-gray-700">{device.id}</td>
+              <td className="p-4 text-gray-700">{device._id}</td>
               <td className="p-4">
                 <div className="flex items-center gap-3">
                   <img 
@@ -110,7 +106,7 @@ export default function DeviceTableLayout({
                 </span>
               </td>
               <td className="p-4 text-gray-700">{_.capitalize(user.role)}</td> */}
-              <td className="p-4 text-gray-700">{toReadableDate(device.specs.createdAt ?? "")}</td>
+              <td className="p-4 text-gray-700">{toReadableDate(device.createdAt ?? "")}</td>
               <td className="p-4">
                 <div className="flex items-center gap-2">
                   
@@ -118,16 +114,16 @@ export default function DeviceTableLayout({
                     {/* <input type="text" name="title"/> */}
                     <button 
                       name="action" 
-                      value={device.id} 
-                      type="submit" 
-                      onClick={() => handleEdit(device.id)}
+                      value={device._id} 
+                      // type="submit" 
+                      onClick={() => handleEdit(device._id)}
                     >
                       Edit
                     </button>
                   </Form>
                   {/* <button 
                     className="p-1 text-gray-500 hover:text-blue-600 transition-colors cursor-pointer"
-                    onClick={() => handleEdit(device.id)}
+                    onClick={() => handleEdit(device._id)}
                   >
                     <Edit2 className="h-4 w-4" />
                   </button> */}

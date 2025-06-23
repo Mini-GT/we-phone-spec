@@ -64,7 +64,7 @@ export default function PhoneCardSlider({
         <div className="w-full h-full relative">
           {smartphones.map((phone, index) => (
             <div 
-              key={phone.id}
+              key={phone._id}
               className={`absolute top-0 left-0 w-full h-full transition-transform duration-500 ease-in-out ${
                 index === counter ? "translate-x-0" : index < counter ? "-translate-x-full" : "translate-x-full"
               }`}
@@ -99,7 +99,7 @@ export default function PhoneCardSlider({
                     </p>
                     <div className="flex flex-col sm:flex-row sm:space-x-4">
                       <Link
-                        to={`/smartphones/${phone.name}-${phone.id}`}
+                        to={`/smartphones/${phone.name}-${phone._id}`}
                         className="flex items-center justify-center px-6 py-3 text-lg text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
                       >
                         More Info

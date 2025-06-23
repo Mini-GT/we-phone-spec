@@ -63,7 +63,7 @@ export default function DeviceManagementDashboard({
 
         let aVal = a[key] ?? '';
         let bVal = b[key] ?? '';
-        if(key === "id") {
+        if(key === "_id") {
           aVal = Number(a[key]) ?? '';
           bVal = Number(b[key]) ?? '';
         }
