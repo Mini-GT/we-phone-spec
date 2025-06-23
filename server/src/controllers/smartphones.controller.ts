@@ -3,13 +3,13 @@ import { phones } from "mockData";
 import deviceModel from "@/models/device.model";
 
 const getAllSmartphones = async (req: Request, res: Response)=> {
-  res.json({ phones: phones })
+  const smartphones = await deviceModel.find().lean()
+  res.json({ phones: smartphones })
 }
 
 const getSmartphone = async (req: Request, res: Response) => {
   const { deviceId } = req.params
-  
-  const result = phones.find(phone => phone.id === deviceId)
+  const result = await deviceModel.findById(deviceId).lean().exec()
   
   if(!result) {
     return res.json({ msg: "No Device found"})
@@ -25,7 +25,8 @@ const getSmartphonesByBrand = async (req: Request, res: Response) => {
     return res.json({ msg: "Brand name not provided"})
   }
   
-  const result = phones.filter(phone => phone.brand.toLowerCase() === brand.toLowerCase())
+  const result = await deviceModel.find({ brand: { $regex: `^${brand}$`, $options: "i" } }).exec()
+  
   if(!result) {
     return res.json({ msg: "No Devices found with this brand"})
   }
