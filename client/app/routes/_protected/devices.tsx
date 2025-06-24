@@ -4,7 +4,6 @@ import { requireAuthCookie } from "~/utils/auth";
 import { ProtectedRoute } from "~/components/protectedRoute";
 import ManagementDashoard from "~/components/dashboard/usersManagement/userManagementDashboard";
 import { useSmartphone } from "~/context/smartphoneContext";
-import DevicePagination from "~/components/dashboard/deviceManagement.tsx/deviceManagementDashboard";
 import smartphoneService from "~/services/smartphone.service";
 import UserMenuNav from "~/components/userMenuNav";
 import { useAuth } from "~/context/authContext";
@@ -23,20 +22,31 @@ export function meta({}: MetaFunction) {
 
 export async function action({
   request,
-}: Route.ClientActionArgs) {
+}: ClientActionFunctionArgs) {
   let formData = await request.formData();
-  const id = formData.get("action") as string;
-  let device = await smartphoneService.getSmartphoneById(id)
-  // console.log(JSON.stringify(device, null, 2));
-  return device;
+  const id = formData.get("deviceId") as string
+  if(id) {
+    let device = await smartphoneService.getSmartphoneById(id)
+    return device;
+  }
+
+  const raw = formData.get("deviceObj") as string
+  if(raw) {
+    const deviceObj = JSON.parse(raw)
+    const {
+      _id,
+      createdAt,
+      updatedAt,
+      __v,
+      ...body
+    } = deviceObj
+    await smartphoneService.updateSmartphone(_id, body)
+    return
+  }
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
   const token = await requireAuthCookie(request)
-}
-
-export async function clientLoader({request}: ClientLoaderFunctionArgs) {
-  // const token = await requireAuthCookie(request);
   try {
     const response = await smartphoneService.getSmartphones()
     if (!response || !response.data) {
@@ -50,18 +60,30 @@ export async function clientLoader({request}: ClientLoaderFunctionArgs) {
   }
 }
 
-// export function HydrateFallback() {
-//   return <div>Loading...</div>;
+export async function clientLoader({
+  serverLoader,
+}: Route.ClientLoaderArgs) {
+  // const res = await smartphoneService.getSmartphoneById()
+  const serverData = await serverLoader();
+  // console.log(serverData)
+  return serverData;
+}
+
+export function HydrateFallback() {
+  return <Spinner childClassName="w-12 h-12" />
+}
+// export async function clientLoader({request}: ClientLoaderFunctionArgs) {
+//   // const token = await requireAuthCookie(request);
+  
 // }
 
 export default function Devices({
   actionData
 }: Route.ComponentProps) {
-  const devices = useLoaderData<typeof clientLoader>()
+  const devices = useLoaderData<typeof loader>()
   const { setSmartphoneFormData } = useSmartphone()
   const { user } = useAuth()
   // const { user, isLoading, error } = useAuth()
-
   useEffect(() => {
     if (actionData) {
       setSmartphoneFormData(actionData);
@@ -98,7 +120,6 @@ export default function Devices({
                 {/* <Smartphone className="mr-3 h-6 w-6" /> */}
                 <Smartphone fill="#d5dbdb" strokeWidth={2} className="mr-3 w-6 h-6 text-gray-400" />
                 Devices
-                
               </div>
               {devices ? <DeviceManagementDashboard items={devices} /> : null}
             </div>
