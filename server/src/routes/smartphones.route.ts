@@ -1,4 +1,4 @@
-import { getSmartphone, getSmartphonesByBrand, getAllSmartphones, createSmartphone } from "@/controllers/smartphones.controller"
+import { getSmartphone, getSmartphonesByBrand, getAllSmartphones, createSmartphone, updateSmartphone } from "@/controllers/smartphones.controller"
 import { asyncWrapper } from "@/middlewares/asyncWrapper.middleware"
 import express from "express"
 
@@ -10,6 +10,9 @@ router.route("/")
 
 router.route("/:deviceId")
 .get(asyncWrapper(getSmartphone))
+
+router.route("/:deviceId")
+.patch(asyncWrapper(updateSmartphone))
 
 router.route("/brand-list/:brand")
 .get(asyncWrapper(getSmartphonesByBrand))

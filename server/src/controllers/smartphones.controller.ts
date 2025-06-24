@@ -41,9 +41,20 @@ const createSmartphone = async (req: Request, res: Response) => {
   res.status(201).json(saveSmartphone)
 }
 
+const updateSmartphone = async (req: Request, res: Response) => {
+  const deviceId = req.params.deviceId
+  const body = req.body
+
+  const updated = await deviceModel.findByIdAndUpdate(deviceId, body, { new: true })
+  if(!updated) return res.status(404).json({ error: "Device not found" })
+
+  res.json(updated);
+}
+
 export {
   getAllSmartphones,
   getSmartphone,
   createSmartphone,
-  getSmartphonesByBrand
+  getSmartphonesByBrand,
+  updateSmartphone
 }
