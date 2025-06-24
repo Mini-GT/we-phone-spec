@@ -6,7 +6,6 @@ import {
   Scripts,
   ScrollRestoration,
   useNavigation,
-  type ActionFunctionArgs,
 } from "react-router";
 
 import type { Route } from "./+types/root";
@@ -15,18 +14,12 @@ import Navbar from "./components/navbar";
 import { PopupButtonProvider, usePopupButton } from "./context/popupButtonContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import LoginRegister from "./components/loginRegister";
-import { useEffect, useState, type ComponentProps } from "react";
-import { AuthProvider, useAuth } from "./context/authContext";
+import { AuthProvider } from "./context/authContext";
 import Footer from "./components/footer";
-import Unauthorized from "./routes/unauthorized";
-import { AlertTriangle } from "lucide-react";
-// import Spinner from "./components/spinner";
 import NotFound from "./routes/notFound";
 import AddUser from "./components/dashboard/usersManagement/addUserForm";
 import { SmartphoneProvider } from "./context/smartphoneContext";
 import AddDevice from "./components/dashboard/deviceManagement.tsx/addDevice";
-import PhoneSpecsForm from "./components/addDeviceForm";
-import { Spinner } from "./components/spinner";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -88,8 +81,6 @@ export default function App() {
   return (
     <div>
       <BodyStyles />
-      {/* {isNavigating && <Spinner />} */}
-      {/* <Spinner className="h-12 w-12"/> */}
       {popupButton.isLoginClicked && <LoginRegister />}
       {popupButton.isAddUserClicked && <AddUser />}
       {popupButton.isAddDeviceClicked && <AddDevice />}
