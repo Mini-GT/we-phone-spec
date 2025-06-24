@@ -10,10 +10,19 @@ class UserService {
 
   // get all users
   async getUsers(headers?: Record<string, string>) {
-    const response = await this.api.get("/users", {
-      headers,
-    });
-    return response;
+    try {
+      const response = await this.api.get("/users", {
+        headers,
+      });
+
+      if (!response || !response.data) {
+        throw new Error("Failed to fetch users");
+      }
+
+      return response;
+    } catch (error) {
+      console.error(error)
+    } 
   }
 
 }
