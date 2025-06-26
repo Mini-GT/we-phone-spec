@@ -18,7 +18,7 @@ export default function DeviceTableLayout({
   currentDevices,
 }: DeviceTableLayoutProps) {
   const { setPopupButton } = usePopupButton()
-  function handleEdit(id: Smartphone["_id"]) {
+  function handlePopupForm() {
     setPopupButton(prevState => ({
       ...prevState,
       isAddDeviceClicked: true, 
@@ -111,12 +111,11 @@ export default function DeviceTableLayout({
                 <div className="flex items-center gap-2">
                   
                   <Form method="post">
-                    {/* <input type="text" name="title"/> */}
                     <button 
-                      name="action" 
+                      name="deviceId" 
                       value={device._id} 
                       // type="submit" 
-                      onClick={() => handleEdit(device._id)}
+                      onClick={handlePopupForm}
                     >
                       Edit
                     </button>

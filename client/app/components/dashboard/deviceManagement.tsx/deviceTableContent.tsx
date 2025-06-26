@@ -3,12 +3,12 @@ import { Search, ChevronDown, Plus, Edit2, Trash2, ChevronLeft, ChevronRight, Up
 import type { Smartphone, TableSortConfig, UserMenuProps } from '~/types/globals.type';
 import _ from 'lodash';
 import UsersTable from '../usersManagement/userTableLayout';
-import DeviceTable from './deviceTable';
 import BrandFilter from './brandFilter';
 import OperatingSystemFilter from './operatingSystemFilter';
-import DeviceTableLayout from './deviceTable';
+import DeviceTableLayout from './deviceTableLayout';
 import { usePopupButton } from '~/context/popupButtonContext';
 import PaginationComponent from '~/components/pagination/paginationComponent';
+import { useSmartphone } from '~/context/smartphoneContext';
 
 type DeviceTableContentProps = {
   devices: Smartphone[];
@@ -52,8 +52,83 @@ export default function DeviceTableContent({
   items
 }: DeviceTableContentProps) {
   const { setPopupButton } = usePopupButton()
-
+  const { setSmartphoneFormData } = useSmartphone()
   function handleAddDevice() {
+    console.log(items)
+    setSmartphoneFormData({
+    _id: '',
+    name: '',
+    brand: '',
+    views: 0,
+    likes: 0,
+    description: '',
+    image: '',
+    launch: {
+      announced: '',
+      released: '',
+    },
+    specs: {
+      body: {
+        dimensions: '',
+        weight: '',
+        build: '',
+        sim: '',
+        resistance: '',
+      },
+      display: {
+        type: '',
+        size: '',
+        resolution: '',
+        protection: '',
+      },
+      platform: {
+        os: '',
+        chipset: '',
+        cpu: '',
+        gpu: '',
+      },
+      memory: {
+        cardSlot: '',
+        internal: '',
+      },
+      camera: {
+        main: {
+          triple: '',
+          features: '',
+          video: '',
+        },
+        selfie: {
+          single: '',
+          features: '',
+          video: '',
+        },
+      },
+      sound: {
+        loudspeaker: '',
+        jack: '',
+      },
+      connection: {
+        wlan: '',
+        bluetooth: '',
+        nfc: '',
+        infraredPort: '',
+        radio: '',
+        USB: '',
+      },
+      features: {
+        sensors: '',
+      },
+      battery: {
+        type: '',
+        charging: '',
+      },
+      misc: {
+        colors: '',
+        models: '',
+      },
+    },
+  })
+
     // Logic to add a new user
     setPopupButton(prevState => ({
       ...prevState,
@@ -92,7 +167,7 @@ export default function DeviceTableContent({
           />
 
           <div className="flex gap-2 ml-auto">
-            {/* Add User Button */}
+            {/* Add Device Button */}
             <button 
               className="flex items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
               onClick={handleAddDevice}

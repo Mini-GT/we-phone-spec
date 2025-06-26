@@ -1,10 +1,12 @@
 import { X } from "lucide-react";
-import AddDeviceForm from "~/components/addDeviceForm";
+import AddDeviceForm from "~/components/dashboard/deviceManagement.tsx/addDeviceForm";
 import { Card } from "~/components/ui/card";
 import { usePopupButton } from "~/context/popupButtonContext";
+import { useSmartphone } from "~/context/smartphoneContext";
 
 export default function AddDevice() {
   const { setPopupButton } = usePopupButton();
+  const { setSmartphoneFormData } = useSmartphone()
 
   function handleCloseForm() {
     // Logic to close the form, e.g., set a state variable to hide it
@@ -12,6 +14,79 @@ export default function AddDevice() {
       ...prevState,
       isAddDeviceClicked: false, 
     }));
+    setSmartphoneFormData({
+      _id: '',
+      name: '',
+      brand: '',
+      views: 0,
+      likes: 0,
+      description: '',
+      image: '',
+      launch: {
+        announced: '',
+        released: '',
+      },
+      specs: {
+        body: {
+          dimensions: '',
+          weight: '',
+          build: '',
+          sim: '',
+          resistance: '',
+        },
+        display: {
+          type: '',
+          size: '',
+          resolution: '',
+          protection: '',
+        },
+        platform: {
+          os: '',
+          chipset: '',
+          cpu: '',
+          gpu: '',
+        },
+        memory: {
+          cardSlot: '',
+          internal: '',
+        },
+        camera: {
+          main: {
+            triple: '',
+            features: '',
+            video: '',
+          },
+          selfie: {
+            single: '',
+            features: '',
+            video: '',
+          },
+        },
+        sound: {
+          loudspeaker: '',
+          jack: '',
+        },
+        connection: {
+          wlan: '',
+          bluetooth: '',
+          nfc: '',
+          infraredPort: '',
+          radio: '',
+          USB: '',
+        },
+        features: {
+          sensors: '',
+        },
+        battery: {
+          type: '',
+          charging: '',
+        },
+        misc: {
+          colors: '',
+          models: '',
+        },
+      },
+    })
   }
 
   return (
