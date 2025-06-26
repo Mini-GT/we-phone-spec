@@ -79,7 +79,7 @@ export default function DeviceManagementDashboard({
       });
     }
     return filtered;
-  }, [searchTerm, brandFilter, operatingSystemFilter, sortConfig]);
+  }, [searchTerm, brandFilter, operatingSystemFilter, sortConfig, items]);
 
   const totalRows = filteredAndSorted.length;
   const totalPages = Math.ceil(totalRows / itemsPerPage);
