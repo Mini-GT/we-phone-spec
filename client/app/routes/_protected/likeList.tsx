@@ -21,19 +21,11 @@ export async function loader({request}: LoaderFunctionArgs) {
 export default function LikeList() {
   const { user } = useAuth()
 
-  // if (isLoading) {
-  //   return (
-  //     <Spinner />
-  //   )
-  // }
-  
-  // if (error) {
-  //   return (
-  //     <div className="min-h-screen bg-gray-800 flex items-center justify-center">
-  //       <p className="text-red-400">Error loading profile. Please try again.</p>
-  //     </div>
-  //   )
-  // }
+  if (!user) {
+    return (
+      <Spinner childClassName="w-12 h-12" />
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-800 bg-opacity-90 flex flex-col items-center py-12 px-4">

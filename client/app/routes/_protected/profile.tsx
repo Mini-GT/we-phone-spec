@@ -68,18 +68,10 @@ export default function Profile() {
       console.error(error)
     }
   }
-
-  // if (isLoading) {
-  //   return (
-  //     <Spinner />
-  //   )
-  // }
   
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-800 flex items-center justify-center">
-        <p className="text-red-400">Error loading profile. Please try again.</p>
-      </div>
+      <Spinner childClassName="w-12 h-12" />
     )
   }
 
