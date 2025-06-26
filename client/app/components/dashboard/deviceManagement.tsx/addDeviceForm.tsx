@@ -1,5 +1,6 @@
 import { useSmartphone } from '~/context/smartphoneContext';
-import { Form, useFetcher } from 'react-router';
+import { Form, useFetcher, useNavigation } from 'react-router';
+import { Spinner } from '~/components/spinner';
 
 type FormPath = 
   | 'name'
@@ -45,7 +46,7 @@ type FormPath =
   | 'specs.misc.models';
 
 export default function AddDeviceForm() {
-  const fetcher = useFetcher()
+  const navigation = useNavigation()
   const { smartphoneFormData: formData, setSmartphoneFormData: setFormData } = useSmartphone()
   const handleInputChange = (path: FormPath, value: string | number | boolean) => {
     setFormData(prev => {
@@ -105,7 +106,7 @@ export default function AddDeviceForm() {
 
           {/* Form Content */}
           <div className="flex-1 p-8">
-            <form className="space-y-6">
+            <Form method="PATCH" action="/devices" className="space-y-6">
               
               {/* Basic Info Section */}
               <div className="space-y-6">
@@ -627,12 +628,20 @@ export default function AddDeviceForm() {
                     </div>
                   </div>
                 </div>
+                <div className="flex justify-end">
+                  <button 
+                    className="flex w-20 h-10 items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+                    type="submit" 
+                    disabled={navigation.formAction === "/devices"}
+                    name="deviceObj" 
+                    value={JSON.stringify(formData)}
+                  >
+                    {navigation.formAction === "/devices" ? <Spinner parentClassName="w-full h-full" childClassName="ml-1 w-5 h-5" /> : "Submit"}
+                  </button>
+                </div>
               </div>
-            </form>
+            </Form>
           </div>
-          <Form method="post" action="/devices">
-            <button name="deviceObj" value={JSON.stringify(formData)}>Click</button>
-          </Form>
         </div>
       </div>
     </div>
