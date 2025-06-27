@@ -5,7 +5,7 @@ class AuthService {
   private api: AxiosInstance = axios.create({
     baseURL: `${import.meta.env.VITE_SMARTPHONE_API_URL}/auth`,
     withCredentials: true, // if using cookies
-  });;
+  });
 
   async login(loginFormData: loginFormType) {
     const response = await this.api.post("/login", { ...loginFormData });
@@ -18,14 +18,8 @@ class AuthService {
   }
 
   async logout() {
-    const response = await this.api.post("/logout");
-    return response.data;
-  }
-
-  // get current user
-  async getMe() {
-    const response = await this.api.get("/me");
-    return response.data;
+    const response = await this.api.get("/logout");
+    return response;
   }
 }
 
