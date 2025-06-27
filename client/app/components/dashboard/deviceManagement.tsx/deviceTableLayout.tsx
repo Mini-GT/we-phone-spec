@@ -21,7 +21,8 @@ export default function DeviceTableLayout({
   function handlePopupForm() {
     setPopupButton(prevState => ({
       ...prevState,
-      isAddDeviceClicked: true, 
+      popup: true,
+      isAddDeviceClicked: true
     }));
   }
   return (

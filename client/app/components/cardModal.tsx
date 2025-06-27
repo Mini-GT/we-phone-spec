@@ -3,16 +3,19 @@ import AddDeviceForm from "~/components/dashboard/deviceManagement.tsx/addDevice
 import { Card } from "~/components/ui/card";
 import { usePopupButton } from "~/context/popupButtonContext";
 import { useSmartphone } from "~/context/smartphoneContext";
+import AddUserForm from "./dashboard/usersManagement/addUserForm";
 
-export default function AddDevice() {
-  const { setPopupButton } = usePopupButton();
+export default function CardModal() {
+  const { popupButton, setPopupButton } = usePopupButton();
   const { setSmartphoneFormData } = useSmartphone()
 
   function handleCloseForm() {
     // Logic to close the form, e.g., set a state variable to hide it
     setPopupButton(prevState => ({
       ...prevState,
-      isAddDeviceClicked: false, 
+      isAddDeviceClicked: false,
+      isAddUserClicked: false,
+      popup: false
     }));
     setSmartphoneFormData({
       _id: '',
@@ -99,23 +102,9 @@ export default function AddDevice() {
         >
           <X size={30} />
         </button>
-        {/* <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6">
-          <h1 className="text-3xl font-bold text-white">Phone Specifications Form</h1>
-          <p className="text-blue-100 mt-2">Enter detailed phone specifications</p>
-        </div> */}
-        {/* <h2>Add Device</h2>
-        <form>
-          <div>
-            <label htmlFor="username">Username:</label>
-            <input type="text" id="username" name="username" required />
-          </div>
-          <div>
-            <label htmlFor="email">Email:</label>
-            <input type="email" id="email" name="email" required />
-          </div>
-          <button type="submit">Add User</button>
-        </form> */}
-        <AddDeviceForm />
+        
+        {popupButton.isAddDeviceClicked && <AddDeviceForm />}
+        {popupButton.isAddUserClicked && <AddUserForm />}
       </Card>
     </div>
   );

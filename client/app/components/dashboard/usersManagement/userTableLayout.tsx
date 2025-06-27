@@ -2,6 +2,8 @@ import { Edit2, Trash2 } from "lucide-react";
 import type { TableSortConfig, UserMenuProps } from "~/types/globals.type";
 import { toReadableDate } from "~/utils/formatDate";
 import _ from "lodash";
+import { Form } from "react-router";
+import { usePopupButton } from "~/context/popupButtonContext";
 
 type UsersTableLayoutProps = {
   getSortIcon: (iconTpe: TableSortConfig["key"]) => React.ReactNode;
@@ -14,6 +16,16 @@ export default function UsersTableLayout({
   handleSort,
   currentUsers,
 }: UsersTableLayoutProps) {
+  const { setPopupButton } = usePopupButton()
+
+  function handlePopupForm() {
+    setPopupButton(prevState => ({
+      ...prevState,
+      popup: true,
+      isAddUserClicked: true
+    }));
+  }
+
   const getStatusColor = (status: boolean) => {
     switch (status) {
       case true: return 'bg-green-100 text-green-800';
@@ -103,9 +115,16 @@ export default function UsersTableLayout({
               <td className="p-4 text-gray-700">{toReadableDate(user.createdAt)}</td>
               <td className="p-4">
                 <div className="flex items-center gap-2">
-                  <button className="p-1 text-gray-500 hover:text-blue-600 transition-colors">
-                    <Edit2 className="h-4 w-4" />
-                  </button>
+                  <Form method="post" action="/users"> 
+                    <button 
+                      name="userId" 
+                      value={user.id} 
+                      // type="submit" 
+                      onClick={handlePopupForm}
+                    >
+                      Edit
+                    </button>
+                  </Form>
                   <button className="p-1 text-gray-500 hover:text-red-600 transition-colors">
                     <Trash2 className="h-4 w-4" />
                   </button>

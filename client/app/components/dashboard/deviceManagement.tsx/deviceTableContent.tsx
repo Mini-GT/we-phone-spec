@@ -54,7 +54,6 @@ export default function DeviceTableContent({
   const { setPopupButton } = usePopupButton()
   const { setSmartphoneFormData } = useSmartphone()
   function handleAddDevice() {
-    console.log(items)
     setSmartphoneFormData({
     _id: '',
     name: '',
@@ -132,7 +131,8 @@ export default function DeviceTableContent({
     // Logic to add a new user
     setPopupButton(prevState => ({
       ...prevState,
-      isAddDeviceClicked: true,
+      popup: true,
+      isAddDeviceClicked: true
     }));
   }
 
@@ -185,7 +185,6 @@ export default function DeviceTableContent({
         getSortIcon={getSortIcon}
         currentDevices={devices}
       />
-      {/* <UsersTable
 
       {/* Pagination */}
       <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">

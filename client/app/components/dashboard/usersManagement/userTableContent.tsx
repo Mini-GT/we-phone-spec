@@ -59,6 +59,7 @@ export default function UserTableContent({
     setPopupButton(prevState => ({
       ...prevState,
       isAddUserClicked: true,
+      popup: true
     }));
   }
 

@@ -7,6 +7,7 @@ type PopupButtonContextType = {
 }
 
 type PopupButtonType = {
+  popup: boolean;
   isLoginClicked: boolean;
   isAddUserClicked: boolean;
   isAddDeviceClicked: boolean;
@@ -16,6 +17,7 @@ const PopupButtonContext = createContext<PopupButtonContextType | undefined>(und
 
 export function PopupButtonProvider({ children }: ContextProviderProps) {
   const [popupButton, setPopupButton] = useState({
+    popup: false,
     isLoginClicked: false,
     isAddUserClicked: false,
     isAddDeviceClicked: false,
