@@ -54,29 +54,42 @@ export default function DeviceManagementDashboard({
     });
     
     if (sortConfig.key) {
-      //  console.log(filtered)
       filtered.sort((a, b) => {
         const key = sortConfig.key as keyof Smartphone;
-      
-        // const aVal = typeof Number(a[key]) === "number" ? Number(a[key]) : a[key];
-        // const bVal = typeof Number(b[key]) === "number" ? Number(b[key]) : b[key];
-
-        let aVal = a[key] ?? '';
-        let bVal = b[key] ?? '';
-        if(key === "_id") {
-          aVal = Number(a[key]) ?? '';
-          bVal = Number(b[key]) ?? '';
-        }
-        else if (typeof a[key] === "string" && typeof b[key] === "string") {
-          aVal = a[key].toLowerCase() || '';
-          bVal = b[key].toLowerCase() || '';
-        }
-        
-        // console.log(aVal)
+        // console.log(a[key])
+        const aVal = a[key] ?? '';
+        const bVal = b[key] ?? '';
+       
         if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
         if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
         return 0;
       });
+
+      // -------BAD FILTER--------
+      //  console.log(filtered)
+      // filtered.sort((a, b) => {
+      //   const key = sortConfig.key as keyof Smartphone;
+      
+      //   // const aVal = typeof Number(a[key]) === "number" ? Number(a[key]) : a[key];
+      //   // const bVal = typeof Number(b[key]) === "number" ? Number(b[key]) : b[key];
+
+      //   let aVal = a[key] ?? '';
+      //   let bVal = b[key] ?? '';
+      //   if(key === "_id") {
+      //     aVal = Number(a[key]) ?? '';
+      //     bVal = Number(b[key]) ?? '';
+      //   }
+      //   else if (typeof a[key] === "string" && typeof b[key] === "string") {
+      //     aVal = a[key].toLowerCase() || '';
+      //     bVal = b[key].toLowerCase() || '';
+      //   }
+        
+      //   // console.log(aVal)
+      //   if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+      //   if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+      //   return 0;
+      // });
+
     }
     return filtered;
   }, [searchTerm, brandFilter, operatingSystemFilter, sortConfig, items]);
