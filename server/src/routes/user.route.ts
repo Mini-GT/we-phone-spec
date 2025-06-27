@@ -1,5 +1,4 @@
-import { updateCurrentUser } from "@/controllers/auth.controller"
-import { getUserData } from "@/controllers/user.controller"
+import { getUser, updatetUser } from "@/controllers/user.controller"
 import { asyncWrapper } from "@/middlewares/asyncWrapper.middleware"
 import { requireAuth } from "@/middlewares/auth.middleware"
 import express from "express"
@@ -7,6 +6,9 @@ import express from "express"
 const router = express.Router()
 
 router.route("/me")
-.patch(asyncWrapper(requireAuth) ,asyncWrapper(updateCurrentUser))
+.get(asyncWrapper(requireAuth) ,asyncWrapper(getUser))
+
+router.route("/:userId")
+.patch(asyncWrapper(requireAuth) ,asyncWrapper(updatetUser))
 
 export default router

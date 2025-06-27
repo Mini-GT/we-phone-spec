@@ -178,32 +178,6 @@ const getCurrentUser = async (req: Request, res: Response) => {
   // res.json(req.isAuthenticated())
 }
 
-const updateCurrentUser = async (req: Request, res: Response) => {
-  if (!req.isAuthenticated()) {
-    return res.status(401).json({ message: 'Not authenticated' });
-  }
-
-  const user = req.user as User;
-
-  // await prisma.user.update({
-  //   where: { id: user.id },
-  //   data: {
-  //     isVerified: true,
-  //     verifyToken: null,
-  //     verifyTokenExpiry: null,
-  //   },
-  // });
-  // console.log(user)
-  // return res.status(200).json({
-  //   createdAt: user.createdAt,
-  //   name: user.name,
-  //   email: user.email,
-  //   profileImage: user.profileImage,
-  //   isVerified: user.isVerified
-  // });
-  // res.json(req.isAuthenticated())
-}
-
 const logout = async (req: Request, res: Response) => {
   res.clearCookie("token").json({ message: "Logged out" })
   // req.logOut((error) => {
@@ -227,5 +201,4 @@ export {
   login,
   getCurrentUser,
   logout,
-  updateCurrentUser
 }

@@ -11,9 +11,6 @@ router.route("/login")
 router.route("/register")
 .post(asyncWrapper(register))
 
-router.route("/me")
-.get(asyncWrapper(requireAuth) ,asyncWrapper(getCurrentUser))
-
 router.route("/logout")
 .get(asyncWrapper(logout))
 
