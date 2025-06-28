@@ -1,8 +1,8 @@
 import prisma from "@/prismaClient";
 import { type Request, type Response } from "express"
 import { v4 as uuidv4 } from "uuid"
-import type { User } from "../../prisma/generated/client";
 import emailService from "@/services/email.service";
+import type { User } from "@prisma/client";
 
 const updateUserEmailVerification = async (req: Request, res: Response) => {
   if (!req.isAuthenticated()) {
@@ -12,8 +12,8 @@ const updateUserEmailVerification = async (req: Request, res: Response) => {
   const user = req.user as User
 
   const verificationToken = uuidv4()
-  // const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-  const verificationExpiry = new Date(Date.now() + 1 * 60 * 1000) // 1 min
+  const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+  // const verificationExpiry = new Date(Date.now() + 1 * 60 * 1000) // 1 min
 
   await prisma.user.update({
     where: { id: user.id },
