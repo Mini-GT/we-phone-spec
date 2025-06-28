@@ -53,8 +53,7 @@ app.get("/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "http://localhost:5173", session: false }),
   (req, res) => {
     const user = req.user as User
-
-    const token = signJwt({ id: user.id }, { expiresIn: "5s" })
+    const token = signJwt({ id: user.id }, { expiresIn: "7d" })
     
     res.cookie("token", token, {
       httpOnly: true,
