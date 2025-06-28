@@ -8,47 +8,21 @@ import { jwtDecode } from "jwt-decode";
 const jwtSecretKey = process.env.JWT_SECRET
 if(!jwtSecretKey) throw new Error("JWT secret key is empty")
 
-// Define a custom type for the Request with user property
-interface AuthenticatedRequest extends Request {
-  userId: JwtPayload;
-}
-
 interface DecodedToken {
   id: string;
   exp: number;
-}
-
-export const authentication = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  try {
-    const token = req.headers["authorization"]
-    if(!token) return res.status(401).json({ message: "No token provided" })
-
-    // Verify token
-    jwt.verify(token, jwtSecretKey, (err, decoded) => {
-      if (err) {
-        throw new CustomAPIError("Not authorized", 403)
-      }
-
-      if(!decoded) throw new CustomAPIError("Invalid Token", 404)
-      
-      const { id } = decoded as JwtPayload;
-      req.userId = { id }
-    });
-    next()
-  } catch (error) {
-    next(error)
-  }
 }
 
 export const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
   // if(req.isAuthenticated()) {
   //   return next()
   // }
+  console.log("Cookies:", req.cookies);
+  console.log("Headers:", req.headers);
 
-  // res.status(401).json({ message: "Unauthorized"})
-    const token = req.cookies.token || req.headers.cookie
+    const token = req.cookies.token
     if (!token) {
-      return res.status(401).json({ message: "No token provided" });
+      return res.status(401).json({ message: "No access token" });
     }
 
     // get token expiration time
@@ -64,7 +38,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
     const decoded = verifyJwt(token) as DecodedToken
 
     const user = await prisma.user.findUnique({ where: { id: decoded.id } })
-
+    
     if (!user) return res.status(401).json({ message: "User not found" })
 
     req.user = user
