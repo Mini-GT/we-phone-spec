@@ -9,7 +9,12 @@ export default [
 
   // Protected Routes by role and permission
   route("users", "routes/_protected/users.tsx"),
-  route("devices", "routes/_protected/devices.tsx"),
+  // route("devices", "routes/_protected/devices.tsx"),
+
+  ...prefix("devices", [
+    index("routes/_protected/devices.tsx"),
+    route("new", "routes/_protected/addNewDevice.tsx"),
+  ]),
 
   ...prefix("brand-list", [
     route(":brandName", "routes/brandList.tsx"),

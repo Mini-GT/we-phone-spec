@@ -88,14 +88,14 @@ export default function DeviceTableLayout({
                 <input type="checkbox" className="rounded border-gray-300" />
               </td> */}
               <td className="p-4 text-gray-700">{device._id}</td>
-              <td className="p-4">
+              <td className=" max-w-[10vw]">
                 <div className="flex items-center gap-3">
                   <img 
                     src={device.image ?? "/userIcon.svg"} 
                     alt={device.name}
                     className="w-8 h-8 object-cover"
                   />
-                  <span className="font-medium text-gray-900">{device.name}</span>
+                  <span className="font-medium text-gray-900 truncate">{device.name}</span>
                 </div>
               </td>
               <td className="p-4 text-gray-700">{device. brand}</td>
@@ -110,10 +110,9 @@ export default function DeviceTableLayout({
               <td className="p-4 text-gray-700">{toReadableDate(device.createdAt ?? "")}</td>
               <td className="p-4">
                 <div className="flex items-center gap-2">
-                  
-                  <Form method="post">
+                  <Form method="patch">
                     <button 
-                      name="deviceId" 
+                      name="updateId" 
                       value={device._id} 
                       // type="submit" 
                       onClick={handlePopupForm}
@@ -121,17 +120,15 @@ export default function DeviceTableLayout({
                       Edit
                     </button>
                   </Form>
-                  {/* <button 
-                    className="p-1 text-gray-500 hover:text-blue-600 transition-colors cursor-pointer"
-                    onClick={() => handleEdit(device._id)}
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </button> */}
-                  <button 
-                    className="p-1 text-gray-500 hover:text-red-600 transition-colors cursor-pointer"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  <Form method="delete">
+                    <button
+                      className="p-1 text-gray-500 hover:text-red-600 transition-colors cursor-pointer"
+                      value={device._id}
+                      name="deleteId"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </Form>
                 </div>
               </td>
             </tr>

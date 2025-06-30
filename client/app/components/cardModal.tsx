@@ -4,10 +4,13 @@ import { Card } from "~/components/ui/card";
 import { usePopupButton } from "~/context/popupButtonContext";
 import { useSmartphone } from "~/context/smartphoneContext";
 import AddUserForm from "./dashboard/usersManagement/addUserForm";
+import { Form, useNavigation } from "react-router";
+import { Spinner } from "./spinner";
 
 export default function CardModal() {
   const { popupButton, setPopupButton } = usePopupButton();
-  const { setSmartphoneFormData } = useSmartphone()
+  const { smartphoneFormData: formData, setSmartphoneFormData } = useSmartphone()
+  const navigation = useNavigation()
 
   function handleCloseForm() {
     // Logic to close the form, e.g., set a state variable to hide it
@@ -103,7 +106,23 @@ export default function CardModal() {
           <X size={30} />
         </button>
         
-        {popupButton.isAddDeviceClicked && <AddDeviceForm />}
+        {popupButton.isAddDeviceClicked && 
+          <AddDeviceForm>
+            <Form method="put" action="/devices">
+              <div className="flex justify-end">
+                <button 
+                  className="flex w-20 h-10 items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+                  type="submit" 
+                  disabled={navigation.formAction === "/devices"}
+                  name="deviceObj" 
+                  value={JSON.stringify(formData)}
+                >
+                  {navigation.formAction === "/devices" ? <Spinner parentClassName="w-full h-full" childClassName="ml-1 w-5 h-5" /> : "Submit"}
+                </button>
+              </div>
+            </Form>
+          </AddDeviceForm>
+        }
         {popupButton.isAddUserClicked && <AddUserForm />}
       </Card>
     </div>

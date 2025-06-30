@@ -4,8 +4,17 @@ import { Spinner } from '~/components/spinner';
 import type { FormPath, Smartphone } from '~/types/globals.type';
 import { FormField } from '~/components/form/formField';
 import { FormSection } from '~/components/form/formSection';
+import type { ReactNode } from 'react';
 
-export default function AddDeviceForm() {
+type AddDeviceFormType = {
+  style?: string
+  children: ReactNode
+} 
+
+export default function AddDeviceForm({
+  style = "h-[90vh] overflow-y-scroll",
+  children
+}: AddDeviceFormType) {
   const navigation = useNavigation()
   const { smartphoneFormData: formData, setSmartphoneFormData: setFormData } = useSmartphone()
   const handleInputChange = (path: FormPath, value: string | number | boolean) => {
@@ -33,8 +42,8 @@ export default function AddDeviceForm() {
   // };
 
   return (
-    <div className="relative rounded-xl h-[90vh] overflow-y-scroll">
-      <div className="relative rounded-t-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 mb-8">
+    <div className={`relative rounded-xl ${style}`}>
+      <div className="relative w-full rounded-t-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 mb-8">
         <h1 className="text-3xl font-bold text-white">Phone Specifications Form</h1>
         {/* <p className="text-blue-100 mt-2">Enter detailed phone specifications</p> */}
       </div>  
@@ -46,7 +55,7 @@ export default function AddDeviceForm() {
         <div className="flex flex-col lg:flex-row">
           {/* Form Content */}
           <div className="flex-1 p-8">
-            <Form method="PATCH" action="/devices" className="space-y-6">
+            <div className="space-y-6">
               <FormSection title="Basic Information">
                 <FormField
                   label="Phone Name *"
@@ -335,19 +344,8 @@ export default function AddDeviceForm() {
                   placeholder="e.g., 2503FRA65G, SM-652F6 etc."
                 />
               </FormSection>
-
-              <div className="flex justify-end">
-                <button 
-                  className="flex w-20 h-10 items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
-                  type="submit" 
-                  disabled={navigation.formAction === "/devices"}
-                  name="deviceObj" 
-                  value={JSON.stringify(formData)}
-                >
-                  {navigation.formAction === "/devices" ? <Spinner parentClassName="w-full h-full" childClassName="ml-1 w-5 h-5" /> : "Submit"}
-                </button>
-              </div>
-            </Form>
+              {children}
+            </div>
           </div>
         </div>
       </div>
