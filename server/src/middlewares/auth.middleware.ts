@@ -15,7 +15,10 @@ interface DecodedToken {
 }
 
 export const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
-  const token = req.headers.cookie
+  const cookie = req.headers.cookie || ""
+
+  const token = cookie.split("=")[1]
+  
   if (!token) {
     return res.status(401).json({ message: "No access token" });
   }

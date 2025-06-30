@@ -39,7 +39,7 @@ const createSmartphone = async (req: Request, res: Response) => {
   // console.log(req.body)
   const device = new deviceModel(req.body)
   const saveSmartphone = await device.save()
-  res.status(201).json(saveSmartphone)
+  res.status(201).json({ result: "success", saveSmartphone })
 }
 
 const updateSmartphone = async (req: Request, res: Response) => {
@@ -49,7 +49,7 @@ const updateSmartphone = async (req: Request, res: Response) => {
   const updated = await deviceModel.findByIdAndUpdate(deviceId, body, { new: true })
   if(!updated) return res.status(404).json({ error: "Device not found" })
 
-  res.json(updated);
+  res.json({ result: "success", updated });
 }
 
 const deleteSmartphone = async (req: Request, res: Response) => {
@@ -58,7 +58,7 @@ const deleteSmartphone = async (req: Request, res: Response) => {
   const deleteDevice = await deviceModel.findByIdAndDelete(deviceId)
   if(!deleteDevice) return res.status(404).json({ error: "Device not found" })
 
-  res.status(200).json({ message: deleteDevice })
+  res.status(200).json({ result: "success", deleteDevice })
 }
 
 export {
