@@ -1,21 +1,20 @@
-import type { AxiosInstance } from "axios";
-import axios from "axios";
+import axios, { type AxiosInstance } from 'axios';
 
-
-class UserService {
+class UsersService {
   private api: AxiosInstance = axios.create({
     baseURL: `${import.meta.env.VITE_SMARTPHONE_API_URL}`,
-    withCredentials: true,
   });
 
   // get all users
-  async getUsers(headers?: Record<string, string>) {
+  async getUsers(token: string) {
     try {
       const response = await this.api.get("/users", {
-        headers,
-      });
+      headers: {
+        Cookie: token 
+      }
+    });
 
-      if (!response || !response.data) {
+      if (!response) {
         throw new Error("Failed to fetch users");
       }
 
@@ -27,4 +26,4 @@ class UserService {
 
 }
 
-export default new UserService();
+export default new UsersService();
