@@ -1,4 +1,4 @@
-import { getSmartphone, getSmartphonesByBrand, getAllSmartphones, createSmartphone, updateSmartphone } from "@/controllers/smartphones.controller"
+import { getSmartphone, getSmartphonesByBrand, getAllSmartphones, createSmartphone, updateSmartphone, deleteSmartphone } from "@/controllers/smartphones.controller"
 import { asyncWrapper } from "@/middlewares/asyncWrapper.middleware"
 import { requireAuth } from "@/middlewares/auth.middleware"
 import express from "express"
@@ -14,6 +14,9 @@ router.route("/:deviceId")
 
 router.route("/:deviceId")
 .patch(asyncWrapper(requireAuth), asyncWrapper(updateSmartphone))
+
+router.route("/:deviceId")
+.delete(asyncWrapper(requireAuth), asyncWrapper(deleteSmartphone))
 
 router.route("/brand-list/:brand")
 .get(asyncWrapper(getSmartphonesByBrand))
