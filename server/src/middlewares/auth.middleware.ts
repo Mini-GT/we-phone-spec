@@ -14,33 +14,27 @@ interface DecodedToken {
 }
 
 export const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
-  // if(req.isAuthenticated()) {
-  //   return next()
-  // }
-  console.log("Cookies:", req.cookies);
-  console.log("Headers:", req.headers);
+  const token = req.headers.cookie
+  if (!token) {
+    return res.status(401).json({ message: "No access token" });
+  }
 
-    const token = req.cookies.token
-    if (!token) {
-      return res.status(401).json({ message: "No access token" });
-    }
+  // get token expiration time
+  const { exp } = jwtDecode<DecodedToken>(token)
 
-    // get token expiration time
-    const { exp } = jwtDecode<DecodedToken>(token)
+  // check if token is expired
+  if(exp * 1000 <= Date.now()) {
+    // if expired clear token to logout user
+    return res.status(401).clearCookie("token").json({ message: "Token expired" });
+  }
 
-    // check if token is expired
-    if(exp * 1000 <= Date.now()) {
-      // if expired clear token to logout user
-      return res.status(401).clearCookie("token").json({ message: "Token expired" });
-    }
+  // verify token
+  const decoded = verifyJwt(token) as DecodedToken
 
-    // verify token
-    const decoded = verifyJwt(token) as DecodedToken
+  const user = await prisma.user.findUnique({ where: { id: decoded.id } })
+  
+  if (!user) return res.status(401).json({ message: "User not found" })
 
-    const user = await prisma.user.findUnique({ where: { id: decoded.id } })
-    
-    if (!user) return res.status(401).json({ message: "User not found" })
-
-    req.user = user
-    next()
+  req.user = user
+  next()
 }
