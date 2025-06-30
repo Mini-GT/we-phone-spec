@@ -4,6 +4,7 @@ import { CustomAPIError } from "@/errors/customError";
 import { verifyJwt } from "@/utils/jwt";
 import prisma from "@/prismaClient";
 import { jwtDecode } from "jwt-decode";
+import type { User } from "@prisma/client";
 
 const jwtSecretKey = process.env.JWT_SECRET
 if(!jwtSecretKey) throw new Error("JWT secret key is empty")
@@ -36,5 +37,14 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
   if (!user) return res.status(401).json({ message: "User not found" })
 
   req.user = user
+  next()
+}
+
+export const actionAuth = async (req: Request, res: Response, next: NextFunction) => {
+  const user = req.user as User
+
+  if(user.role === "USER" || user.role === "DEMO") {
+    return res.status(403).json({ message: "Action Not allowed" })
+  }
   next()
 }

@@ -36,11 +36,6 @@ const getSmartphonesByBrand = async (req: Request, res: Response) => {
 }
 
 const createSmartphone = async (req: Request, res: Response) => {
-  const user = req.user as User 
-
-  if(user.role === "USER" || user.role === "DEMO") {
-    return res.status(403).json({ message: "Not allowed" })
-  }
   // console.log(req.body)
   const device = new deviceModel(req.body)
   const saveSmartphone = await device.save()
@@ -48,12 +43,6 @@ const createSmartphone = async (req: Request, res: Response) => {
 }
 
 const updateSmartphone = async (req: Request, res: Response) => {
-  const user = req.user as User 
-  
-  if(user.role === "USER" || user.role === "DEMO") {
-    return res.status(403).json({ message: "Not allowed" })
-  } 
-
   const deviceId = req.params.deviceId
   const body = req.body
 
@@ -64,12 +53,6 @@ const updateSmartphone = async (req: Request, res: Response) => {
 }
 
 const deleteSmartphone = async (req: Request, res: Response) => {
-  const user = req.user as User 
-  
-  if(user.role === "USER" || user.role === "DEMO") {
-    return res.status(403).json({ message: "Not allowed" })
-  }
-  
   const { deviceId } = req.params
   
   const deleteDevice = await deviceModel.findByIdAndDelete(deviceId)
