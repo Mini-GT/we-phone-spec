@@ -4,13 +4,11 @@ import axios from "axios";
 class UserService {
   private api: AxiosInstance = axios.create({
     baseURL: `${import.meta.env.VITE_SMARTPHONE_API_URL}/user`,
-    withCredentials: true,
   });
 
   private handleError(error: unknown): never {
     if (axios.isAxiosError(error)) {
       if (error.response) {
-        console.error('API Error:', error.response.data);
         throw {
           status: error.response.status,
           message: error.response.data.message || 'An error occurred',
@@ -29,23 +27,44 @@ class UserService {
     };
   }
   
-  async getMe() {
+  async getMe(token: string) {
   try {
-    const response = await this.api.get("/me");
+    const response = await this.api.get("/me", {
+      headers: {
+        Cookie: token
+      }
+    })
     return response.data;
   } catch (error) {
     this.handleError(error)
   }
 }
   
-  async updatetUser() {
+  async updatetUser(token: string, userId: string) {
     try {
-      const response = await this.api.patch("/:userId")
+      const response = await this.api.patch(`/${userId}`, {
+      headers: {
+        Cookie: token
+      }
+    })
       return response.data;
     } catch (error) {
       this.handleError(error)
     }
   } 
+
+  async deleteUser(token: string, userId: string) {
+    try {
+      const response = await this.api.delete(`/${userId}`, {
+      headers: {
+        Cookie: token
+      }
+    })
+      return response.data;
+    } catch (error) {
+      this.handleError(error)
+    }
+  }
 }
 
 export default new UserService();

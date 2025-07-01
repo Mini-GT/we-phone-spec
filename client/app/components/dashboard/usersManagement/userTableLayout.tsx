@@ -1,5 +1,5 @@
 import { Edit2, Trash2 } from "lucide-react";
-import type { TableSortConfig, UserMenuProps } from "~/types/globals.type";
+import type { TableSortConfig, User } from "~/types/globals.type";
 import { toReadableDate } from "~/utils/formatDate";
 import _ from "lodash";
 import { Form } from "react-router";
@@ -8,7 +8,7 @@ import { usePopupButton } from "~/context/popupButtonContext";
 type UsersTableLayoutProps = {
   getSortIcon: (iconTpe: TableSortConfig["key"]) => React.ReactNode;
   handleSort: (sortType: TableSortConfig["key"]) => void;
-  currentUsers: UserMenuProps[];
+  currentUsers: User[];
 };
 
 export default function UsersTableLayout({
@@ -125,9 +125,15 @@ export default function UsersTableLayout({
                       Edit
                     </button>
                   </Form>
-                  <button className="p-1 text-gray-500 hover:text-red-600 transition-colors">
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  <Form method="delete">
+                    <button 
+                      className="p-1 text-gray-500 hover:text-red-600 transition-colors"
+                      value={user.id}
+                      name="userId"
+                      >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </Form>
                 </div>
               </td>
             </tr>
