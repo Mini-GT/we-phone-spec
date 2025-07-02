@@ -1,5 +1,7 @@
 import axios, { type AxiosInstance } from "axios";
+import { redirect } from "react-router";
 import type { loginFormType, RegisterFormType } from "~/types/globals.type";
+import { isTokenValid } from "~/utils/tokenValidator";
 
 class AuthService {
   private api: AxiosInstance = axios.create({
@@ -8,8 +10,8 @@ class AuthService {
   });
 
   async login(loginFormData: loginFormType) {
-    const response = await this.api.post("/login", { ...loginFormData });
-    return response;
+      const response = await this.api.post("/login", { ...loginFormData });
+      return response;
   }
 
   async register(registerFormData: RegisterFormType) {
@@ -21,6 +23,23 @@ class AuthService {
     const response = await this.api.get("/logout");
     return response;
   }
+  
+  publicRoute(request: Request): string | null {
+    const userCookieToken = request.headers.get("Cookie")
+    // check token expiration
+    const valid = isTokenValid(userCookieToken);
+
+    return valid ? userCookieToken : null
+  }
+  
+  privateRoute(request: Request): string | null {
+    const userCookieToken = request.headers.get("Cookie")
+    const valid = isTokenValid(userCookieToken);
+
+    if(!valid) throw redirect("unauthorized")
+
+    return userCookieToken
+  } 
 }
 
 export default new AuthService();

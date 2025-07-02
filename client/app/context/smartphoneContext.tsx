@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, type Dispatch, type SetStateAction } from "react";
 import type { ContextProviderProps, Smartphone } from "~/types/globals.type";
 import smartphoneService from "~/services/smartphone.service";
 
 type SmartpoheContextType = {
   smartphoneFormData: Smartphone
-  setSmartphoneFormData: (device: Smartphone) => void
+  setSmartphoneFormData: Dispatch<SetStateAction<Smartphone>>
+
 }
 
 export const SmartphoneContext = createContext<SmartpoheContextType | undefined>(undefined)

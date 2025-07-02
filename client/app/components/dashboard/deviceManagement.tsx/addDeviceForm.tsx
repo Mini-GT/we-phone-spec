@@ -15,7 +15,6 @@ export default function AddDeviceForm({
   style = "h-[90vh] overflow-y-scroll",
   children
 }: AddDeviceFormType) {
-  const navigation = useNavigation()
   const { smartphoneFormData: formData, setSmartphoneFormData: setFormData } = useSmartphone()
   const handleInputChange = (path: FormPath, value: string | number | boolean) => {
     setFormData(prev => {

@@ -117,13 +117,29 @@ export default function CardModal() {
                   name="deviceObj" 
                   value={JSON.stringify(formData)}
                 >
-                  {navigation.formAction === "/devices" ? <Spinner parentClassName="w-full h-full" childClassName="ml-1 w-5 h-5" /> : "Submit"}
+                  {navigation.formAction === "/devices" ? <Spinner parentClassName="w-full h-full" spinSize="ml-1 w-5 h-5" /> : "Submit"}
                 </button>
               </div>
             </Form>
           </AddDeviceForm>
         }
-        {popupButton.isAddUserClicked && <AddUserForm />}
+        {popupButton.isAddUserClicked && 
+          <AddUserForm>
+            <Form method="put" action="/users">
+              <div className="flex justify-end">
+                <button 
+                  className="flex w-20 h-10 items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+                  type="submit" 
+                  disabled={navigation.formAction === "/users"}
+                  name="deviceObj" 
+                  value={JSON.stringify(formData)}
+                >
+                  {navigation.formAction === "/users" ? <Spinner parentClassName="w-full h-full" spinSize="ml-1 w-5 h-5" /> : "Submit"}
+                </button>
+              </div>
+            </Form>
+          </AddUserForm>
+        }
       </Card>
     </div>
   );

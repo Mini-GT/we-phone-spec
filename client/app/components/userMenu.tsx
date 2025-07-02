@@ -1,17 +1,17 @@
 import { useState, useEffect, useRef, use } from "react";
-import type { UserMenuProps } from "~/types/globals.type";
 import authService from "~/services/auth.service";
 import { NavLink, redirect, useNavigate } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { ProtectedRoute } from "./protectedRoute";
 import { PERMISSIONS } from "~/utils/permissions";
 import { useAuth } from "~/context/authContext";
+import type { UserType } from "~/types/globals.type";
 
 export default function UserMenu({
   name,
   email,
   profileImage,
-}: Omit<UserMenuProps, "createdAt" | "isVerified" | "id">) {
+}: Omit<UserType, "createdAt" | "status" | "id">) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -40,12 +40,6 @@ export default function UserMenu({
   const toggleMenu = () => {
     setOpen((prev) => !prev);
   };
-  
-  // const handleLogout = async () => {
-  //   await authService.logout();
-  //   queryClient.clear()
-  //   window.location.href = "/";
-  // };
 
   return (
     <div className="relative inline-block text-left" ref={menuRef}>

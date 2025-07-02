@@ -28,18 +28,31 @@ class UserService {
   }
   
   async getMe(token: string) {
-  try {
-    const response = await this.api.get("/me", {
-      headers: {
-        Cookie: token
-      }
-    })
-    return response.data;
-  } catch (error) {
-    this.handleError(error)
+    try {
+      const response = await this.api.get("/me", {
+        headers: {
+          Cookie: token
+        }
+      })
+      return response.data;
+    } catch (error) {
+      this.handleError(error)
+    }
   }
-}
-  
+
+  async getUserById(token: string, userId: string) {
+    try {
+      const response = await this.api.get(`/${userId}`, {
+        headers: {
+          Cookie: token
+        }
+      })
+      return response.data;
+    } catch (error) {
+      this.handleError(error)
+    }
+  }
+
   async updatetUser(token: string, userId: string) {
     try {
       const response = await this.api.patch(`/${userId}`, {

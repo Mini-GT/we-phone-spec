@@ -1,5 +1,5 @@
-import axios, { type AxiosInstance } from 'axios';
-import type { Smartphone } from '~/types/globals.type';
+import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
+import type { ApiResponse, Smartphone } from '~/types/globals.type';
 
 class SmartphoneService {
   private api: AxiosInstance = axios.create({
@@ -54,7 +54,7 @@ class SmartphoneService {
   }
 
   // create a new smartphone
-  async createSmartphone(smartphoneData: Omit<Smartphone, 'id'>, token: string): Promise<Smartphone> {
+  async createSmartphone(smartphoneData: Omit<Smartphone, 'id'>, token: string): Promise<ApiResponse> {
     try {
       const response = await this.api.post('/smartphones', smartphoneData, {
         headers: {
@@ -68,7 +68,7 @@ class SmartphoneService {
   }
 
   // update an existing smartphone
-  async updateSmartphone(id: string, updatedForm: Partial<Smartphone>, token: string): Promise<Smartphone> {
+async updateSmartphone(id: string, updatedForm: Partial<Smartphone>, token: string): Promise<Smartphone> {
     try {
       const response = await this.api.patch(
         `/smartphones/${id}`,
