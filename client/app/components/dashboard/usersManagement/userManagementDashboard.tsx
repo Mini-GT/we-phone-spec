@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Search, ChevronDown, Plus, Edit2, Trash2, ChevronLeft, ChevronRight, Upload } from 'lucide-react';
-import type { TableSortConfig, UserMenuProps } from '~/types/globals.type';
+import type { TableSortConfig, UserType } from '~/types/globals.type';
 import _ from 'lodash';
 import StatusFilter from './statusFilter';
 import RoleFilter from './roleFilter';
@@ -13,7 +13,7 @@ import UserTableContent from './userTableContent';
 
 
 type ManagementDashoardProps = {
-  users: UserMenuProps[];
+  users: UserType[];
   handleAddUser: () => void;
 };
 
@@ -44,7 +44,7 @@ export default function UserManagementDashoard ({
       //  user.username.toLowerCase().includes(searchTerm.toLowerCase());
       // console.log(searchTerm.toLowerCase())
       const matchesRole = roleFilter === '' || user.role.toLowerCase() === roleFilter.toLowerCase();
-      const matchesStatus = statusFilter === '' || (user.isVerified ? "Verified" : "Unverified") === statusFilter;
+      const matchesStatus = statusFilter === '' || (user.status? "Verified" : "Unverified") === statusFilter;
       
       return matchesSearch && matchesRole && matchesStatus;
     });
@@ -52,18 +52,18 @@ export default function UserManagementDashoard ({
     if (sortConfig.key) {
       //  console.log(filtered)
       filtered.sort((a, b) => {
-        const key = sortConfig.key as keyof UserMenuProps;
+        const key = sortConfig.key as keyof UserType;
         // console.log(a[key])
         const aVal = a[key] ?? '';
         const bVal = b[key] ?? '';
-       
+      
         if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
         if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
         return 0;
       });
     }
     return filtered;
-  }, [searchTerm, roleFilter, statusFilter, sortConfig]);
+  }, [searchTerm, roleFilter, statusFilter, sortConfig, users]);
 
   const totalRows = filteredAndSortedUsers.length;
   const totalPages = Math.ceil(totalRows / rowsPerPage);

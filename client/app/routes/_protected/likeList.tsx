@@ -1,11 +1,12 @@
-import { NavLink, useLoaderData, useNavigate, type LoaderFunctionArgs, type MetaFunction } from "react-router";
+import { NavLink, useLoaderData, useMatches, useNavigate, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import { Mail, Lock, AlertTriangle, Edit2, Heart } from 'lucide-react';
 import { toReadableDate } from "~/utils/formatDate";
 import UserMenuNav from "~/components/userMenuNav";
 import { useAuth } from "~/context/authContext";
 import type { Route } from "../_protected/+types/likeList";
-import { requireAuthCookie } from "~/utils/auth";
 import { Spinner } from "~/components/spinner";
+import authService from "~/services/auth.service";
+import type { UserType } from "~/types/globals.type";
 
 export function meta({}: MetaFunction) {
   return [
@@ -15,15 +16,16 @@ export function meta({}: MetaFunction) {
 }
 
 export async function loader({request}: LoaderFunctionArgs) {
-  const userId = await requireAuthCookie(request);
+  const userId = authService.privateRoute(request);
 }
 
 export default function LikeList() {
-  const { user } = useAuth()
+  const matches = useMatches()
+  const user = matches[0].data as UserType
 
   if (!user) {
     return (
-      <Spinner childClassName="w-12 h-12" />
+      <Spinner spinSize="w-12 h-12" />
     )
   }
 

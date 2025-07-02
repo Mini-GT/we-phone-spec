@@ -1,5 +1,5 @@
 import { Edit2, Trash2 } from "lucide-react";
-import type { TableSortConfig, User } from "~/types/globals.type";
+import type { TableSortConfig, UserStatus, UserType } from "~/types/globals.type"
 import { toReadableDate } from "~/utils/formatDate";
 import _ from "lodash";
 import { Form } from "react-router";
@@ -8,7 +8,7 @@ import { usePopupButton } from "~/context/popupButtonContext";
 type UsersTableLayoutProps = {
   getSortIcon: (iconTpe: TableSortConfig["key"]) => React.ReactNode;
   handleSort: (sortType: TableSortConfig["key"]) => void;
-  currentUsers: User[];
+  currentUsers: UserType[];
 };
 
 export default function UsersTableLayout({
@@ -26,11 +26,11 @@ export default function UsersTableLayout({
     }));
   }
 
-  const getStatusColor = (status: boolean) => {
+  const getStatusColor = (status: UserStatus) => {
     switch (status) {
-      case true: return 'bg-green-100 text-green-800';
+      case "verified": return 'bg-green-100 text-green-800';
       // case 'inactive': return 'bg-gray-100 text-gray-800';
-      case false: return 'bg-red-100 text-red-800';
+      case "unverified": return 'bg-red-100 text-red-800';
       // case 'pending': return 'bg-blue-100 text-blue-800';
       // case 'suspended': return 'bg-orange-100 text-orange-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -107,8 +107,8 @@ export default function UsersTableLayout({
               <td className="p-4 text-gray-700">{user.email}</td>
               {/* <td className="p-4 text-gray-700">{user.username}</td> */}
               <td className="p-4">
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(user.isVerified)}`}>
-                  {user.isVerified ? 'Verified' : 'Unverified'}
+                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(user.status)}`}>
+                  {user.status}
                 </span>
               </td>
               <td className="p-4 text-gray-700">{_.capitalize(user.role)}</td>
@@ -129,7 +129,7 @@ export default function UsersTableLayout({
                     <button 
                       className="p-1 text-gray-500 hover:text-red-600 transition-colors"
                       value={user.id}
-                      name="userId"
+                      name="deleteUser"
                       >
                       <Trash2 className="h-4 w-4" />
                     </button>

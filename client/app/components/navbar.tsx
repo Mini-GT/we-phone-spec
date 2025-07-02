@@ -1,21 +1,14 @@
-import { NavLink } from "react-router"
+import { NavLink, useMatches } from "react-router"
 import { Button } from "./ui/button"
 import { usePopupButton } from "~/context/popupButtonContext"
-// import authService from "~/services/auth.service"
-import { use, useState } from "react"
-import { useQuery } from "@tanstack/react-query"
 import UserMenu from "./userMenu"
 import { useAuth } from "~/context/authContext"
+import type { UserType } from "~/types/globals.type"
 
 export default function Navbar() {
   const { setPopupButton } = usePopupButton()
-  const { user } = useAuth()
-  // const {data, isLoading} = useQuery({
-  //   queryFn: () => authService.getMe(),
-  //   queryKey: ["me"],
-  //   retry: false
-  // })
-  // const user = data?.data
+  const matches = useMatches()
+  const user = matches[0].data as UserType
   async function handleLoginClick() {
     setPopupButton(prevState => ({
       ...prevState,
@@ -83,12 +76,11 @@ export default function Navbar() {
           role={user.role}
         /> :
         <Button 
-        className="cursor-pointer"
-        onClick={handleLoginClick}
-      >
-        Login
-      </Button>}
-        
+          className="cursor-pointer"
+          onClick={handleLoginClick}
+          >
+          Login
+        </Button>}
       </div>
     </header>
   )

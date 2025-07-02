@@ -1,10 +1,11 @@
-import { useNavigate, type LoaderFunctionArgs, type MetaFunction } from "react-router";
+import { useMatches, useNavigate, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import UserMenuNav from "~/components/userMenuNav";
 import { useAuth } from "~/context/authContext";
-import { requireAuthCookie } from "~/utils/auth";
 import type { Route } from "../_protected/+types/notification";
 import { Bell } from "lucide-react";
 import { Spinner } from "~/components/spinner";
+import authService from "~/services/auth.service";
+import type { UserType } from "~/types/globals.type";
 
 export function meta({}: MetaFunction) {
   return [
@@ -14,15 +15,16 @@ export function meta({}: MetaFunction) {
 }
 
 export async function loader({request}: LoaderFunctionArgs) {
-  const userId = await requireAuthCookie(request);
+  const userId = authService.privateRoute(request);
 }
 
 export default function Notification() {
-  const { user } = useAuth()
+  const matches = useMatches()
+  const user = matches[0].data as UserType
 
   if (!user) {
     return (
-      <Spinner childClassName="w-12 h-12" />
+      <Spinner spinSize="w-12 h-12" />
     )
   }
 

@@ -2,15 +2,16 @@ import { useEffect, useState } from 'react';
 import { Mail, Lock, AlertTriangle, Edit2, UserCheck, UserRound } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { toReadableDate } from '~/utils/formatDate';
-import { NavLink, redirect, useNavigate, type LoaderFunctionArgs, type MetaFunction } from 'react-router';
-import type { MenuNav, UserMenuProps } from '~/types/globals.type';
+import { NavLink, redirect, useLoaderData, useMatches, useNavigate, type LoaderFunctionArgs, type MetaFunction } from 'react-router';
 import UserMenuNav from '~/components/userMenuNav';
 import { useAuth } from '~/context/authContext';
 import { AnimatePresence, motion } from "motion/react"
 import EmailService from '../../services/email.service';
-import { requireAuthCookie } from '~/utils/auth';
 import authService from '~/services/auth.service';
 import { Spinner } from '~/components/spinner';
+import userService from '~/services/user.service';
+import type { Route } from './+types/profile';
+import type { UserType } from '~/types/globals.type';
 
 export function meta({}: MetaFunction) {
   return [
@@ -20,33 +21,16 @@ export function meta({}: MetaFunction) {
 }
 
 export async function loader({request}: LoaderFunctionArgs) {
-  const userId = await requireAuthCookie(request);
+  const token = authService.privateRoute(request) || "";
+  const user = await userService.getMe(token)
+  return user
 }
 
 export default function Profile() {
-  // const [userData, setUserData] = useState<Omit<UserMenuProps, "userId">>({
-  //   email: "",
-  //   name: "",
-  //   createdAt: "",
-  //   profileImage: "",
-  //   isVerified: false,
-  //   role: "USER",
-  // })
-  const { user } = useAuth()
+  const matches = useMatches()
+  const user = matches[0].data as UserType
+
   const [showFields, setShowFields] = useState(false);
-  
-  // useEffect(() => {
-  //   if (user) {
-  //     setUserData({
-  //       email: user.email || "",
-  //       name: user.name || "",
-  //       createdAt: user.createdAt || "",
-  //       profileImage: user.profileImage || "",
-  //       isVerified: user.isVerified || false,
-  //       role: user.role || "USER",
-  //     });
-  //   }
-  // }, [user]);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,7 +55,7 @@ export default function Profile() {
   
   if (!user) {
     return (
-      <Spinner childClassName="w-12 h-12" />
+      <Spinner spinSize="w-12 h-12" />
     )
   }
 
@@ -108,7 +92,7 @@ export default function Profile() {
               </div>
 
               {/* Verification Status */}
-              {user.isVerified ? 
+              {user.status === "verified" ? 
               // verified
               <div className="mb-6 inline-flex items-center gap-2 border border-pink-300 text-pink-300 px-4 py-2 rounded-full text-md font-medium">
                 <UserCheck className="w-6 h-6" />

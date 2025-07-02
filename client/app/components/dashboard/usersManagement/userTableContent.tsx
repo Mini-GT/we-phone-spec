@@ -1,6 +1,6 @@
 import { Plus, Search } from "lucide-react";
 import { usePopupButton } from "~/context/popupButtonContext";
-import type { TableSortConfig, UserMenuProps } from "~/types/globals.type";
+import type { TableSortConfig, UserType } from "~/types/globals.type";
 import StatusFilter from "./statusFilter";
 import RoleFilter from "./roleFilter";
 import UsersTableLayout from "./userTableLayout";
@@ -8,7 +8,7 @@ import PaginationComponent from "~/components/pagination/paginationComponent";
 import DateFilter from "./dateFilter";
 
 type UserTableContentProps = {
-  filteredUsers: UserMenuProps[];
+  filteredUsers: UserType[];
   rowsPerPage: number;
   totalPages: number;
   setRowsPerPage: (rows: number) => void;
@@ -27,7 +27,7 @@ type UserTableContentProps = {
   setDateFilter: (date: string) => void
   startIndex: number;
   endIndex: number;
-  users: UserMenuProps[];
+  users: UserType[];
 };
 
 export default function UserTableContent({

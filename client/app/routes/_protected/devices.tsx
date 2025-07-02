@@ -1,17 +1,19 @@
 import { Smartphone, User } from "lucide-react";
-import { useLoaderData, type ActionFunctionArgs, type ClientActionFunctionArgs, type ClientLoaderFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
-import { requireAuthCookie } from "~/utils/auth";
+import { Form, useLoaderData, useMatches, useNavigation, type ActionFunctionArgs, type ClientActionFunctionArgs, type ClientLoaderFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import { ProtectedRoute } from "~/components/protectedRoute";
 import ManagementDashoard from "~/components/dashboard/usersManagement/userManagementDashboard";
 import { useSmartphone } from "~/context/smartphoneContext";
-import smartphoneService from "~/services/smartphone.service";
 import UserMenuNav from "~/components/userMenuNav";
 import { useAuth } from "~/context/authContext";
 import Unauthorized from "../unauthorized";
 import DeviceManagementDashboard from "~/components/dashboard/deviceManagement.tsx/deviceManagementDashboard";
 import type { Route } from "./+types/devices";
-import { useEffect } from "react";
+import { useEffect, type ComponentProps } from "react";
 import { Spinner } from "~/components/spinner";
+import smartphoneService from "~/services/smartphone.service";
+import usersService from "~/services/users.service";
+import authService from "~/services/auth.service";
+import type { UserType } from "~/types/globals.type";
 
 export function meta({}: MetaFunction) {
   return [
@@ -22,12 +24,18 @@ export function meta({}: MetaFunction) {
 
 export async function action({
   request,
-}: ClientActionFunctionArgs) {
+}: ActionFunctionArgs) {
+  const token = authService.privateRoute(request) || ""
   let formData = await request.formData();
-  const id = formData.get("deviceId") as string
-  if(id) {
-    let device = await smartphoneService.getSmartphoneById(id)
+  const updateId = formData.get("updateId") as string
+  const deleteId = formData.get("deleteId") as string
+  if(updateId) {
+    let device = await smartphoneService.getSmartphoneById(updateId)
     return device;
+  }
+
+  if(deleteId) {
+    await smartphoneService.deleteSmartphone(deleteId, token)
   }
 
   const raw = formData.get("deviceObj") as string
@@ -40,17 +48,16 @@ export async function action({
       __v,
       ...body
     } = deviceObj
-    await smartphoneService.updateSmartphone(_id, body)
-    return
+
+    await smartphoneService.updateSmartphone(_id, body, token)
   }
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const token = await requireAuthCookie(request)
   try {
     const response = await smartphoneService.getSmartphones()
     if (!response || !response.data) {
-      throw new Error("Failed to fetch users");
+      throw new Error("Failed to fetch devices");
     }
 
     const devices = response.data.phones
@@ -60,18 +67,18 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 }
 
-export async function clientLoader({
-  serverLoader,
-}: Route.ClientLoaderArgs) {
-  // const res = await smartphoneService.getSmartphoneById()
-  const serverData = await serverLoader();
-  // console.log(serverData)
-  return serverData;
-}
+// export async function clientLoader({
+//   serverLoader,
+// }: Route.ClientLoaderArgs) {
+//   const res = await smartphoneService.getSmartphones()
+//   const serverData = await serverLoader();
+//   // console.log(serverData)
+//   return serverData;
+// }
 
-export function HydrateFallback() {
-  return <Spinner childClassName="w-12 h-12" />
-}
+// export function HydrateFallback() {
+//   return <Spinner childClassName="w-12 h-12" />
+// }
 // export async function clientLoader({request}: ClientLoaderFunctionArgs) {
 //   // const token = await requireAuthCookie(request);
   
@@ -82,7 +89,8 @@ export default function Devices({
 }: Route.ComponentProps) {
   const devices = useLoaderData<typeof loader>()
   const { setSmartphoneFormData } = useSmartphone()
-  const { user } = useAuth()
+  const matches = useMatches()
+  const user = matches[0].data as UserType
   // const { user, isLoading, error } = useAuth()
   useEffect(() => {
     if (actionData) {
@@ -92,7 +100,7 @@ export default function Devices({
 
   if (!user) {
     return (
-      <Spinner childClassName="w-12 h-12" />
+      <Spinner spinSize="w-12 h-12" />
     )
   }
   

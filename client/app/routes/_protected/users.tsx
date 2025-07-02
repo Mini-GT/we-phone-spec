@@ -1,8 +1,7 @@
-import { User, UsersRound } from "lucide-react";
-import { useLoaderData, type ClientLoaderFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
+import { UsersRound } from "lucide-react";
+import { useLoaderData, useMatches, type ActionFunctionArgs, type ClientActionFunctionArgs, type ClientLoaderFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import UserMenuNav from "~/components/userMenuNav";
 import { useAuth } from "~/context/authContext";
-import { requireAuthCookie } from "~/utils/auth";
 import Unauthorized from "../unauthorized";
 import { ProtectedRoute } from "~/components/protectedRoute";
 import ManagementDashoard from "~/components/dashboard/usersManagement/userManagementDashboard";
@@ -12,6 +11,10 @@ import type { Route } from "./+types/users";
 import { usePopupButton } from "~/context/popupButtonContext";
 import UserManagementDashoard from "~/components/dashboard/usersManagement/userManagementDashboard";
 import { Spinner } from "~/components/spinner";
+import authService from "~/services/auth.service";
+import type { UserType } from "~/types/globals.type";
+import { useEffect } from "react";
+import { useUser } from "~/context/userContext";
 
 export function meta({}: MetaFunction) {
   return [
@@ -20,13 +23,27 @@ export function meta({}: MetaFunction) {
   ];
 }
 
+export async function action({
+  request,
+}: ActionFunctionArgs) {
+  const token = authService.privateRoute(request) || ""
+  let formData = await request.formData();
+  const deleteUserById = formData.get("deleteUser") as string
+  if(deleteUserById) {
+    const deleteResult = await userService.deleteUser(token, deleteUserById)
+  }
+  const userId = formData.get("userId") as string
+  if(userId) {
+    const user = await userService.getUserById(token, userId)
+    return user.user
+  }
+}
+
 export async function loader({ request }: Route.LoaderArgs) {
   // console.log("loader", request) 
-  const token = await requireAuthCookie(request)
-  try {
-    const response = await usersService.getUsers({
-      cookie: token || "",
-    })
+  const token = authService.privateRoute(request) || ""
+try {
+    const response = await usersService.getUsers(token)
 
     const users = response?.data
     return  users
@@ -40,9 +57,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 //   console.log("clientloader", serverData) 
 //   const token = await requireAuthCookie(request);
 //   try {
-//     const response = await usersService.getUsers({
-//       cookie: token || "",
-//     })
+//     const response = await usersService.getUsers()
 
 //     const users = response?.data
 //     return  users
@@ -57,13 +72,19 @@ export async function loader({ request }: Route.LoaderArgs) {
 //   return <div className="h-screen">Loading.ssssssssssssssssssssssasdasda..</div>
 // }
 
-export default function Users() {
-  const { user } = useAuth()
+export default function Users({
+  actionData
+}: Route.ComponentProps) {
+  const matches = useMatches()
+  const user = matches[0].data as UserType
   const users = useLoaderData<typeof loader>()
-  // console.log(users)
+  const { setUser } = useUser()
   // const { user, isLoading, error } = useAuth()
   const { setPopupButton } = usePopupButton()
 
+  useEffect(() => {
+    setUser(actionData)
+  }, [actionData, setUser])
   function handleAddUser() {
     // Logic to add a new user
     setPopupButton(prevState => ({
@@ -74,7 +95,7 @@ export default function Users() {
   
   if (!user) {
     return (
-      <Spinner childClassName="w-12 h-12" />
+      <Spinner spinSize="w-12 h-12" />
     )
   }
 
