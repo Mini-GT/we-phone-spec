@@ -64,8 +64,9 @@ const login = async (req: Request, res: Response) => {
   const result = loginSchema.safeParse(req.body)
 
   if (!result.success) {
+    console.error(result.error.format())
     return res.status(400).json({
-      error: result.error.format(),
+      message: "Incorrect email or password"
     });
   }
 
@@ -110,51 +111,10 @@ const login = async (req: Request, res: Response) => {
           role: user.role,
           profileImage: user.profileImage,
           createdAt: user.createdAt,
-          isVerified: user.isVerified,
+          status: user.status,
         }
       });
   })(req, res)
-
-  // const result = loginSchema.safeParse(req.body)
-
-  // if (!result.success) {
-  //   return res.status(400).json({
-  //     error: result.error.format(),
-  //   });
-  // }
-  // const { email, password } = result.data;
-  // console.log(email, password)
-
-  // const user = await prisma.user.findUnique({
-  //   where: {
-  //     email
-  //   }
-  // })
-
-  // if(!user) {
-  //   return res.status(404).json({ message: "User not found" })
-  // }
-
-  // const passwordIsValid = bcrypt.compare(password, user.password)
-
-  // if(!passwordIsValid) {
-  //   return res.status(401).json({ message: "Invalid credentials" })
-  // }
-
-  // const token = jwt.sign(
-  //   { id: user.id },
-  //   jwtSecretKey,
-  //   { expiresIn: "24h" }
-  // )
-
-  // res.cookie('token', token, {
-  //   httpOnly: false,
-  //   secure: process.env.NODE_ENV === 'production',
-  //   sameSite: 'strict',
-  //   maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  // });
-
-  // res.status(200).json({ message: "Logged in", id: user.id, name: user.name, email: user.email });
 }
 
 const getCurrentUser = async (req: Request, res: Response) => {
@@ -172,7 +132,7 @@ const getCurrentUser = async (req: Request, res: Response) => {
     name: user.name,
     email: user.email,
     profileImage: user.profileImage,
-    isVerified: user.isVerified,
+    status: user.status,
     role: user.role,
   });
   // res.json(req.isAuthenticated())

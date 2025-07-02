@@ -2,7 +2,7 @@ import type { Request, Response } from "express"
 import type { User } from "@prisma/client"
 import prisma from "@/prismaClient"
 
-const getUser = async (req: Request, res: Response) => {
+const getMe = async (req: Request, res: Response) => {
   const user = req.user as User
 
   res.status(200).json({
@@ -10,18 +10,18 @@ const getUser = async (req: Request, res: Response) => {
     name: user.name,
     email: user.email,
     profileImage: user.profileImage,
-    isVerified: user.isVerified,
+    status: user.status,
     role: user.role,
   })
 } 
 const updatetUser = async (req: Request, res: Response) => {
-  const userId = req.params.userId
+  const { userId } = req.params
 
   console.log(userId)
 }
 
 const deleteUser = async (req: Request, res: Response) => {
-  const userId = req.params.userId
+  const { userId } = req.params
 
   if(!userId) return res.status(400)
 
@@ -36,8 +36,31 @@ const deleteUser = async (req: Request, res: Response) => {
   res.status(200).json({ result: "Success" })
 }
 
+const getUserById = async (req: Request, res: Response) => {
+  const { userId } = req.params
+
+  const user = await prisma.user.findUnique({
+    where: { 
+      id: userId 
+    },
+    select: {
+      createdAt: true,
+      name: true,
+      email: true,
+      profileImage: true,
+      status: true,
+      role: true
+    }
+  })
+
+  if(!user) return res.status(404).json({ result: "Cannot find user" })
+
+  res.status(200).json({ result: "success", user })
+}
+
 export {
-  getUser,
+  getUserById, 
   updatetUser,
-  deleteUser 
+  deleteUser,
+  getMe 
 }

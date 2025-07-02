@@ -9,8 +9,8 @@ export const registerSchema = z.object({
 
 // User Login Schema
 export const loginSchema = z.object({
-  email: z.string().email().min(6),
-  password: z.string().min(6),
+  email: z.string().email().min(6, "Incorrect email or password"),
+  password: z.string().min(6, "Incorrect email or password"),
 });
 
 // Type Inference for TypeScript

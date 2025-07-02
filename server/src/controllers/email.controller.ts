@@ -23,7 +23,6 @@ const updateUserEmailVerification = async (req: Request, res: Response) => {
     },
   })
 
-  console.log(user)
   await emailService.sendVerificationEmail(user.email, verificationToken)
 
   res.json({ message: "Email Verification Sent. Please check your inbox/spambox."})
@@ -50,7 +49,7 @@ const verifyEmail = async (req: Request, res: Response) => {
   await prisma.user.update({
     where: { id: user.id },
     data: {
-      isVerified: true,
+      status: "verified",
       verifyToken: null,
       verifyTokenExpiry: null,
     },

@@ -21,7 +21,7 @@ const getAllUsers = async (req: Request, res: Response) => {
       email: true,
       createdAt: true,
       profileImage: true,
-      isVerified: true,
+      status: true,
       role: true,
     },
   })
