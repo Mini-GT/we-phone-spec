@@ -3,9 +3,13 @@ import {
   Links,
   Meta,
   Outlet,
+  redirect,
   Scripts,
   ScrollRestoration,
   useNavigation,
+  type ActionFunctionArgs,
+  type ClientActionFunctionArgs,
+  type LoaderFunctionArgs,
 } from "react-router";
 
 import type { Route } from "./+types/root";
@@ -19,7 +23,13 @@ import Footer from "./components/footer";
 import NotFound from "./routes/notFound";
 import AddUser from "./components/dashboard/usersManagement/addUserForm";
 import { SmartphoneProvider } from "./context/smartphoneContext";
-import AddDevice from "./components/dashboard/deviceManagement.tsx/addDevice";
+import AddDevice from "./components/cardModal";
+import AddDeviceForm from "./components/dashboard/deviceManagement.tsx/addDeviceForm";
+import CardModal from "./components/cardModal";
+import userService from "./services/user.service";
+import authService from "./services/auth.service";
+import { Spinner } from "./components/spinner";
+import { UserProvider } from "./context/userContext";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -33,6 +43,27 @@ export const links: Route.LinksFunction = () => [
     href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
   },
 ];
+
+// export async function action({
+//   request,
+// }: ActionFunctionArgs) {
+//   let formData = await request.formData()
+//   const email = formData.get("email") as string
+//   const password = formData.get("password") as string
+//   const response = await authService.login({ email, password })
+//   // console.log(response.error)
+// }
+
+export async function loader({request}: LoaderFunctionArgs) {
+  const token = authService.publicRoute(request)
+  
+  if(!token) {
+    return
+  } else {
+    const user = await userService.getMe(token)
+    return user
+  } 
+}
 
 const queryClient = new QueryClient()
 
@@ -50,7 +81,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <PopupButtonProvider>
             <AuthProvider>
               <SmartphoneProvider>
-                {children}
+                <UserProvider>
+                  {children}
+                </UserProvider>
               </SmartphoneProvider>
             </AuthProvider>
           </PopupButtonProvider>
@@ -76,14 +109,14 @@ function BodyStyles() {
 export default function App() {
   const {popupButton} = usePopupButton()
   const navigation = useNavigation()
-  const isNavigating = Boolean(navigation.location)
+  const isNavigating = navigation.location?.pathname === "/"
 
   return (
     <div>
       <BodyStyles />
+      {isNavigating && <Spinner spinSize="w-12 h-12" />}
       {popupButton.isLoginClicked && <LoginRegister />}
-      {popupButton.isAddUserClicked && <AddUser />}
-      {popupButton.isAddDeviceClicked && <AddDevice />}
+      {popupButton.popup && <CardModal />}
       <Navbar />
       <Outlet />
       <Footer />
