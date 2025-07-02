@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Search, ChevronDown, Plus, Edit2, Trash2, ChevronLeft, ChevronRight, Upload, User } from 'lucide-react';
-import type { Smartphone, TableSortConfig, UserMenuProps } from '~/types/globals.type';
+import type { Smartphone, TableSortConfig } from '~/types/globals.type';
 import _ from 'lodash';
 import UsersTable from '../usersManagement/userTableLayout';
 import BrandFilter from './brandFilter';

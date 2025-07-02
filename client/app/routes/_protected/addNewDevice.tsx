@@ -3,15 +3,15 @@ import { ProtectedRoute } from "~/components/protectedRoute";
 import Unauthorized from "../unauthorized";
 import { useSmartphone } from "~/context/smartphoneContext";
 import { Form, useNavigation, type ActionFunctionArgs } from "react-router";
-import { requireAuthCookie } from "~/utils/auth";
 import smartphoneService from "~/services/smartphone.service";
 import { Spinner } from "~/components/spinner";
 import type { Axios, AxiosResponse } from "axios";
+import authService from "~/services/auth.service";
 
 export async function action({
   request,
 }: ActionFunctionArgs) {
-  const token = await requireAuthCookie(request) || ""
+  const token = authService.privateRoute(request) || ""
   let formData = await request.formData();
   const stringifiedForm = formData.get("addNewDevice") as string
   const {_id, ...formBody}= JSON.parse(stringifiedForm)
@@ -36,7 +36,7 @@ export default function AddNewDevice() {
               disabled={navigation.formAction === "/devices/new"}
               value={JSON.stringify(smartphoneFormData)}
             >
-              {navigation.formAction === "/devices/new" ? <Spinner parentClassName="w-full h-full" childClassName="ml-1 w-5 h-5" /> : "Add"}
+              {navigation.formAction === "/devices/new" ? <Spinner parentClassName="w-full h-full" spinSize="ml-1 w-5 h-5" /> : "Add"}
             </button>
           </Form>
         </AddDeviceForm>
