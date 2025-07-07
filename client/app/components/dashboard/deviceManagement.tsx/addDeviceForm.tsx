@@ -55,7 +55,7 @@ export default function AddDeviceForm({
           {/* Form Content */}
           <div className="flex-1 p-8">
             <div className="space-y-6">
-              <FormSection title="Basic Information">
+              <FormSection title="Basic Information" gridStyle="grid-cols-2">
                 <FormField
                   label="Phone Name *"
                   value={formData.name || ''}
@@ -90,7 +90,7 @@ export default function AddDeviceForm({
                 />
               </div>
               
-              <FormSection title="Launch Information">
+              <FormSection title="Launch Information" gridStyle="grid-cols-2">
                 <FormField
                   label="Announced Date *"
                   value={formData.launch.announced || ''}
@@ -105,7 +105,7 @@ export default function AddDeviceForm({
                 />
               </FormSection>
 
-              <FormSection title="Body Specifications">
+              <FormSection title="Body Specifications" gridStyle="grid-cols-2">
                 <FormField
                   label="Dimensions *"
                   value={formData.specs.body.dimensions || ''}
@@ -138,7 +138,7 @@ export default function AddDeviceForm({
                 />
               </FormSection>
 
-              <FormSection title="Display Specifications">
+              <FormSection title="Display Specifications" gridStyle="grid-cols-2">
                 <FormField
                   label="Display Type *"
                   value={formData.specs.display.type || ''}
@@ -192,7 +192,7 @@ export default function AddDeviceForm({
                 />
               </FormSection>
 
-              <FormSection title="Memory Specifications">
+              <FormSection title="Memory Specifications" gridStyle="grid-cols-2">
                 <FormField
                   label="Internal Storage *"
                   value={formData.specs.memory.internal || ''}
@@ -207,7 +207,7 @@ export default function AddDeviceForm({
                 />
               </FormSection>
 
-              <FormSection title="Camera Specifications">
+              <FormSection title="Camera Specifications" gridStyle="grid-cols-2">
                 <FormSection title="Main Camera">
                   <FormField
                     label="Triple Camera Setup *"
@@ -251,7 +251,7 @@ export default function AddDeviceForm({
                 </FormSection>
               </FormSection>
 
-              <FormSection title="Sound Specifications">
+              <FormSection title="Sound Specifications" gridStyle="grid-cols-2">
                 <FormField
                   label="3.5mm Jack *"
                   value={formData.specs.sound.loudspeaker || ''}
@@ -266,7 +266,7 @@ export default function AddDeviceForm({
                 />
               </FormSection>
 
-              <FormSection title="Connection Specifications">
+              <FormSection title="Connection Specifications" gridStyle="grid-cols-2">
                 <FormField
                   label="Wlan *"
                   value={formData.specs.connection.wlan || ''}
@@ -314,7 +314,7 @@ export default function AddDeviceForm({
                 />
               </FormSection>
 
-              <FormSection title="Battery">
+              <FormSection title="Battery" gridStyle="grid-cols-2">
                 <FormField
                   label="Type *"
                   value={formData.specs.battery.type || ''}
