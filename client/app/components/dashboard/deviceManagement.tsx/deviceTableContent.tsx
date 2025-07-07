@@ -10,6 +10,7 @@ import { usePopupButton } from '~/context/popupButtonContext';
 import PaginationComponent from '~/components/pagination/paginationComponent';
 import { useSmartphone } from '~/context/smartphoneContext';
 import { NavLink } from 'react-router';
+import { Spinner } from '~/components/spinner';
 
 type DeviceTableContentProps = {
   devices: Smartphone[];
@@ -134,7 +135,7 @@ export default function DeviceTableContent({
     <div className="bg-white w-full min-h-screen border rounded-md overflow-hidden shadow-lg">
       {/* Header with filters */}
       <div className="bg-white border-b border-gray-200 p-6">
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4 h-10">
           {/* Search */}
           <div className="relative flex-1 min-w-64">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -160,16 +161,23 @@ export default function DeviceTableContent({
             setOperatingSystemFilter={setOperatingSystemFilter}
           />
 
-          <div className="flex gap-2 ml-auto">
+          <div className="flex gap-2 ml-auto items-center h-full">
             {/* Add Device Button */}
             <NavLink
               to="/devices/new"
-              className="flex items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+              className="flex items-center w-35 h-full text-nowrap gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
               onClick={handleAddDevice}
-            >
-              <Plus className="h-4 w-4" />
-              Add Device
-            </NavLink>
+              children={({ isPending }: { isPending: boolean }) =>
+                isPending ? (
+                  <Spinner parentClassName="w-full h-full" spinSize="ml-1 w-5 h-5" />
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4" />
+                    Add Device
+                  </>
+                )
+              }
+            />
           </div>
         </div>
       </div>

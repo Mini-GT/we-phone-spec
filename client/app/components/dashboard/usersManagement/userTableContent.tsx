@@ -6,6 +6,8 @@ import RoleFilter from "./roleFilter";
 import UsersTableLayout from "./userTableLayout";
 import PaginationComponent from "~/components/pagination/paginationComponent";
 import DateFilter from "./dateFilter";
+import { NavLink } from "react-router";
+import { Spinner } from "~/components/spinner";
 
 type UserTableContentProps = {
   filteredUsers: UserType[];
@@ -67,7 +69,7 @@ export default function UserTableContent({
     <div className="bg-white w-full min-h-screen border rounded-md overflow-hidden shadow-lg">
       {/* Header with filters */}
       <div className="bg-white border-b border-gray-200 p-6">
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4 h-10">
           {/* Search */}
           <div className="relative flex-1 min-w-64">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -98,15 +100,23 @@ export default function UserTableContent({
             setDateFilter={setDateFilter}
           />
 
-          <div className="flex gap-2 ml-auto">
+          <div className="flex gap-2 ml-auto items-center h-full">
             {/* Add User Button */}
-            <button 
-              className="flex items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+            <NavLink
+              to="/users/new"
+              className="flex items-center w-35 h-full text-nowrap gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
               onClick={handleAddUser}
-            >
-              <Plus className="h-4 w-4" />
-              Add User
-            </button>
+              children={({ isPending }: { isPending: boolean }) =>
+                isPending ? (
+                  <Spinner parentClassName="w-full h-full" spinSize="ml-1 w-5 h-5" />
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4" />
+                    Add User
+                  </>
+                )
+              }
+            />
           </div>
         </div>
       </div>
