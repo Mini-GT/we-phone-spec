@@ -56,12 +56,12 @@ export default function PhoneCardSlider({
   return (
     <div className="mt-6 bg-white">
       <div 
-        className="relative w-full overflow-hidden" 
-        style={{ height: "500px" }}
+        className="relative w-full" 
+        style={{ height: "450px" }}
         onMouseOver={handleMouseOver}
         onMouseOut={handleMouseOut}
       >
-        <div className="w-full h-full relative">
+        <div className="w-full relative">
           {smartphones.map((phone, index) => (
             <div 
               key={phone._id}
@@ -94,7 +94,7 @@ export default function PhoneCardSlider({
                         <h1>{phone.launch.released}</h1>
                       </div>
                     </div>
-                    <p className="text-base text-gray-500 text-xl">
+                    <p className="text-base text-gray-500 text-xl line-clamp-5">
                       {phone.description}
                     </p>
                     <div className="flex flex-col sm:flex-row sm:space-x-4">
@@ -122,7 +122,7 @@ export default function PhoneCardSlider({
                 </div>
                 <div className="bg-white flex justify-end md:w-1/2">
                   <div className="overflow-hidden rounded-md">
-                    <img src={phone.image} alt={phone.name} className="w-[400px]" />
+                    <img src={phone.image} alt={phone.name} className="w-[350px]" />
                   </div>
                 </div>
               </div>
