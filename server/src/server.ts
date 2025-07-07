@@ -45,7 +45,7 @@ app.use("/api/v1/user", userRouter)
 
 app.use("/api/v1/users", usersRouter)
 
-app.use("/api/v1/user", emailRouter)
+app.use("/api/v1/email", emailRouter)
 
 app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"], session: false }))
 

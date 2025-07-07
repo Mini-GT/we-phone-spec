@@ -12,7 +12,7 @@ class EmailService {
 });
 
   async sendVerificationEmail(email: string, token: string): Promise<void> {
-    const verificationUrl = `${process.env.BASE_URL}/verify-email?token=${token}`;
+    const verificationUrl = `${process.env.BASE_URL}/email/verify-email?token=${token}`;
 
     await this.transporter.sendMail({
       from: `${process.env.TRANSPORT_FROM_EMAIL} <${process.env.TRANSPORT_FROM_NAME}>`,
