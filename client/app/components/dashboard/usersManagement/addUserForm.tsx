@@ -60,6 +60,7 @@ export default function AddUserForm({
                       option={["Verified", "Unverified", "Banned", "Pending", "Suspended"]}
                       user={user}
                       setUser={setUser}
+                      selectValue={user.status}
                     />
 
                     <FormSelectOption 
@@ -67,6 +68,7 @@ export default function AddUserForm({
                       option={["Admin", "Moderator", "User", "Demo"]}
                       user={user}
                       setUser={setUser}
+                      selectValue={user.role}
                     />
                   </div>
                 </FormSection>

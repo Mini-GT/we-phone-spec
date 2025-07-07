@@ -6,9 +6,10 @@ type FormSelectOptionProps = {
   option: string[]
   user: UserType
   setUser: (user: UserType) => void
+  selectValue: string
 } 
 
-export default function FormSelectOption({ label, option, user, setUser }: FormSelectOptionProps) {
+export default function FormSelectOption({ label, option, selectValue, user, setUser }: FormSelectOptionProps) {
   return (
     <div>
     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -17,7 +18,7 @@ export default function FormSelectOption({ label, option, user, setUser }: FormS
     <div className="relative">
       <select
         name="select-status"
-        value={user.status.toLowerCase()}
+        value={selectValue.toLowerCase()}
         onChange={(e) => setUser({
           ...user, 
           status: e.target.value as UserStatus
