@@ -5,6 +5,8 @@ import TopTenSection from '~/components/topTenSection';
 import type { Smartphone, TableSortConfig } from '~/types/globals.type';
 import { getFirstWord } from '~/utils/getFirstWord';
 import DeviceTableContent from './deviceTableContent';
+import type { BrandType } from '~/components/footer';
+import type { OperatingSystemType } from './operatingSystemFilter';
 
 type DeviceManagementDashboardProps = {
   items: Smartphone[];
@@ -27,8 +29,8 @@ export default function DeviceManagementDashboard({
 
   // 
   const [searchTerm, setSearchTerm] = useState('');
-  const [brandFilter, setBrandFilter] = useState('');
-  const [operatingSystemFilter, setOperatingSystemFilter] = useState('');
+  const [brandFilter, setBrandFilter] = useState<BrandType | ''>('');
+  const [operatingSystemFilter, setOperatingSystemFilter] = useState<OperatingSystemType | ''>('');
   const [dateFilter, setDateFilter] = useState('');
   const [sortConfig, setSortConfig] = useState<TableSortConfig>({ key: null, direction: 'asc' });
 

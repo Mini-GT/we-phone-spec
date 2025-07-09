@@ -6,7 +6,9 @@ export const brands = [
   "XIAOMI", "GOOGLE", "HONOR", "OPPO", "REALME", "ONEPLUS", "NOTHING", "VIVO", "MEIZU",
   "ASUS", "ALCATEL", "ZTE", "MICROSOFT", "UMIDIGI", "COOLPAD", "OSCAL", "SHARP", "MICROMAX",
   "INFINIX", "ULEFONE", "TECNO", "DOOGEE", "BLACKVIEW", "CUBOT", "OUKITEL", "ITEL", "TCL"
-  ];
+  ] as const;
+
+export type BrandType = typeof brands[number];
 
 export default function Footer() {
   const [selectedBrand] = useState<string>("");

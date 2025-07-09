@@ -4,13 +4,14 @@ import type { Smartphone, TableSortConfig } from '~/types/globals.type';
 import _ from 'lodash';
 import UsersTable from '../usersManagement/userTableLayout';
 import BrandFilter from './brandFilter';
-import OperatingSystemFilter from './operatingSystemFilter';
+import OperatingSystemFilter, { type OperatingSystemType } from './operatingSystemFilter';
 import DeviceTableLayout from './deviceTableLayout';
 import { usePopupButton } from '~/context/popupButtonContext';
 import PaginationComponent from '~/components/pagination/paginationComponent';
 import { useSmartphone } from '~/context/smartphoneContext';
 import { NavLink } from 'react-router';
 import { Spinner } from '~/components/spinner';
+import type { BrandType } from '~/components/footer';
 
 type DeviceTableContentProps = {
   devices: Smartphone[];
@@ -24,10 +25,10 @@ type DeviceTableContentProps = {
   totalRows: number;
   currentPage: number;
   setCurrentPage: (page: number) => void;
-  brandFilter: string;
-  setBrandFilter: (brand: string) => void;
-  operatingSystemFilter: string;
-  setOperatingSystemFilter: (os: string) => void;
+  brandFilter: BrandType | "";
+  setBrandFilter: (brand: BrandType) => void;
+  operatingSystemFilter: OperatingSystemType | "";
+  setOperatingSystemFilter: (os: OperatingSystemType) => void;
   startIndex: number;
   endIndex: number;
   items: Smartphone[];
