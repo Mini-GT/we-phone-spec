@@ -1,5 +1,6 @@
 import type { AxiosInstance } from "axios";
 import axios from "axios";
+import type { UserType } from "~/types/globals.type";
 
 class UserService {
   private api: AxiosInstance = axios.create({
@@ -25,6 +26,21 @@ class UserService {
       status: 500,
       message: 'Unexpected error occurred'
     };
+  }
+
+  async addNewUser(userFormData: UserType, token: string) {
+    try {
+      const response = await this.api.post(
+        "/new", 
+        userFormData, {
+        headers: {
+          Cookie: token
+        }
+      })
+      return response.data;
+    } catch (error) {
+      this.handleError(error)
+    }
   }
   
   async getMe(token: string) {

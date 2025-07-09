@@ -1,6 +1,45 @@
 import type { Request, Response } from "express"
 import type { User } from "@prisma/client"
 import prisma from "@/prismaClient"
+import { addUserSchema } from "@/schemas/auth.schemas";
+import bcrypt from "bcryptjs";
+
+const addNewUser = async (req: Request, res: Response) => {
+  const result = addUserSchema.safeParse(req.body);
+  console.log(result)
+  if (!result.success) {
+    return res.status(400).json({
+      error: result.error.format(),
+    });
+  }
+
+  const { name, email, password, role, status } = result.data;
+
+  const existingUser = await prisma.user.findUnique({ 
+    where: { 
+      email, 
+    } 
+  })
+
+  if (existingUser) {
+    return res.status(400).json({ message: "User already exists" });
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 8)
+
+  await prisma.user.create({
+    data: {
+      name,
+      email,
+      password: hashedPassword,
+      role,
+      status,
+    }
+  })
+
+  res.status(201).json({ result: "success",  message: "User created" });
+}
+
 
 const getMe = async (req: Request, res: Response) => {
   const user = req.user as User
@@ -14,6 +53,7 @@ const getMe = async (req: Request, res: Response) => {
     role: user.role,
   })
 } 
+
 const updatetUser = async (req: Request, res: Response) => {
   const { userId } = req.params
 
@@ -62,5 +102,6 @@ export {
   getUserById, 
   updatetUser,
   deleteUser,
-  getMe 
+  getMe,
+  addNewUser 
 }
