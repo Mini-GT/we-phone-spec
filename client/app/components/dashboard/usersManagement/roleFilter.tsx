@@ -1,8 +1,9 @@
 import { ChevronDown } from "lucide-react";
+import type { UserRole } from "~/types/globals.type";
 
 type RoleFilterProps = {
-  roleFilter: string;
-  setRoleFilter: (value: string) => void;
+  roleFilter: UserRole | "";
+  setRoleFilter: (value: UserRole) => void;
 };
 
 export default function RoleFilter({
@@ -14,7 +15,7 @@ export default function RoleFilter({
       <select
         name="select-role"
         value={roleFilter}
-        onChange={(e) => setRoleFilter(e.target.value)}
+        onChange={(e) => setRoleFilter(e.target.value as UserRole)}
         className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
       >
         <option value="">Role</option>

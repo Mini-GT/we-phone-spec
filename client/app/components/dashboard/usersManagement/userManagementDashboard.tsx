@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Search, ChevronDown, Plus, Edit2, Trash2, ChevronLeft, ChevronRight, Upload } from 'lucide-react';
-import type { TableSortConfig, UserType } from '~/types/globals.type';
+import type { TableSortConfig, UserRole, UserStatus, UserType } from '~/types/globals.type';
 import _ from 'lodash';
 import StatusFilter from './statusFilter';
 import RoleFilter from './roleFilter';
@@ -21,8 +21,8 @@ export default function UserManagementDashoard ({
   users
 }: ManagementDashoardProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [roleFilter, setRoleFilter] = useState<UserRole | ''>('');
+  const [statusFilter, setStatusFilter] = useState<UserStatus | ''>('');
   const [dateFilter, setDateFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -38,25 +38,26 @@ export default function UserManagementDashoard ({
 
   const filteredAndSortedUsers = useMemo(() => {
     let filtered = users.filter(user => {
+
+      // filter base on search, role, and status
       const matchesSearch = 
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase())
       //  user.username.toLowerCase().includes(searchTerm.toLowerCase());
-      // console.log(searchTerm.toLowerCase())
       const matchesRole = roleFilter === '' || user.role.toLowerCase() === roleFilter.toLowerCase();
-      const matchesStatus = statusFilter === '' || (user.status? "Verified" : "Unverified") === statusFilter;
+      const matchesStatus = statusFilter === '' || user.status.toLowerCase() === statusFilter.toLowerCase();
       
       return matchesSearch && matchesRole && matchesStatus;
     });
     
+    // filter by configuration key *hover for types*
     if (sortConfig.key) {
-      //  console.log(filtered)
       filtered.sort((a, b) => {
         const key = sortConfig.key as keyof UserType;
-        // console.log(a[key])
         const aVal = a[key] ?? '';
         const bVal = b[key] ?? '';
       
+        // sort by direction if asc or desc
         if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
         if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
         return 0;

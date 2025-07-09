@@ -1,6 +1,6 @@
 import { Plus, Search } from "lucide-react";
 import { usePopupButton } from "~/context/popupButtonContext";
-import type { TableSortConfig, UserType } from "~/types/globals.type";
+import type { TableSortConfig, UserRole, UserStatus, UserType } from "~/types/globals.type";
 import StatusFilter from "./statusFilter";
 import RoleFilter from "./roleFilter";
 import UsersTableLayout from "./userTableLayout";
@@ -21,10 +21,10 @@ type UserTableContentProps = {
   totalRows: number;
   currentPage: number;
   setCurrentPage: (page: number) => void;
-  statusFilter: string;
-  setStatusFilter: (status: string) => void;
-  roleFilter: string;
-  setRoleFilter: (role: string) => void;
+  statusFilter: UserStatus | '';
+  setStatusFilter: (status: UserStatus) => void;
+  roleFilter: UserRole | '';
+  setRoleFilter: (role: UserRole) => void;
   dateFilter: string;
   setDateFilter: (date: string) => void
   startIndex: number;
@@ -54,15 +54,15 @@ export default function UserTableContent({
   endIndex,
   users
 }: UserTableContentProps) {
-  const { setPopupButton } = usePopupButton()
-
+  // const { setUser } = useUser()
   function handleAddUser() {
     // Logic to add a new user
-    setPopupButton(prevState => ({
-      ...prevState,
-      isAddUserClicked: true,
-      popup: true
-    }));
+    // setUser({
+    //   name: "",
+    //   email: "",
+    //   role: "USER",
+
+    // })
   }
 
   return (
@@ -103,7 +103,7 @@ export default function UserTableContent({
           <div className="flex gap-2 ml-auto items-center h-full">
             {/* Add User Button */}
             <NavLink
-              to="/users/new"
+              to="/user/new"
               className="flex items-center w-35 h-full text-nowrap gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
               onClick={handleAddUser}
               children={({ isPending }: { isPending: boolean }) =>
