@@ -8,6 +8,7 @@ import PaginationComponent from "~/components/pagination/paginationComponent";
 import DateFilter from "./dateFilter";
 import { NavLink } from "react-router";
 import { Spinner } from "~/components/spinner";
+import { useUser } from "~/context/userContext";
 
 type UserTableContentProps = {
   filteredUsers: UserType[];
@@ -54,15 +55,15 @@ export default function UserTableContent({
   endIndex,
   users
 }: UserTableContentProps) {
-  // const { setUser } = useUser()
+  const { setUser } = useUser()
   function handleAddUser() {
     // Logic to add a new user
-    // setUser({
-    //   name: "",
-    //   email: "",
-    //   role: "USER",
-
-    // })
+    setUser({
+      name: "",
+      email: "",
+      status: "unverified",
+      role: "USER"
+    })
   }
 
   return (

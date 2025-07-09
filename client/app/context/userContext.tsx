@@ -2,23 +2,20 @@ import { createContext, useContext, useState, type Dispatch, type SetStateAction
 import type { ContextProviderProps, UserType } from "~/types/globals.type";
 
 type UserContextType = {
-  user: UserType | null
-  setUser: Dispatch<SetStateAction<UserType>>
+  user: UserType | undefined
+  setUser: Dispatch<SetStateAction<UserType | undefined>>
 
 }
 
 export const UserContext = createContext<UserContextType | undefined>(undefined)
 
 export function UserProvider({ children }: ContextProviderProps) {
-  const [ user, setUser ] = useState<UserType>({
-    id: "",
+  const [ user, setUser ] = useState<UserType | undefined>({
     name: "",
     email: "",
-    profileImage: "",
-    createdAt: "",
     status: "unverified",
     role: "USER"
-}) 
+  }) 
 
   return (
     <UserContext value={{ user, setUser }} >
