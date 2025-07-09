@@ -1,15 +1,23 @@
 import { ChevronDown } from "lucide-react";
-import type { UserStatus, UserType } from "~/types/globals.type";
+import type { UserRole, UserStatus, UserType } from "~/types/globals.type";
 
 type FormSelectOptionProps = {
   label: string
+  field: keyof UserType
   option: string[]
   user: UserType
   setUser: (user: UserType) => void
   selectValue: string
 } 
 
-export default function FormSelectOption({ label, option, selectValue, user, setUser }: FormSelectOptionProps) {
+export default function FormSelectOption({ 
+  label, 
+  field,
+  option, 
+  selectValue, 
+  user, 
+  setUser 
+}: FormSelectOptionProps) {
   return (
     <div>
     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -17,11 +25,11 @@ export default function FormSelectOption({ label, option, selectValue, user, set
     </label>
     <div className="relative">
       <select
-        name="select-status"
+        name={`select-${field}`}
         value={selectValue.toLowerCase()}
         onChange={(e) => setUser({
           ...user, 
-          status: e.target.value as UserStatus
+          [field]: e.target.value
         })}
         className="appearance-none w-full bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
       >
