@@ -27,15 +27,15 @@ export async function action({
 }: ActionFunctionArgs) {
   const token = authService.privateRoute(request) || ""
   let formData = await request.formData();
-  const updateId = formData.get("updateId") as string
-  const deleteId = formData.get("deleteId") as string
-  if(updateId) {
-    let device = await smartphoneService.getSmartphoneById(updateId)
+  const deviceId = formData.get("deviceId") as string
+  const deleteDeviceById= formData.get("deleteDeviceById") as string
+  if(deviceId) {
+    let device = await smartphoneService.getSmartphoneById(deviceId)
     return device;
   }
 
-  if(deleteId) {
-    await smartphoneService.deleteSmartphone(deleteId, token)
+  if(deleteDeviceById) {
+    await smartphoneService.deleteSmartphone(deleteDeviceById, token)
   }
 
   const raw = formData.get("deviceObj") as string

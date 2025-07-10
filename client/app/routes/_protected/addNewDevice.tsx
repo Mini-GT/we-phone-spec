@@ -5,7 +5,6 @@ import { useSmartphone } from "~/context/smartphoneContext";
 import { Form, useNavigation, type ActionFunctionArgs } from "react-router";
 import smartphoneService from "~/services/smartphone.service";
 import { Spinner } from "~/components/spinner";
-import type { Axios, AxiosResponse } from "axios";
 import authService from "~/services/auth.service";
 
 export async function action({

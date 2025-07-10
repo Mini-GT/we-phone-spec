@@ -110,9 +110,9 @@ export default function DeviceTableLayout({
               <td className="p-4 text-gray-700">{toReadableDate(device.createdAt ?? "")}</td>
               <td className="p-4">
                 <div className="flex items-center gap-2">
-                  <Form method="patch">
+                  <Form method="post">
                     <button 
-                      name="updateId" 
+                      name="deviceId" 
                       value={device._id} 
                       // type="submit" 
                       onClick={handlePopupForm}
@@ -124,7 +124,7 @@ export default function DeviceTableLayout({
                     <button
                       className="p-1 text-gray-500 hover:text-red-600 transition-colors cursor-pointer"
                       value={device._id}
-                      name="deleteId"
+                      name="deleteDeviceById"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>

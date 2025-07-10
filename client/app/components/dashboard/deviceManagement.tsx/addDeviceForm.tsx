@@ -31,14 +31,6 @@ export default function AddDeviceForm({
       return newData;
     });
   };
-  
-  // const handleSubmit = (e: React.FormEvent) => {
-  //   e.preventDefault();
-
-
-  //   // console.log('Form Data:', formData);
-  //   // alert('Form submitted! Check console for data.');
-  // };
 
   return (
     <div className={`relative rounded-xl ${style}`}>
