@@ -9,7 +9,7 @@ export default function DeviceGridLayout({
   return (
     <div className='flex flex-col gap-4 my-4'>
       <h1 className="text-xl font-bold my-4">{title}</h1>
-      <ul className="mb-4 grid grid-cols-[230px_230px_230px_230px_230px] gap-4 rounded">
+      <ul className="grid grid-cols-[230px_230px_230px_230px_230px] gap-4 rounded">
         {items.map(item => (
           <div key={item._id} data-id={item._id} className="flex flex-col justify-between items-start max-w-[15rem] cursor-pointer overflow-hidden">
             <Link to={`/smartphones/${item.name}-${item._id}`} >
