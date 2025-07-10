@@ -112,12 +112,12 @@ export default function UsersTableLayout({
                 </span>
               </td>
               <td className="p-4 text-gray-700">{_.capitalize(user.role)}</td>
-              <td className="p-4 text-gray-700">{toReadableDate(user.createdAt)}</td>
+              <td className="p-4 text-gray-700">{toReadableDate(user.createdAt || "")}</td>
               <td className="p-4">
                 <div className="flex items-center gap-2">
-                  <Form method="post" action="/users"> 
+                  <Form method="post"> 
                     <button 
-                      name="userId" 
+                      name="getUserById" 
                       value={user.id} 
                       // type="submit" 
                       onClick={handlePopupForm}
@@ -129,7 +129,7 @@ export default function UsersTableLayout({
                     <button 
                       className="p-1 text-gray-500 hover:text-red-600 transition-colors"
                       value={user.id}
-                      name="deleteUser"
+                      name="deleteUserById"
                       >
                       <Trash2 className="h-4 w-4" />
                     </button>

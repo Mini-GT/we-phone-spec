@@ -69,13 +69,15 @@ class UserService {
     }
   }
 
-  async updatetUser(token: string, userId: string) {
+  async updatetUser(token: string, updatedForm: Partial<UserType>, id: string) {
     try {
-      const response = await this.api.patch(`/${userId}`, {
-      headers: {
-        Cookie: token
-      }
-    })
+      const response = await this.api.patch(
+        `/${id}`,
+        updatedForm, {
+          headers: {
+            Cookie: token
+          }
+        })
       return response.data;
     } catch (error) {
       this.handleError(error)

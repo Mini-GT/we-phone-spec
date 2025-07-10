@@ -9,7 +9,7 @@ import type { UserFormPath } from "~/types/globals.type";
 
 type AddUserFormType = {
   children: ReactNode
-  newInputField: ReactNode
+  newInputField?: ReactNode
   handleInputChange: (path: UserFormPath, value: string | number | boolean) => void
 }
 
@@ -19,10 +19,9 @@ export default function AddUserForm({
   handleInputChange
 }: AddUserFormType) {
   const { user, setUser } = useUser()
-  
   return (
     <div className="flex flex-col justify-start items-center relative rounded-xl overflow-y-auto">
-      <div className="flex flex-col justify-center items-center pb-8">
+      <div className="flex flex-col justify-center items-center">
         <div className="relative w-[60vw] rounded-t-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6">
           <h1 className="text-3xl font-bold text-white">User Form</h1>
         </div>
@@ -43,6 +42,7 @@ export default function AddUserForm({
                       <FormField 
                         label="Email"
                         value={user.email}
+                        readOnly={user.email ? true : false}
                         onChange={(val) => handleInputChange("email", val)}
                       />
                       {newInputField}
@@ -55,7 +55,7 @@ export default function AddUserForm({
                           setUser={setUser}
                           selectValue={user.status}
                         />
-
+                        
                         <FormSelectOption 
                           label="Role"
                           field="role"
@@ -68,7 +68,7 @@ export default function AddUserForm({
                     </FormSection>
                     {children}
                   </div> :
-                  <Spinner spinSize="w-12 h-12"/>
+                  <Spinner parentClassName="" spinSize="w-12 h-12"/>
                 }
               </div>
             </div>

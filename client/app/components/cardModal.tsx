@@ -6,11 +6,31 @@ import { useSmartphone } from "~/context/smartphoneContext";
 import AddUserForm from "./dashboard/usersManagement/addUserForm";
 import { Form, useNavigation } from "react-router";
 import { Spinner } from "./spinner";
+import type { UserFormPath } from "~/types/globals.type";
+import { useUser } from "~/context/userContext";
 
 export default function CardModal() {
   const { popupButton, setPopupButton } = usePopupButton();
   const { smartphoneFormData: formData, setSmartphoneFormData } = useSmartphone()
+  const { user } = useUser() 
   const navigation = useNavigation()
+  const { setUser } = useUser() 
+
+  const handleInputChange = (path: UserFormPath, value: string | number | boolean) => {
+    setUser(prev => {
+      const newData = structuredClone(prev);
+      const keys = path.split('.');
+      let current: any = newData;
+    
+      for (let i = 0; i < keys.length - 1; i++) {
+        if (!current[keys[i]]) current[keys[i]] = {};
+        current = current[keys[i]];
+      }
+      
+      current[keys[keys.length - 1]] = value;
+      return newData;
+    })
+  } 
 
   function handleCloseForm() {
     // Logic to close the form, e.g., set a state variable to hide it
@@ -124,15 +144,15 @@ export default function CardModal() {
           </AddDeviceForm>
         }
         {popupButton.isAddUserClicked && 
-          <AddUserForm>
+          <AddUserForm handleInputChange={handleInputChange}>
             <Form method="put" action="/users">
               <div className="flex justify-end">
                 <button 
                   className="flex w-20 h-10 items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
                   type="submit" 
                   disabled={navigation.formAction === "/users"}
-                  name="deviceObj" 
-                  value={JSON.stringify(formData)}
+                  name="userFormData" 
+                  value={JSON.stringify(user)}
                 >
                   {navigation.formAction === "/users" ? <Spinner parentClassName="w-full h-full" spinSize="ml-1 w-5 h-5" /> : "Submit"}
                 </button>

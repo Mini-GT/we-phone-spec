@@ -2,7 +2,7 @@ import AddDeviceForm from "~/components/dashboard/deviceManagement.tsx/addDevice
 import { ProtectedRoute } from "~/components/protectedRoute";
 import Unauthorized from "../unauthorized";
 import { useSmartphone } from "~/context/smartphoneContext";
-import { Form, useNavigation, type ActionFunctionArgs } from "react-router";
+import { Form, useLoaderData, useNavigation, type ActionFunctionArgs } from "react-router";
 import smartphoneService from "~/services/smartphone.service";
 import { Spinner } from "~/components/spinner";
 import authService from "~/services/auth.service";
@@ -12,6 +12,7 @@ import { FormField } from "~/components/form/formField";
 import type { UserFormPath } from "~/types/globals.type";
 import { useState } from "react";
 import userService from "~/services/user.service";
+import type { Route } from "./+types/addNewUser";
 
 export async function action({
   request,
@@ -19,13 +20,21 @@ export async function action({
   const token = authService.privateRoute(request) || ""
   let formData = await request.formData();
   const stringifiedForm = formData.get("addNewUser") as string
-  const parsedFormData = JSON.parse(stringifiedForm)
-  if(!parsedFormData) return { error: "Invalid form data" }
-  const result = await userService.addNewUser(parsedFormData, token)
-  console.log(result)
+  const { name, email, password, ...body } = JSON.parse(stringifiedForm)
+  if(!name || !email || !password) return { error: "Field is required" }
+  const userData = {
+    name,
+    email,
+    password,
+    ...body
+  }
+  const result = await userService.addNewUser(userData, token)
+  console.log(result.details)
 }
 
-export default function AddNewDevice() {
+export default function AddNewUser({
+  actionData
+}: Route.ComponentProps) {
   const [ password, setPassword ] = useState("")
   const { user, setUser } = useUser()
   const handleInputChange = (path: UserFormPath, value: string | number | boolean) => {
@@ -63,7 +72,6 @@ export default function AddNewDevice() {
               name="addNewUser"
               disabled={navigation.formAction === "/user/new"}
               value={JSON.stringify({ ...user, password})}
-              onClick={() => {console.log(user)}}
             >
               {navigation.formAction === "/user/new" ? <Spinner parentClassName="w-full h-full" spinSize="ml-1 w-5 h-5" /> : "Add"}
             </button>

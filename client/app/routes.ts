@@ -9,7 +9,6 @@ export default [
 
   // Protected Routes by role and permission
   route("users", "routes/_protected/users.tsx"),
-  // route("devices", "routes/_protected/devices.tsx"),
 
   ...prefix("devices", [
     index("routes/_protected/devices.tsx"),
@@ -27,6 +26,7 @@ export default [
   
   ...prefix("user", [
     route("profile", "routes/_protected/profile.tsx"),
+    route("new", "routes/_protected/addNewUser.tsx"),
     route("like-list", "routes/_protected/likeList.tsx"),
     route("notification", "routes/_protected/notification.tsx"),
     route("settings", "routes/_protected/settings.tsx"),
