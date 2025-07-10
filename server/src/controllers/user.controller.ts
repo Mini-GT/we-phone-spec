@@ -8,7 +8,8 @@ const addNewUser = async (req: Request, res: Response) => {
   const result = addUserSchema.safeParse(req.body);
   console.log(result)
   if (!result.success) {
-    return res.status(400).json({
+    return res.status(400).json({ 
+      result: "Failed",
       error: result.error.format(),
     });
   }
@@ -56,8 +57,41 @@ const getMe = async (req: Request, res: Response) => {
 
 const updatetUser = async (req: Request, res: Response) => {
   const { userId } = req.params
+  const { name, status, role } = req.body
+  
+  if(!userId) return res.status(400).json({ message: "userId is empty" });
 
-  console.log(userId)
+  const user = await prisma.user.findUnique({ 
+    where: { 
+      id: userId 
+    } 
+  })
+
+  if (!user) {
+    return res.status(400).json({ message: "User doesn't exists" });
+  } 
+
+  const updatedUser = await prisma.user.update({
+    where: {
+      id: userId
+    },
+    data: {
+      name,
+      status: status.toLowerCase(),
+      role: role.toUpperCase() 
+    },
+    select: {
+      id: true,
+      updatedAt: true,
+      name: true,
+      email: true,
+      profileImage: true,
+      status: true,
+      role: true
+    }
+  })
+
+  res.status(200).json({ result: "success", updatedUser });
 }
 
 const deleteUser = async (req: Request, res: Response) => {
@@ -84,6 +118,7 @@ const getUserById = async (req: Request, res: Response) => {
       id: userId 
     },
     select: {
+      id: true, 
       createdAt: true,
       name: true,
       email: true,
