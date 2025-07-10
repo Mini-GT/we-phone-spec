@@ -28,14 +28,28 @@ export async function action({
 }: ActionFunctionArgs) {
   const token = authService.privateRoute(request) || ""
   let formData = await request.formData();
-  const deleteUserById = formData.get("deleteUser") as string
-  if(deleteUserById) {
-    const deleteResult = await userService.deleteUser(token, deleteUserById)
+  const deleteId = formData.get("deleteUser") as string
+  const userId = formData.get("getUserById") as string
+  const rawData = formData.get("userFormData") as string
+  if(deleteId) {
+    const deleteResult = await userService.deleteUser(token, deleteId)
   }
-  const userId = formData.get("userId") as string
   if(userId) {
     const user = await userService.getUserById(token, userId)
     return user.user
+  }
+  if(rawData) {
+    const userFormData = JSON.parse(rawData)
+    const {
+      id,
+      createdAt,
+      email,
+      profileImage,
+      ...body
+    } = userFormData
+
+    const updateResult = await userService.updatetUser(token, body, id)
+    return updateResult.updatedUser
   }
 }
 
@@ -81,10 +95,10 @@ export default function Users({
   const { setUser } = useUser()
   // const { user, isLoading, error } = useAuth()
   const { setPopupButton } = usePopupButton()
-
   useEffect(() => {
     setUser(actionData)
   }, [actionData, setUser])
+
   function handleAddUser() {
     // Logic to add a new user
     setPopupButton(prevState => ({
@@ -93,7 +107,7 @@ export default function Users({
     }));
   }
   
-  if (!user) {
+  if (!user || !users) {
     return (
       <Spinner spinSize="w-12 h-12" />
     )
@@ -112,14 +126,9 @@ export default function Users({
             <div className="flex flex-col items-center mb-8">
               <div className="text-3xl font-bold text-white flex items-center">
                 <UsersRound fill="#3498db" strokeWidth={2} className="mr-3 w-6 h-6 text-gray-400" />
-                {/* <span className="mr-3">👤</span> */}
                 Users Management
               </div>
               {user ? <UserManagementDashoard users={users} handleAddUser={handleAddUser} /> : null}
-              {/* <UserManagementDashoard
-                users={users}
-                handleAddUser={handleAddUser}
-              /> */}
             </div>
           </div>
         </div>
