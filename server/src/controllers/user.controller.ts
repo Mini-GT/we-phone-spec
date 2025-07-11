@@ -6,7 +6,6 @@ import bcrypt from "bcryptjs";
 
 const addNewUser = async (req: Request, res: Response) => {
   const result = addUserSchema.safeParse(req.body);
-  console.log(result)
   if (!result.success) {
     return res.status(400).json({ 
       result: "Failed",
@@ -41,11 +40,11 @@ const addNewUser = async (req: Request, res: Response) => {
   res.status(201).json({ result: "success",  message: "User created" });
 }
 
-
 const getMe = async (req: Request, res: Response) => {
   const user = req.user as User
 
   res.status(200).json({
+    id: user.id,
     createdAt: user.createdAt,
     name: user.name,
     email: user.email,
@@ -94,6 +93,98 @@ const updatetUser = async (req: Request, res: Response) => {
   res.status(200).json({ result: "success", updatedUser });
 }
 
+const changeName = async (req: Request, res: Response) => {
+  const { userId } = req.params
+  const { name } = req.body
+  
+  if(!userId) return res.status(400).json({ message: "userId is empty" });
+
+  const user = await prisma.user.findUnique({ 
+    where: { 
+      id: userId 
+    } 
+  })
+
+  if (!user) {
+    return res.status(400).json({ message: "User doesn't exists" });
+  } 
+
+  await prisma.user.update({
+    where: {
+      id: userId
+    },
+    data: {
+      name
+    }
+  })
+
+  res.status(200).json({ result: "success", message: "Username updated" });
+}
+
+const changePassword = async (req: Request, res: Response) => {
+  const { userId } = req.params
+  const { currentPassword, newPassword, confirmPassword } = req.body
+
+  if (!userId || !currentPassword || !newPassword) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({ error: "New password and confirm password do not match" });
+  }
+
+  const user = await prisma.user.findUnique({ 
+    where: { 
+      id: userId 
+    } 
+  })
+
+  if (!user) {
+    return res.status(400).json({ message: "User doesn't exists" });
+  } 
+  
+  if(!user.password) {
+    const hashedPassword = await bcrypt.hash(newPassword, 8)
+
+    await prisma.user.update({
+      where: {
+        id: userId
+      },
+      data: {
+        password: hashedPassword 
+      }
+    })
+
+    return res.status(200).json({ result: "success", message: "Password updated" });
+  }
+
+  const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+  
+  if (!isCurrentPasswordValid) {
+    return res.status(401).json({ error: "Current password is incorrect" });
+  }
+
+  const isSamePassword = await bcrypt.compare(newPassword, user.password);
+  
+  if (isSamePassword) {
+    return res.status(400).json({ error: 'New password must be different from current password'});
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 8)
+
+  await prisma.user.update({
+    where: {
+      id: userId
+    },
+    data: {
+      password: hashedPassword,
+      updatedAt: new Date()
+    }
+  })
+
+  res.status(200).json({ result: "success", message: "Password changed successfully" });
+}
+
 const deleteUser = async (req: Request, res: Response) => {
   const { userId } = req.params
 
@@ -138,5 +229,7 @@ export {
   updatetUser,
   deleteUser,
   getMe,
-  addNewUser 
+  addNewUser,
+  changeName,
+  changePassword
 }
