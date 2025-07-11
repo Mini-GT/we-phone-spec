@@ -95,17 +95,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-// removes screen y-scroll when login/register form popups
-function BodyStyles() {
-  const { popupButton } = usePopupButton()
-  
-  const overflowStyle = popupButton.isLoginClicked || popupButton.isAddUserClicked || popupButton.isAddDeviceClicked 
-    ? 'body { overflow: hidden; }'
-    : 'body { overflow: auto; }'
-  
-  return <style>{overflowStyle}</style>
-}
-
 export default function App() {
   const {popupButton} = usePopupButton()
   const navigation = useNavigation()
@@ -113,7 +102,6 @@ export default function App() {
 
   return (
     <div>
-      <BodyStyles />
       {isNavigating && <Spinner spinSize="w-12 h-12" />}
       {popupButton.isLoginClicked && <LoginRegister />}
       {popupButton.popup && <CardModal />}
