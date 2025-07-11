@@ -96,6 +96,32 @@ class UserService {
       this.handleError(error)
     }
   }
+
+  async changePassword(token: string, formData: string) {
+    try {
+      const response = await this.api.delete("/changePassword", {
+      headers: {
+        Cookie: token
+      }
+    })
+      return response.data;
+    } catch (error) {
+      this.handleError(error)
+    }
+  }
+
+  async changeName(token: string, formData: string) {
+    try {
+      const response = await this.api.delete("/changeName", {
+      headers: {
+        Cookie: token
+      }
+    })
+      return response.data;
+    } catch (error) {
+      this.handleError(error)
+    }
+  }
 }
 
 export default new UserService();

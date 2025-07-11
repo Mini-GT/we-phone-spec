@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Mail, Lock, AlertTriangle, Edit2, UserCheck, UserRound } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { toReadableDate } from '~/utils/formatDate';
-import { NavLink, redirect, useLoaderData, useMatches, useNavigate, type LoaderFunctionArgs, type MetaFunction } from 'react-router';
+import { Form, NavLink, redirect, useLoaderData, useMatches, useNavigate, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from 'react-router';
 import UserMenuNav from '~/components/userMenuNav';
 import { useAuth } from '~/context/authContext';
 import { AnimatePresence, motion } from "motion/react"
@@ -12,6 +12,8 @@ import { Spinner } from '~/components/spinner';
 import userService from '~/services/user.service';
 import type { Route } from './+types/profile';
 import type { UserType } from '~/types/globals.type';
+import { FormField } from '~/components/form/formField';
+import { Input } from '~/components/ui/input';
 
 export function meta({}: MetaFunction) {
   return [
@@ -20,28 +22,89 @@ export function meta({}: MetaFunction) {
   ];
 }
 
+type FormField = 'name' | 'currentPassword' | 'newPassword' | 'confirmPassword';
+type FieldErrors = Record<FormField, boolean>;
+
+export async function action({request}: ActionFunctionArgs) { 
+  const token = authService.privateRoute(request) || ""
+  let formData = await request.formData()
+  const rawFormData = formData.get("profileFormData") as string
+  if(rawFormData) {
+    const parsedData = JSON.parse(rawFormData)
+    const { name, currentPassword, newPassword, confirmPassword } = parsedData
+
+    const fieldInput = {
+      isEmptyName: !name,
+      isEmptyCurrentPassword: !currentPassword,
+      isEmptyNewPassword: !newPassword,
+      isEmptyConfirmPassword: !confirmPassword
+    }
+
+    if(!name) return fieldInput
+
+    await userService.changeName(token, name)
+
+    if(!currentPassword || !newPassword || !confirmPassword) {
+      return fieldInput 
+    }
+
+  }
+}
+
+
 export async function loader({request}: LoaderFunctionArgs) {
   const token = authService.privateRoute(request) || "";
   const user = await userService.getMe(token)
   return user
 }
 
-export default function Profile() {
+const defaultFieldErrors: FieldErrors = {
+  name: false,
+  currentPassword: false,
+  newPassword: false,
+  confirmPassword: false,
+};
+
+export default function Profile({
+  actionData
+}: Route.ComponentProps) {
   const matches = useMatches()
   const user = matches[0].data as UserType
+  const [ formData, setFormData ] = useState({
+    id: user.id,
+    name: user.name,
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  })
+  const [ fieldError, setFieldError ] = useState<FieldErrors>(defaultFieldErrors)
+  const [showFields, setShowFields] = useState(true);
+  useEffect(() => {
+    if (actionData) {
+      const mappedErrors: FieldErrors = {
+        name: actionData.isEmptyName,
+        currentPassword: actionData.isEmptyCurrentPassword,
+        newPassword: actionData.isEmptyNewPassword,
+        confirmPassword: actionData.isEmptyConfirmPassword,
+      };
 
-  const [showFields, setShowFields] = useState(false);
-  
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
+      setFieldError(mappedErrors);
 
-      // await userService.updateUser(userData);
-      // Show success message
-    } catch (error) {
-      // Handle error
-      console.error("Failed to update profile:", error);
+      // Clear after 3 seconds
+      const timeout = setTimeout(() => {
+        setFieldError(defaultFieldErrors);
+      }, 5000);
+
+      return () => clearTimeout(timeout); // cleanup
     }
+  }, [actionData])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const sendEmailVerification = async () => {
@@ -79,15 +142,13 @@ export default function Profile() {
             <div className="flex-1 pr-0 md:pr-8">
               {/* Email */}
               <div className="mb-6">
-                <label className="block text-gray-400 text-sm mb-2 uppercase tracking-wide">
-                  Email Address
-                </label>
-                <input
-                  type="email"
+                <FormField 
+                  label="Email Address"
+                  name="email"
                   value={user.email}
-                  onChange={handleSubmit}
-                  className="w-full bg-gray-800 rounded px-4 py-3 text-white focus:outline-none"
-                  readOnly
+                  labelStyle="block text-gray-400 text-sm mb-2 uppercase tracking-wide"
+                  inputStyle="w-full bg-gray-800 rounded px-4 py-3 text-white focus:outline-none"
+                  readOnly={true}
                 />
               </div>
 
@@ -111,7 +172,7 @@ export default function Profile() {
                       >
                         Click here
                       </button> to
-                      resend verification email.
+                      send verification email.
                     </p>
                   </div>
                 </div>
@@ -120,28 +181,25 @@ export default function Profile() {
 
               {/* Name */}
               <div className="mb-6">
-                <label className="block text-gray-400 text-sm mb-2 uppercase tracking-wide">
-                  Your Name
-                </label>
-                <input
-                  type="text"
-                  value={user.name}
-                  onChange={handleSubmit}
-                  className="w-full bg-gray-800 rounded px-4 py-3 text-white"
+                <FormField 
+                  label="YOUR NAME"
+                  name="name"
+                  value={formData.name}
+                  onChangeEvent={handleChange}
+                  labelStyle="block text-gray-400 text-sm mb-2 uppercase tracking-wide"
+                  inputStyle={`w-full bg-gray-800 rounded px-4 py-3 text-white ${fieldError.name ? "border border-2 border-red-400 shake" : null }`}
                 />
               </div>
 
               {/* Join Date */}
               <div className="mb-6">
-                <label className="block text-gray-400 text-sm mb-2 uppercase tracking-wide">
-                  Joined
-                </label>
-                <input
-                  type="text"
-                  value={toReadableDate(user.createdAt)}
-                  disabled
-                  className="w-full bg-gray-800 rounded px-4 py-3 text-white"
-                  readOnly
+                <FormField 
+                  label="Joined"
+                  name="email"
+                  value={toReadableDate(user.createdAt || "")}
+                  labelStyle="block text-gray-400 text-sm mb-2 uppercase tracking-wide"
+                  inputStyle="w-full bg-gray-800 rounded px-4 py-3 text-white focus:outline-none"
+                  readOnly={true}
                 />
               </div>
 
@@ -164,33 +222,33 @@ export default function Profile() {
                       className="overflow-hidden mt-4"
                     >
                       <div className="space-y-3">
-                        <div className="mb-6">
-                          <label className="block text-gray-400 text-sm mb-2 uppercase tracking-wide">
-                            CURRENT PASSWORD
-                          </label>
-                          <input
-                            type="password"
-                            className="w-full bg-gray-800 rounded px-4 py-3 text-white"
-                          />
-                        </div>
-                        <div className="mb-6">
-                          <label className="block text-gray-400 text-sm mb-2 uppercase tracking-wide">
-                            NEW PASSWORD
-                          </label>
-                          <input
-                            type="password"
-                            className="w-full bg-gray-800 rounded px-4 py-3 text-white"
-                          />
-                        </div>
-                        <div className="mb-6">
-                          <label className="block text-gray-400 text-sm mb-2 uppercase tracking-wide">
-                            CONFIRM PASSWORD
-                          </label>
-                          <input
-                            type="password"
-                            className="w-full bg-gray-800 rounded px-4 py-3 text-white"
-                          />
-                        </div>
+                        <FormField 
+                          label="CURRENT PASSWORD"
+                          name="currentPassword"
+                          type="password"
+                          value={formData.currentPassword}
+                          onChangeEvent={handleChange}
+                          labelStyle="block text-gray-400 text-sm mb-2 uppercase tracking-wide"
+                          inputStyle={`w-full bg-gray-800 rounded px-4 py-3 text-white ${fieldError.currentPassword ? "border border-2 border-red-400 shake" : null }`}
+                        />
+                        <FormField 
+                          label="NEW PASSWORD"
+                          name="newPassword"
+                          type="password"
+                          value={formData.newPassword}
+                          onChangeEvent={handleChange}
+                          labelStyle="block text-gray-400 text-sm mb-2 uppercase tracking-wide"
+                          inputStyle={`w-full bg-gray-800 rounded px-4 py-3 text-white ${fieldError.newPassword ? "border border-2 border-red-400 shake" : null }`}
+                        />
+                        <FormField 
+                          label="CONFIRM PASSWORD"
+                          name="confirmPassword"
+                          type="password"
+                          value={formData.confirmPassword}
+                          onChangeEvent={handleChange}
+                          labelStyle="block text-gray-400 text-sm mb-2 uppercase tracking-wide"
+                          inputStyle={`w-full bg-gray-800 rounded px-4 py-3 text-white ${fieldError.confirmPassword? "border border-2 border-red-400 shake" : null }`}
+                        />
                       </div>
                     </motion.div>
                   )}
@@ -198,9 +256,15 @@ export default function Profile() {
               </div>
 
               {/* Save Button */}
-              <button className="w-full bg-pink-300 hover:bg-pink-400 text-gray-900 font-medium py-3 px-4 rounded transition-colors cursor-pointer">
-                Save
-              </button>
+              <Form method="post" action="/user/profile">
+                <button 
+                    className="w-full bg-pink-300 hover:bg-pink-400 text-gray-900 font-medium py-3 px-4 rounded transition-colors cursor-pointer"
+                    value={JSON.stringify(formData)}
+                    name="profileFormData"
+                  >
+                    Save
+                </button>
+              </Form>
             </div>
 
             {/* Profile Picture */}
