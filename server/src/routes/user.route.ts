@@ -16,10 +16,10 @@ router.route("/:userId")
 .patch(asyncWrapper(requireAuth), asyncWrapper(actionAuth), asyncWrapper(updatetUser))
 .delete(asyncWrapper(requireAuth), asyncWrapper(actionAuth), asyncWrapper(deleteUser))
 
-router.route("/changePassword")
+router.route("/change-password/:userId")
 .patch(asyncWrapper(requireAuth) ,asyncWrapper(changePassword))
 
-router.route("/changeName")
+router.route("/change-name/:userId")
 .patch(asyncWrapper(requireAuth) ,asyncWrapper(changeName))
 
 export default router

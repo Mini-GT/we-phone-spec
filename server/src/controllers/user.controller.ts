@@ -5,7 +5,7 @@ import { addUserSchema } from "@/schemas/auth.schemas";
 import bcrypt from "bcryptjs";
 
 const addNewUser = async (req: Request, res: Response) => {
-  const result = addUserSchema.safeParse(req.body);
+  const result = await addUserSchema.safeParseAsync(req.body);
   if (!result.success) {
     return res.status(400).json({ 
       result: "Failed",
@@ -96,8 +96,8 @@ const updatetUser = async (req: Request, res: Response) => {
 const changeName = async (req: Request, res: Response) => {
   const { userId } = req.params
   const { name } = req.body
-  
-  if(!userId) return res.status(400).json({ message: "userId is empty" });
+  if(!userId) return res.json({ message: "userId is empty" });
+  if(!name) return res.json({ message: "username is empty" });
 
   const user = await prisma.user.findUnique({ 
     where: { 
@@ -143,6 +143,7 @@ const changePassword = async (req: Request, res: Response) => {
     return res.status(400).json({ message: "User doesn't exists" });
   } 
   
+  // for users who are signed-in using gmail OAuth
   if(!user.password) {
     const hashedPassword = await bcrypt.hash(newPassword, 8)
 
@@ -155,7 +156,7 @@ const changePassword = async (req: Request, res: Response) => {
       }
     })
 
-    return res.status(200).json({ result: "success", message: "Password updated" });
+    return res.status(200).json({ result: "success", message: "Password change successfully" });
   }
 
   const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
