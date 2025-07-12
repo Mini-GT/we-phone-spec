@@ -99,7 +99,7 @@ class UserService {
 
   async changePassword(token: string, formData: string) {
     try {
-      const response = await this.api.delete("/changePassword", {
+      const response = await this.api.patch("/change-password", {
       headers: {
         Cookie: token
       }
@@ -110,13 +110,13 @@ class UserService {
     }
   }
 
-  async changeName(token: string, formData: string) {
+  async changeName(token: string, name: string, id: string) {
     try {
-      const response = await this.api.delete("/changeName", {
-      headers: {
-        Cookie: token
-      }
-    })
+      const response = await this.api.patch(`/change-name/${id}`, { name }, {
+        headers: {
+          Cookie: token
+        }
+      })
       return response.data;
     } catch (error) {
       this.handleError(error)

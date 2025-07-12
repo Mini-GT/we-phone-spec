@@ -14,6 +14,7 @@ import type { Route } from './+types/profile';
 import type { UserType } from '~/types/globals.type';
 import { FormField } from '~/components/form/formField';
 import { Input } from '~/components/ui/input';
+import { changeName } from '~/schema/profile.schema';
 
 export function meta({}: MetaFunction) {
   return [
@@ -22,8 +23,18 @@ export function meta({}: MetaFunction) {
   ];
 }
 
-type FormField = 'name' | 'currentPassword' | 'newPassword' | 'confirmPassword';
-type FieldErrors = Record<FormField, boolean>;
+type FieldErrorTypes = {
+  nameError: string
+  currentPasswordError: string
+  newPasswordError: string
+  confirmPasswordError: string 
+}
+const defaultFieldErrors = {
+  nameError: "",
+  currentPasswordError: "",
+  newPasswordError: "",
+  confirmPasswordError: "", 
+}
 
 export async function action({request}: ActionFunctionArgs) { 
   const token = authService.privateRoute(request) || ""
@@ -31,22 +42,31 @@ export async function action({request}: ActionFunctionArgs) {
   const rawFormData = formData.get("profileFormData") as string
   if(rawFormData) {
     const parsedData = JSON.parse(rawFormData)
-    const { name, currentPassword, newPassword, confirmPassword } = parsedData
+    const { id, name, currentPassword, newPassword, confirmPassword } = parsedData
+    const changeNameResult = await changeName.safeParseAsync(name)
 
-    const fieldInput = {
-      isEmptyName: !name,
-      isEmptyCurrentPassword: !currentPassword,
-      isEmptyNewPassword: !newPassword,
-      isEmptyConfirmPassword: !confirmPassword
+    if(!changeNameResult.success) {
+      const issue = changeNameResult.error?.issues[0]
+      return { nameError: issue.message }
     }
 
-    if(!name) return fieldInput
+    const result = await userService.changeName(token, name, id)
+    console.log(result)
 
-    await userService.changeName(token, name)
+    // const changePasswordResult = 
+    // const fieldInput = {
+    //   isEmptyName: !name,
+    //   isEmptyCurrentPassword: !currentPassword,
+    //   isEmptyNewPassword: !newPassword,
+    //   isEmptyConfirmPassword: !confirmPassword
+    // }
 
-    if(!currentPassword || !newPassword || !confirmPassword) {
-      return fieldInput 
-    }
+    // if(!name) return fieldInput
+    // await userService.changeName(token, name)
+
+    // if(!currentPassword || !newPassword || !confirmPassword) {
+    //   return fieldInput 
+    // }
 
   }
 }
@@ -57,13 +77,6 @@ export async function loader({request}: LoaderFunctionArgs) {
   const user = await userService.getMe(token)
   return user
 }
-
-const defaultFieldErrors: FieldErrors = {
-  name: false,
-  currentPassword: false,
-  newPassword: false,
-  confirmPassword: false,
-};
 
 export default function Profile({
   actionData
@@ -77,25 +90,26 @@ export default function Profile({
     newPassword: "",
     confirmPassword: "",
   })
-  const [ fieldError, setFieldError ] = useState<FieldErrors>(defaultFieldErrors)
+  const [ fieldError, setFieldError ] = useState<FieldErrorTypes>(defaultFieldErrors)
   const [showFields, setShowFields] = useState(true);
+  // const [ fieldError, setFieldError ] = useState(undefined)
   useEffect(() => {
     if (actionData) {
-      const mappedErrors: FieldErrors = {
-        name: actionData.isEmptyName,
-        currentPassword: actionData.isEmptyCurrentPassword,
-        newPassword: actionData.isEmptyNewPassword,
-        confirmPassword: actionData.isEmptyConfirmPassword,
-      };
+      const mappedErrors = {
+        nameError: actionData.nameError,
+        // currentPassword: actionData.currentPasswordError,
+        // newPassword: actionData.newPasswordError,
+        // confirmPassword: actionData.confirmPasswordError,
+      }
 
-      setFieldError(mappedErrors);
+      setFieldError(mappedErrors)
 
-      // Clear after 3 seconds
-      const timeout = setTimeout(() => {
-        setFieldError(defaultFieldErrors);
-      }, 5000);
+    // Clear after 3 seconds
+    const timeout = setTimeout(() => {
+      setFieldError(defaultFieldErrors)
+    }, 3000);
 
-      return () => clearTimeout(timeout); // cleanup
+      return () => clearTimeout(timeout) // cleanup
     }
   }, [actionData])
 
@@ -180,19 +194,22 @@ export default function Profile({
               }
 
               {/* Name */}
-              <div className="mb-6">
-                <FormField 
-                  label="YOUR NAME"
-                  name="name"
-                  value={formData.name}
-                  onChangeEvent={handleChange}
-                  labelStyle="block text-gray-400 text-sm mb-2 uppercase tracking-wide"
-                  inputStyle={`w-full bg-gray-800 rounded px-4 py-3 text-white ${fieldError.name ? "border border-2 border-red-400 shake" : null }`}
-                />
+              <div className="mb-6 h-20">
+                  <FormField 
+                    label="YOUR NAME"
+                    name="name"
+                    value={formData.name}
+                    onChangeEvent={handleChange}
+                    labelStyle="block text-gray-400 text-sm mb-2 uppercase tracking-wide"
+                    inputStyle={`w-full bg-gray-800 rounded px-4 py-3 text-white ${fieldError.nameError ? "border border-2 border-red-400 shake" : null }`}
+                  />
+                  {fieldError.nameError ?
+                  <div className="text-red-400 text-sm">{fieldError.nameError}</div> : null
+                  }
               </div>
 
               {/* Join Date */}
-              <div className="mb-6">
+              <div className="mb-6 h-20">
                 <FormField 
                   label="Joined"
                   name="email"
