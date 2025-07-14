@@ -1,15 +1,16 @@
 import type { Request, Response } from "express"
 import type { User } from "@prisma/client"
 import prisma from "@/prismaClient"
-import { addUserSchema } from "@/schemas/auth.schemas";
 import bcrypt from "bcryptjs";
+import { addUserSchema, changeNameSchema, changePasswordSchema } from "@/schemas/user.schema";
+import * as z from "zod";
 
 const addNewUser = async (req: Request, res: Response) => {
   const result = await addUserSchema.safeParseAsync(req.body);
   if (!result.success) {
     return res.status(400).json({ 
       result: "Failed",
-      error: result.error.format(),
+      error: result.error,
     });
   }
 
@@ -96,8 +97,14 @@ const updatetUser = async (req: Request, res: Response) => {
 const changeName = async (req: Request, res: Response) => {
   const { userId } = req.params
   const { name } = req.body
+
+  // validate name
+  const changeNameResult = await changeNameSchema.safeParseAsync(name)
+  if(!changeNameResult.success) {
+    const issue = changeNameResult.error?.issues[0]
+    return res.status(400).json({ result: "failed", message: issue?.message })
+  }
   if(!userId) return res.json({ message: "userId is empty" });
-  if(!name) return res.json({ message: "username is empty" });
 
   const user = await prisma.user.findUnique({ 
     where: { 
@@ -124,13 +131,22 @@ const changeName = async (req: Request, res: Response) => {
 const changePassword = async (req: Request, res: Response) => {
   const { userId } = req.params
   const { currentPassword, newPassword, confirmPassword } = req.body
+  // validate password inputs
+  const changePasswordResult = await changePasswordSchema.safeParseAsync({ currentPassword, newPassword, confirmPassword})
+  if(changePasswordResult.error) {
+    const flattened = z.flattenError(changePasswordResult.error)
+    const currentPasswordError = flattened.fieldErrors["currentPassword"]?.[0] ?? ""
+    const newPasswordError = flattened.fieldErrors["newPassword"]?.[0] ?? ""
+    const confirmPasswordError = flattened.fieldErrors["confirmPassword"]?.[0] ?? ""
 
-  if (!userId || !currentPassword || !newPassword) {
-    return res.status(400).json({ error: 'Missing required fields' });
+    return res.status(400).json({ currentPasswordError, newPasswordError, confirmPasswordError })
+  }
+  if (!userId) {
+    return res.status(400).json({ result: "failed", message: "userId is missing"});
   }
 
   if (newPassword !== confirmPassword) {
-    return res.status(400).json({ error: "New password and confirm password do not match" });
+    return res.status(400).json({ result: "failed", message: "New password and confirm password do not match" });
   }
 
   const user = await prisma.user.findUnique({ 
@@ -140,7 +156,7 @@ const changePassword = async (req: Request, res: Response) => {
   })
 
   if (!user) {
-    return res.status(400).json({ message: "User doesn't exists" });
+    return res.status(404).json({ result: "failed", message: "User doesn't exists" });
   } 
   
   // for users who are signed-in using gmail OAuth
@@ -162,13 +178,13 @@ const changePassword = async (req: Request, res: Response) => {
   const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
   
   if (!isCurrentPasswordValid) {
-    return res.status(401).json({ error: "Current password is incorrect" });
+    return res.status(400).json({ result: "failed", message: "Current password is incorrect" });
   }
 
   const isSamePassword = await bcrypt.compare(newPassword, user.password);
   
   if (isSamePassword) {
-    return res.status(400).json({ error: 'New password must be different from current password'});
+    return res.status(400).json({ result: "failed", message: 'New password must be different from current password'});
   }
 
   const hashedPassword = await bcrypt.hash(newPassword, 8)
