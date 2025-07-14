@@ -1,28 +1,27 @@
 import type { AxiosInstance } from "axios";
 import axios from "axios";
-import type { UserType } from "~/types/globals.type";
+import type { ChangePasswordType, UserType } from "~/types/globals.type";
 
 class UserService {
   private api: AxiosInstance = axios.create({
     baseURL: `${import.meta.env.VITE_SMARTPHONE_API_URL}/user`,
   });
 
-  private handleError(error: unknown): never {
+  private handleError(error: unknown) {
     if (axios.isAxiosError(error)) {
       if (error.response) {
-        throw {
+        return {
           status: error.response.status,
-          message: error.response.data.message || 'An error occurred',
-          details: error.response.data
+          message: error.response.data || 'An error occurred',
         };
       } else if (error.request) {
-        throw {
+        return {
           status: 0,
           message: 'No response from server'
         };
       }
     }
-    throw {
+    return {
       status: 500,
       message: 'Unexpected error occurred'
     };
@@ -69,10 +68,10 @@ class UserService {
     }
   }
 
-  async updatetUser(token: string, updatedForm: Partial<UserType>, id: string) {
+  async updatetUser(token: string, updatedForm: Partial<UserType>, userId: string) {
     try {
       const response = await this.api.patch(
-        `/${id}`,
+        `/${userId}`,
         updatedForm, {
           headers: {
             Cookie: token
@@ -97,22 +96,26 @@ class UserService {
     }
   }
 
-  async changePassword(token: string, formData: string) {
+  async changePassword(token: string, passwordFormData: ChangePasswordType, userId: string) {
     try {
-      const response = await this.api.patch("/change-password", {
-      headers: {
-        Cookie: token
+      const response = await this.api.patch(`/change-password/${userId}`, passwordFormData, {
+        headers: {
+          Cookie: token
+        }
+      })
+      const result = {
+        status: response.status,
+        message: response.data
       }
-    })
-      return response.data;
+      return result;
     } catch (error) {
-      this.handleError(error)
+      return this.handleError(error)
     }
   }
 
-  async changeName(token: string, name: string, id: string) {
+  async changeName(token: string, name: string, userId: string) {
     try {
-      const response = await this.api.patch(`/change-name/${id}`, { name }, {
+      const response = await this.api.patch(`/change-name/${userId}`, { name }, {
         headers: {
           Cookie: token
         }
