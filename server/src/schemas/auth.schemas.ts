@@ -13,19 +13,6 @@ export const loginSchema = z.object({
   password: z.string().min(6, "Incorrect email or password"),
 });
 
-export const addUserSchema= z.object({
-  name: z.string().min(3, "Name must be at least 3 characters"),
-  email: z.string().email().min(6, "Email must be at least 6 characters"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  role: z.enum(["ADMIN", "MODERATOR", "USER", "DEMO"], {
-    errorMap: () => ({ message: "Invalid role" }),
-  }),
-  status: z.enum(["verified", "unverified", "banned", "pending", "suspended"], {
-    errorMap: () => ({ message: "Invalid status" }),
-  }),
-});
-
 // Type Inference for TypeScript
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
-export type AddUserInput = z.infer<typeof addUserSchema>;
