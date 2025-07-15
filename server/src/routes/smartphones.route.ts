@@ -8,26 +8,16 @@ const router = express.Router()
 //routes
 router.route("/")
 .get(asyncWrapper(getAllSmartphones))
-
-router.route("/:deviceId")
-.get(asyncWrapper(getSmartphone))
+// actions
+.post(asyncWrapper(requireAuth), asyncWrapper(actionAuth), asyncWrapper(createSmartphone))
 
 router.route("/brand-list/:brand")
 .get(asyncWrapper(getSmartphonesByBrand))
 
-// actions
-router.route("/")
-.post(asyncWrapper(requireAuth), asyncWrapper(actionAuth), asyncWrapper(createSmartphone))
-
 router.route("/:deviceId")
+.get(asyncWrapper(getSmartphone))
 .patch(asyncWrapper(requireAuth), asyncWrapper(actionAuth), asyncWrapper(updateSmartphone))
-
-router.route("/:deviceId")
 .delete(asyncWrapper(requireAuth), asyncWrapper(actionAuth), asyncWrapper(deleteSmartphone))
-
-
-
-
 
 
 export default router
