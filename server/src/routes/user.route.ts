@@ -12,7 +12,7 @@ router.route("/new")
 .post(asyncWrapper(requireAuth), asyncWrapper(actionAuth), asyncWrapper(addNewUser))
 
 router.route("/likes")
-.get(asyncWrapper(getUserLikes))
+.get(asyncWrapper(requireAuth), asyncWrapper(getUserLikes))
 
 router.route("/add-to-likes")
 .post(asyncWrapper(requireAuth), asyncWrapper(addToLikes)) 
