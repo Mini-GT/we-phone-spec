@@ -4,6 +4,7 @@ import prisma from "@/prismaClient"
 import bcrypt from "bcryptjs";
 import { addUserSchema, changeNameSchema, changePasswordSchema } from "@/schemas/user.schema";
 import * as z from "zod";
+import deviceModel from "@/models/device.model";
 
 const addNewUser = async (req: Request, res: Response) => {
   const result = await addUserSchema.safeParseAsync(req.body);
@@ -55,7 +56,7 @@ const getMe = async (req: Request, res: Response) => {
   })
 } 
 
-const updatetUser = async (req: Request, res: Response) => {
+const updateUser = async (req: Request, res: Response) => {
   const { userId } = req.params
   const { name, status, role } = req.body
   
@@ -241,12 +242,59 @@ const getUserById = async (req: Request, res: Response) => {
   res.status(200).json({ result: "success", user })
 }
 
+const addToLikes = async (req: Request, res: Response) => {
+  const { deviceId } = req.body
+  const user = req.user as User
+
+  const alreadyLiked = await prisma.userSmartphoneLike.findUnique({
+    where: {
+      userId_smartphoneId: {
+        userId: user.id,
+        smartphoneId: deviceId
+      }
+    }
+  });
+
+  if (alreadyLiked) {
+    return res.status(400).json({ result: "failed", message: "Already Liked" })
+  }
+
+  await deviceModel.findByIdAndUpdate(deviceId, { $inc: { like: 1 } })
+
+  await prisma.userSmartphoneLike.create({
+    data: {
+      user: { connect: { id: user.id } },
+      smartphone: {
+        connectOrCreate: {
+          where: { id: deviceId },
+          create: { id: deviceId }
+        }
+      }
+    }
+  })
+
+  return res.status(200).json({ result: "success", message: "Device Liked" })
+}
+
+const getUserLikes = async (req: Request, res: Response) => {
+  const user = req.user as User 
+
+  const likedSmartphones = await prisma.userSmartphoneLike.findMany({
+    where: { userId: user.id },
+    select: { smartphoneId: true }
+  });
+
+  return res.status(200).json({ result: "success", likedSmartphones })
+}
+
 export {
   getUserById, 
-  updatetUser,
+  updateUser,
   deleteUser,
   getMe,
   addNewUser,
   changeName,
-  changePassword
+  changePassword,
+  addToLikes,
+  getUserLikes
 }
