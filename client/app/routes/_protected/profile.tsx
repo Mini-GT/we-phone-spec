@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Mail, Lock, AlertTriangle, Edit2, UserCheck, UserRound } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { toReadableDate } from '~/utils/formatDate';
-import { Form, NavLink, redirect, useLoaderData, useMatches, useNavigate, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from 'react-router';
+import { Form, NavLink, redirect, useLoaderData, useMatches, useNavigate, useNavigation, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from 'react-router';
 import UserMenuNav from '~/components/userMenuNav';
 import { useAuth } from '~/context/authContext';
 import { AnimatePresence, motion } from "motion/react"
@@ -56,9 +56,7 @@ export async function action({request}: ActionFunctionArgs) {
     // update name only if name is valid and all password field not valid
     if(name && !passwordFieldValid) {
       // dont update name if there is no change
-      if(name === oldName) {
-        return
-      }
+      if(name === oldName) return null
       const result = await userService.changeName(token, name, id)
       console.log(result)
     }
@@ -95,7 +93,8 @@ export default function Profile({
 }: Route.ComponentProps) {
   const matches = useMatches()
   const user = matches[0].data as UserType
-  const [showPasswordFields, setShowPasswordFields] = useState(true);
+  const navigation = useNavigation()
+  const [showPasswordFields, setShowPasswordFields] = useState(false);
   const [ formData, setFormData ] = useState({
     id: user.id,
     name: user.name,
@@ -301,12 +300,12 @@ export default function Profile({
               {/* Save Button */}
               <Form method="post" action="/user/profile">
                 <button 
-                    className="w-full bg-pink-300 hover:bg-pink-400 text-gray-900 font-medium py-3 px-4 rounded transition-colors cursor-pointer"
+                    className="w-full h-12 bg-pink-300 hover:bg-pink-400 text-gray-900 font-medium py-3 px-4 rounded transition-colors cursor-pointer"
                     value={JSON.stringify(formData)}
                     name="profileFormData"
-                    // onClick={handleSave}
+                    disabled={navigation.formAction === "/user/profile"}
                   >
-                    Save
+                    {navigation.formAction === "/user/profile" ? <Spinner parentClassName="w-full h-full" spinSize="ml-1 w-5 h-5" /> : "Save" }
                 </button>
               </Form>
             </div>
