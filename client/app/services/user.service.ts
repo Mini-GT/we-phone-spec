@@ -1,6 +1,6 @@
 import type { AxiosInstance } from "axios";
 import axios from "axios";
-import type { ChangePasswordType, UserType } from "~/types/globals.type";
+import type { ChangePasswordType, Smartphone, UserType } from "~/types/globals.type";
 
 class UserService {
   private api: AxiosInstance = axios.create({
@@ -122,7 +122,47 @@ class UserService {
       })
       return response.data;
     } catch (error) {
-      this.handleError(error)
+      return this.handleError(error)
+    }
+  }
+
+  async addToLikes(token: string, deviceId: Smartphone["_id"]) {
+    try {
+      const response = await this.api.post(
+        "/add-to-likes", { deviceId }, {
+          headers: {
+            Cookie: token
+          }
+        }
+      );
+
+      const result = {
+        status: response.status,
+        message: response.data 
+      }
+      return result;
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  async getUserLikes(token: string) {
+    try {
+      const response = await this.api.get(
+        "/likes", {
+          headers: {
+            Cookie: token
+          }
+        }
+      );
+
+      const result = {
+        status: response.status,
+        message: response.data 
+      }
+      return result;
+    } catch (error) {
+      return this.handleError(error);
     }
   }
 }
