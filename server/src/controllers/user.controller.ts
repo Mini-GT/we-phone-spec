@@ -256,10 +256,22 @@ const addToLikes = async (req: Request, res: Response) => {
   });
 
   if (alreadyLiked) {
-    return res.status(400).json({ result: "failed", message: "Already Liked" })
+    // unlike the device
+    await deviceModel.findByIdAndUpdate(deviceId, { $inc: { likes: -1 } })
+    
+    const result = await prisma.userSmartphoneLike.delete({
+      where: {
+        userId_smartphoneId: {
+          userId: user.id,
+          smartphoneId: deviceId
+        }
+      }
+    })
+    
+    return res.status(200).json({ result: "success", message: "Device unliked" })
   }
 
-  await deviceModel.findByIdAndUpdate(deviceId, { $inc: { like: 1 } })
+  await deviceModel.findByIdAndUpdate(deviceId, { $inc: { likes: 1 } })
 
   await prisma.userSmartphoneLike.create({
     data: {
