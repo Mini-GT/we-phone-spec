@@ -11,6 +11,7 @@ model User {
   id                String    @id @default(cuid())
   googleId          String?   @unique
   createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt @default(now())
   email             String    @unique
   status            Status    @default(unverified)
   verifyToken       String?
@@ -19,6 +20,8 @@ model User {
   name              String?
   password          String?
   profileImage      String?
+
+  likedSmartphones  UserSmartphoneLike[]
 }
 
 enum Role {
@@ -34,4 +37,20 @@ enum Status {
   banned
   pending
   suspended
+}
+
+model Smartphone {
+  id       String                  @id // MongoDB ObjectId as string
+  likes    UserSmartphoneLike[]
+}
+
+model UserSmartphoneLike {
+  userId        String
+  smartphoneId  String
+  likedAt       DateTime            @default(now())
+
+  user          User                @relation(fields: [userId], references: [id])
+  smartphone    Smartphone          @relation(fields: [smartphoneId], references: [id])
+
+  @@id([userId, smartphoneId])
 }
