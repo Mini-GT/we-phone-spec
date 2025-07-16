@@ -7,22 +7,21 @@ class SmartphoneService {
   });
 
   // error handler
-  private handleError(error: unknown): never {
+  private handleError(error: unknown) {
     if (axios.isAxiosError(error)) {
       if (error.response) {
-        throw {
+        return {
           status: error.response.status,
-          message: error.response.data.message || 'An error occurred',
-          details: error.response.data
+          message: error.response.data || 'An error occurred',
         };
       } else if (error.request) {
-        throw {
+        return {
           status: 0,
           message: 'No response from server'
         };
       }
     }
-    throw {
+    return {
       status: 500,
       message: 'Unexpected error occurred'
     };
@@ -44,7 +43,7 @@ class SmartphoneService {
   }
 
   // get a specific smartphone by ID
-  async getSmartphoneById(id: string): Promise<Smartphone> {
+  async getSmartphoneById(id: string) {
     try {
       const response = await this.api.get(`/smartphones/${id}`);
       return response.data.msg;
@@ -54,7 +53,7 @@ class SmartphoneService {
   }
 
   // create a new smartphone
-  async createSmartphone(smartphoneData: Omit<Smartphone, 'id'>, token: string): Promise<ApiResponse> {
+  async createSmartphone(smartphoneData: Omit<Smartphone, 'id'>, token: string) {
     try {
       const response = await this.api.post('/smartphones', smartphoneData, {
         headers: {
@@ -68,7 +67,7 @@ class SmartphoneService {
   }
 
   // update an existing smartphone
-async updateSmartphone(id: string, updatedForm: Partial<Smartphone>, token: string): Promise<Smartphone> {
+async updateSmartphone(id: string, updatedForm: Partial<Smartphone>, token: string) {
     try {
       const response = await this.api.patch(
         `/smartphones/${id}`,
@@ -97,7 +96,7 @@ async updateSmartphone(id: string, updatedForm: Partial<Smartphone>, token: stri
   }
 
   // get smartphone by brand
-  async getSmartphonesByBrand(brand: string): Promise<Smartphone[]> {
+  async getSmartphonesByBrand(brand: string) {
     try {
       const response = await this.api.get(`/smartphones/brand-list/${brand}`);
       return response.data.result;
