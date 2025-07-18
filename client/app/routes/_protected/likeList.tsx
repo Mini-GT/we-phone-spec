@@ -93,6 +93,7 @@ export default function LikeList() {
                       </button>
                     </div>
                   </Link>
+                  <KebabMenu />
                 </div>
               )) : null}
             </div>
