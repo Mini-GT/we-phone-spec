@@ -13,9 +13,12 @@ import { useEffect, useState } from "react";
 import userService from "~/services/user.service";
 import { usePopupButton } from "~/context/popupButtonContext";
 
-type LikeSmartphonesType = {
+type SmartphoneIdType = {
   smartphoneId: string
-  likes: number
+}
+
+type UserLikeResponse = ApiResponse["message"] & {
+  likedSmartphoneId: SmartphoneIdType[]
 }
 
 export function meta({ data }: any) {
@@ -47,8 +50,8 @@ export async function loader({params, request}: Route.LoaderArgs) {
 
   if(token) {
     const result = await userService.getUserLikes(token)
-    const likedSmartphones = result.message.likedSmartphones as Omit<LikeSmartphonesType, "likes">[]
-    const likedIds = new Set(likedSmartphones.map(item => item.smartphoneId))
+    const { likedSmartphoneId } = result.message as UserLikeResponse
+    const likedIds = new Set(likedSmartphoneId.map(item => item.smartphoneId))
     // check if this smartphone is liked 
     const isLiked = likedIds.has(id) 
     return { smartphone, isLiked }
