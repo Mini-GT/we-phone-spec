@@ -18,6 +18,7 @@ const updateUserEmailVerification = async (req: Request, res: Response) => {
   await prisma.user.update({
     where: { id: user.id },
     data: {
+      status: "pending",
       verifyToken: verificationToken,
       verifyTokenExpiry: verificationExpiry,
     },
