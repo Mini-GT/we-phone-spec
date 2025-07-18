@@ -1,4 +1,4 @@
-import { NavLink, useLoaderData, useMatches, useNavigate, type LoaderFunctionArgs, type MetaFunction } from "react-router";
+import { Link, NavLink, useLoaderData, useMatches, useNavigate, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import { Mail, Lock, AlertTriangle, Edit2, Heart } from 'lucide-react';
 import { toReadableDate } from "~/utils/formatDate";
 import UserMenuNav from "~/components/userMenuNav";
@@ -6,7 +6,10 @@ import { useAuth } from "~/context/authContext";
 import type { Route } from "../_protected/+types/likeList";
 import { Spinner } from "~/components/spinner";
 import authService from "~/services/auth.service";
-import type { UserType } from "~/types/globals.type";
+import type { ApiResponse, Smartphone, UserType } from "~/types/globals.type";
+import userService from "~/services/user.service";
+import { formatNumberToCompact } from "~/utils/formatNumber";
+import KebabMenu from "~/components/ui/kebabMenu";
 
 export function meta({}: MetaFunction) {
   return [
@@ -15,30 +18,46 @@ export function meta({}: MetaFunction) {
   ];
 }
 
+type UserLikeResponse = ApiResponse["message"] & {
+  likedSmartphoneId: string[]
+}
+type SmartphoneData = ApiResponse["message"] & {
+  smartphones: Smartphone[]
+}
+
 export async function loader({request}: LoaderFunctionArgs) {
-  const userId = authService.privateRoute(request);
+  const token = authService.privateRoute(request) || ""
+  // get user liked smartphones Id/s 
+  const data = await userService.getUserLikes(token)
+  const { result, likedSmartphoneId } = data.message as UserLikeResponse
+  // if success and there is a liked smartphone id/s
+  if(result === "success") {
+    // fetch the smartphone data base on Id/s
+    const data = await userService.getUserLikeListSmartphoneData(token, likedSmartphoneId)
+    const { smartphones } = data.message as SmartphoneData
+    return smartphones
+  }
 }
 
 export default function LikeList() {
+  const smartphones = useLoaderData<typeof loader>();
   const matches = useMatches()
   const user = matches[0].data as UserType
-
   if (!user) {
     return (
       <Spinner spinSize="w-12 h-12" />
     )
   }
-
   return (
-    <div className="min-h-screen bg-gray-800 bg-opacity-90 flex flex-col items-center py-12 px-4">
+  <div className="w-full min-h-screen bg-gray-800 bg-opacity-90 flex flex-col items-center py-12 px-4">
       <UserMenuNav
         tab={"likelist"}
         name={user?.name}
       />
 
-      <div className="w-full max-w-3xl bg-gray-900 rounded-lg overflow-hidden">
-        <div className="p-8 h-[70vh]">
-          <div className="flex items-center mb-8">
+      <div className="w-1/2 rounded-lg overflow-hidden">
+        <div className="h-full">
+          <div className="flex p-8 bg-gray-900 items-center">
             <div className="text-3xl font-bold text-white flex items-center">
               {/* <span className="mr-3">👤</span> */}
               {/* <Heart className="mr-3 h-6 w-6" /> */}
@@ -47,6 +66,37 @@ export default function LikeList() {
             </div>
           </div>
 
+          <div className="bg-gray-900 px-4 pb-4 w-full h-full">
+            <div className="grid grid-cols-5 gap-2">
+              {smartphones ? 
+              smartphones.map(item => (
+                <div
+                  key={item._id} data-id={item._id}
+                  className="relative bg-white border rounded-sm flex flex-col w-full cursor-pointer transform transition-transform duration-300 ease-in-out hover:scale-102 overflow-hidden"
+
+                >
+                  <Link 
+                    to={`/smartphones/${item.name}-${item._id}`}
+                    className="px-2 py-2"
+                  >
+                    <div className="relative">
+                      <img src={`/${item.image}`} alt={item.name} className="" />
+                      <div className="flex px-2 bg-black rounded-sm gap-1 cursor-default absolute bottom-0 m-5">
+                        <img src="/eyeVector.svg" alt="views" className="" />
+                      </div>
+                    </div>
+                    <div className="bg-white w-full">
+                      <button className="ml-1 text-start hover:text-pink-600 cursor-pointer w-full">
+                        <div className="truncate w-full">
+                          {item.name}
+                        </div>
+                      </button>
+                    </div>
+                  </Link>
+                </div>
+              )) : null}
+            </div>
+          </div>
         </div>
       </div>
     </div>
