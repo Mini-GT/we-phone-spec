@@ -1,6 +1,6 @@
 import type { AxiosInstance } from "axios";
 import axios from "axios";
-import type { ChangePasswordType, Smartphone, UserType } from "~/types/globals.type";
+import type { ApiResponse, ChangePasswordType, Smartphone, UserType } from "~/types/globals.type";
 
 class UserService {
   private api: AxiosInstance = axios.create({
@@ -11,18 +11,18 @@ class UserService {
     if (axios.isAxiosError(error)) {
       if (error.response) {
         return {
-          status: error.response.status,
+          statusCode: error.response.status,
           message: error.response.data || 'An error occurred',
         };
       } else if (error.request) {
         return {
-          status: 0,
+          statusCode: 0,
           message: 'No response from server'
         };
       }
     }
     return {
-      status: 500,
+      statusCode: 500,
       message: 'Unexpected error occurred'
     };
   }
@@ -126,7 +126,7 @@ class UserService {
     }
   }
 
-  async addToLikes(token: string, deviceId: Smartphone["_id"]) {
+  async addToLikes(token: string, deviceId: Smartphone["_id"]): Promise<ApiResponse> {
     try {
       const response = await this.api.post(
         "/add-to-likes", { deviceId }, {
@@ -137,7 +137,7 @@ class UserService {
       );
 
       const result = {
-        status: response.status,
+        statusCode: response.status,
         message: response.data 
       }
       return result;
@@ -146,7 +146,7 @@ class UserService {
     }
   }
 
-  async getUserLikes(token: string) {
+  async getUserLikes(token: string): Promise<ApiResponse> {
     try {
       const response = await this.api.get(
         "/likes", {
@@ -157,8 +157,28 @@ class UserService {
       );
 
       const result = {
-        status: response.status,
-        message: response.data 
+        statusCode: response.status,
+        message: response.data
+      }
+      return result;
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+  
+  async getUserLikeListSmartphoneData(token: string, smartphoneIds: string[]): Promise<ApiResponse> {
+    try {
+      const response = await this.api.post(
+        "/like-list", { smartphoneIds }, {
+          headers: {
+            Cookie: token
+          }
+        }
+      );
+
+      const result = {
+        statusCode: response.status,
+        message: response.data
       }
       return result;
     } catch (error) {

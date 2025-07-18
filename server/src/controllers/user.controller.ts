@@ -5,6 +5,8 @@ import bcrypt from "bcryptjs";
 import { addUserSchema, changeNameSchema, changePasswordSchema } from "@/schemas/user.schema";
 import * as z from "zod";
 import deviceModel from "@/models/device.model";
+import mongoose from "mongoose";
+import type { LikedSmartphoneIds } from "@/types/types";
 
 const addNewUser = async (req: Request, res: Response) => {
   const result = await addUserSchema.safeParseAsync(req.body);
@@ -40,6 +42,20 @@ const addNewUser = async (req: Request, res: Response) => {
   })
 
   res.status(201).json({ result: "success",  message: "User created" });
+}
+
+const getUserLikeListSmartphones = async (req: Request, res: Response)=> {
+  const liked = req.body.smartphoneIds as LikedSmartphoneIds[]
+  if(!liked) return res.status(400).json({ result: "failed", message: "No like id/s provided" })
+  const ids = liked.map(item => item.smartphoneId)
+
+  // convert to mongoose objectIds to make sure it is accepted by mongoose
+  const objectIds = ids.map(id => new mongoose.Types.ObjectId(id))
+  const smartphones = await deviceModel.find({
+    _id: { $in: objectIds }
+  });
+
+  return res.status(200).json({ result: "success", smartphones })
 }
 
 const getMe = async (req: Request, res: Response) => {
@@ -291,12 +307,12 @@ const addToLikes = async (req: Request, res: Response) => {
 const getUserLikes = async (req: Request, res: Response) => {
   const user = req.user as User 
 
-  const likedSmartphones = await prisma.userSmartphoneLike.findMany({
+  const likedSmartphoneId = await prisma.userSmartphoneLike.findMany({
     where: { userId: user.id },
     select: { smartphoneId: true }
   });
 
-  return res.status(200).json({ result: "success", likedSmartphones })
+  return res.status(200).json({ result: "success", likedSmartphoneId })
 }
 
 export {
@@ -308,5 +324,6 @@ export {
   changeName,
   changePassword,
   addToLikes,
-  getUserLikes
+  getUserLikes,
+  getUserLikeListSmartphones,
 }

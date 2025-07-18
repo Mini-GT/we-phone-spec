@@ -1,4 +1,4 @@
-import { addNewUser, addToLikes, changeName, changePassword, deleteUser, getMe, getUserById, getUserLikes, updateUser } from "@/controllers/user.controller"
+import { addNewUser, addToLikes, changeName, changePassword, deleteUser, getMe, getUserById, getUserLikeListSmartphones, getUserLikes, updateUser } from "@/controllers/user.controller"
 import { asyncWrapper } from "@/middlewares/asyncWrapper.middleware"
 import { actionAuth, requireAuth } from "@/middlewares/auth.middleware"
 import express from "express"
@@ -13,6 +13,9 @@ router.route("/new")
 
 router.route("/likes")
 .get(asyncWrapper(requireAuth), asyncWrapper(getUserLikes))
+
+router.route("/like-list")
+.post(asyncWrapper(requireAuth), asyncWrapper(getUserLikeListSmartphones))
 
 router.route("/add-to-likes")
 .post(asyncWrapper(requireAuth), asyncWrapper(addToLikes)) 
