@@ -185,6 +185,26 @@ class UserService {
       return this.handleError(error);
     }
   }
+
+  async deleteLikedDevice(token: string, smartphoneId: string): Promise<ApiResponse> {
+    try {
+      const response = await this.api.delete(
+        `/${smartphoneId}`, {
+          headers: {
+            Cookie: token
+          }
+        }
+      );
+
+      const result = {
+        statusCode: response.status,
+        message: response.data
+      }
+      return result;
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
 }
 
 export default new UserService();

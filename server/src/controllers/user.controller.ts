@@ -315,6 +315,25 @@ const getUserLikes = async (req: Request, res: Response) => {
   return res.status(200).json({ result: "success", likedSmartphoneId })
 }
 
+
+const deleteLikeDevice = async (req: Request, res: Response) => {
+  const user = req.user as User 
+  const { deviceId } = req.params
+
+  if(!deviceId) return res.status(400).json({ result: "failed", message: "No device Id provided" })
+
+  await prisma.userSmartphoneLike.delete({
+    where: {
+      userId_smartphoneId: {
+        userId: user.id,
+        smartphoneId: deviceId
+      }
+    }
+  })
+
+  return res.status(200).json({ result: "success", message: "Device remove from like list" })
+}
+
 export {
   getUserById, 
   updateUser,
@@ -326,4 +345,5 @@ export {
   addToLikes,
   getUserLikes,
   getUserLikeListSmartphones,
+  deleteLikeDevice 
 }

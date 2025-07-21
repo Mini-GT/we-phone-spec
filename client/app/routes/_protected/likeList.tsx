@@ -1,4 +1,4 @@
-import { Link, NavLink, useLoaderData, useMatches, useNavigate, type LoaderFunctionArgs, type MetaFunction } from "react-router";
+import { Link, NavLink, useLoaderData, useMatches, useNavigate, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import { Mail, Lock, AlertTriangle, Edit2, Heart } from 'lucide-react';
 import { toReadableDate } from "~/utils/formatDate";
 import UserMenuNav from "~/components/userMenuNav";
@@ -23,6 +23,18 @@ type UserLikeResponse = ApiResponse["message"] & {
 }
 type SmartphoneData = ApiResponse["message"] & {
   smartphones: Smartphone[]
+}
+
+
+export async function action({request}: ActionFunctionArgs) {
+  const token = authService.privateRoute(request) || ""
+  let formData = await request.formData()
+  // action coming from "KebabMenu.tsx" component
+  const smartphoneId = formData.get("smartphoneId") as string
+  if(smartphoneId) {
+    const response = userService.deleteLikedDevice(token, smartphoneId)
+    // console.log(response)
+  }
 }
 
 export async function loader({request}: LoaderFunctionArgs) {
@@ -66,13 +78,13 @@ export default function LikeList() {
             </div>
           </div>
 
-          <div className="bg-gray-900 px-4 pb-4 w-full h-full">
-            <div className="grid grid-cols-5 gap-2">
-              {smartphones ? 
+          <div className="bg-gray-900 px-4 w-full h-full">
+            <ul className="grid grid-cols-5 grid-rows-2 gap-2">
+              {Array.isArray(smartphones) && smartphones.length > 0 ? 
               smartphones.map(item => (
-                <div
+                <li
                   key={item._id} data-id={item._id}
-                  className="relative bg-white border rounded-sm flex flex-col w-full cursor-pointer transform transition-transform duration-300 ease-in-out hover:scale-102 overflow-hidden"
+                  className="relative bg-white mb-4 border rounded-sm flex flex-col w-full cursor-pointer transform transition-transform duration-300 ease-in-out hover:scale-102 overflow-hidden"
 
                 >
                   <Link 
@@ -93,10 +105,10 @@ export default function LikeList() {
                       </button>
                     </div>
                   </Link>
-                  <KebabMenu />
-                </div>
+                  <KebabMenu deviceId={item._id} />
+                </li>
               )) : null}
-            </div>
+            </ul>
           </div>
         </div>
       </div>
