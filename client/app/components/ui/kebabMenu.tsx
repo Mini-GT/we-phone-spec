@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import { Form, useFetcher } from "react-router";
+import type { KebabMenuProps } from "~/types/globals.type";
 
-export default function KebabMenu() {
+export default function KebabMenu({ deviceId }: KebabMenuProps) {
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const fetcher = useFetcher()
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -15,6 +18,16 @@ export default function KebabMenu() {
       document.removeEventListener("mousedown", handleClickOutside)
     }
   }, [])
+
+  const handleRemove = () => {
+    fetcher.submit(
+      { smartphoneId: deviceId },
+      {
+        method: "post",
+        action: "/user/like-list"
+      }
+    )
+  }
 
   return (
     <div className="absolute top-1 right-1" ref={menuRef}> 
@@ -33,7 +46,12 @@ export default function KebabMenu() {
 
       {open && (
         <div className="absolute right-0 mt-1 w-32 bg-white shadow-md rounded z-50 overflow-hidden">
-          <button className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-red-700 cursor-pointer">Remove</button>
+          <button 
+            className="block w-full text-left px-4 py-2 hover:bg-gray-200 active:bg-white text-sm text-red-700 cursor-pointer"
+            onClick={handleRemove}
+          >
+            Remove
+          </button>
         </div>
       )}
     </div>
