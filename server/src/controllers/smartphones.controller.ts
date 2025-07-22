@@ -1,7 +1,7 @@
 import type { Request, Response } from "express"
 import { phones } from "mockData";
 import deviceModel from "@/models/device.model";
-import type { User } from "@prisma/client";
+import prisma from "@/prismaClient";
 
 const getAllSmartphones = async (req: Request, res: Response)=> {
   const smartphones = await deviceModel.find().lean()
@@ -38,8 +38,8 @@ const getSmartphonesByBrand = async (req: Request, res: Response) => {
 const createSmartphone = async (req: Request, res: Response) => {
   // console.log(req.body)
   const device = new deviceModel(req.body)
-  const saveSmartphone = await device.save()
-  res.status(201).json({ result: "success", saveSmartphone })
+  const { _id, ...rest } = await device.save()
+  res.status(201).json({ result: "success" })
 }
 
 const updateSmartphone = async (req: Request, res: Response) => {
@@ -57,6 +57,12 @@ const deleteSmartphone = async (req: Request, res: Response) => {
   
   const deleteDevice = await deviceModel.findByIdAndDelete(deviceId)
   if(!deleteDevice) return res.status(404).json({ error: "Device not found" })
+
+  await prisma.userSmartphoneLike.deleteMany({ 
+    where: { 
+      smartphoneId: deviceId 
+    } 
+  })
 
   res.status(200).json({ result: "success", deleteDevice })
 }

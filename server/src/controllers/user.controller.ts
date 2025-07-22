@@ -292,12 +292,7 @@ const addToLikes = async (req: Request, res: Response) => {
   await prisma.userSmartphoneLike.create({
     data: {
       user: { connect: { id: user.id } },
-      smartphone: {
-        connectOrCreate: {
-          where: { id: deviceId },
-          create: { id: deviceId }
-        }
-      }
+      smartphoneId: deviceId
     }
   })
 
