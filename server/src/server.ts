@@ -17,14 +17,25 @@ import { requireAuth } from './middlewares/auth.middleware'
 import { asyncWrapper } from './middlewares/asyncWrapper.middleware'
 import notFound from './middlewares/notFound.middleware'
 import errorHandlerMiddleware from './middlewares/errorHandler.middleware'
+import http from 'http'
+import { Server } from 'socket.io'
 
 export const app = express()
+const server = http.createServer(app)
 const PORT = process.env.PORT || 3000
 
 app.use(cors({
   origin: 'http://localhost:5173',
   credentials: true,   
 }))
+
+export const io = new Server(server, {
+  cors: {
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST']
+  }
+})
+
 app.use(express.json())
 app.use(cookieParser())
 
@@ -74,7 +85,18 @@ app.get('/api/v1', (req: Request, res: Response): void => {
 app.use(notFound)
 app.use(errorHandlerMiddleware)
 
-app.listen(PORT, () => {
+// webSocket
+io.on("connection", socket => {
+  console.log("User connected:", socket.id)
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id)
+  })
+
+  // socket.disconnect()
+})
+
+server.listen(PORT, () => {
   connectMongoDB()
   console.log(`Server running on port ${process.env.PORT}`)
 })
