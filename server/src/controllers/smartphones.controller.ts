@@ -2,7 +2,7 @@ import type { Request, Response } from "express"
 import { phones } from "mockData";
 import deviceModel from "@/models/device.model";
 import prisma from "@/prismaClient";
-import { io } from "@/server";
+import { notification } from "@/server";
 
 const getAllSmartphones = async (req: Request, res: Response)=> {
   const smartphones = await deviceModel.find().lean()
@@ -41,16 +41,16 @@ const createSmartphone = async (req: Request, res: Response) => {
   const deviceData = new deviceModel(req.body)
   const newDevice = await deviceData.save()
   
-  const newDeviceNotification = [{
+  const newDeviceNotification = {
     id: newDevice._id,
     title: `${newDevice.name} - New Device [specification] available NOW!`,
     image: newDevice.image,
     date: newDevice.createdAt,
     description: newDevice.description,
     isRead: false,
-  }]
+  }
 
-  io.emit("newDeviceNotification", newDeviceNotification)
+  notification.emit("newDeviceNotification", newDeviceNotification)
 
   res.status(201).json({ result: "success" })
 }

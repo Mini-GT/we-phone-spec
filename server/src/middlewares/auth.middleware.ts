@@ -9,7 +9,7 @@ import type { User } from "@prisma/client";
 const jwtSecretKey = process.env.JWT_SECRET
 if(!jwtSecretKey) throw new Error("JWT secret key is empty")
 
-interface DecodedToken {
+export interface DecodedToken {
   id: string;
   exp: number;
 }

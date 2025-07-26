@@ -11,14 +11,16 @@ import passport from './services/passport'
 import emailRouter from "./routes/email.route"
 import path from "path"
 import { sign } from 'crypto'
-import { signJwt } from './utils/jwt'
+import { signJwt, verifyJwt } from './utils/jwt'
 import type { User } from '@prisma/client'
-import { requireAuth } from './middlewares/auth.middleware'
+import { requireAuth, type DecodedToken } from './middlewares/auth.middleware'
 import { asyncWrapper } from './middlewares/asyncWrapper.middleware'
 import notFound from './middlewares/notFound.middleware'
 import errorHandlerMiddleware from './middlewares/errorHandler.middleware'
 import http from 'http'
 import { Server } from 'socket.io'
+import prisma from './prismaClient'
+import type { ServerToClientEvents, SocketData } from './types/types'
 
 export const app = express()
 const server = http.createServer(app)
@@ -29,10 +31,11 @@ app.use(cors({
   credentials: true,   
 }))
 
-export const io = new Server(server, {
+export const io = new Server<SocketData, ServerToClientEvents>(server, {
   cors: {
     origin: 'http://localhost:5173',
-    methods: ['GET', 'POST']
+    methods: ['GET', 'POST'],
+    credentials: true
   }
 })
 
@@ -94,6 +97,34 @@ io.on("connection", socket => {
   })
 
   // socket.disconnect()
+})
+
+export const notification = io.of("/notification")
+
+notification.use(async (socket, next) => {
+  const token = socket.handshake.headers.cookie?.split("=")[1] || ''
+
+  try {
+    const decoded = verifyJwt(token) as DecodedToken
+
+    const user = await prisma.user.findUnique({ where: { id: decoded.id } })
+
+    if(!user) return next(new Error("Unauthorized"))
+
+    socket.data.name = user.name
+    next()
+  } catch (error) {
+    next(error as Error)
+  }
+})
+
+notification.on("connection", socket => {
+  console.log("User connected in notification:", socket.data.name)
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected from /notification:', socket.data.name);
+  });
+  // notification.disconnectSockets()
 })
 
 server.listen(PORT, () => {
