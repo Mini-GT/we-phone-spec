@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react'
 import { BellIcon, Bluetooth, CheckIcon } from 'lucide-react'
 import clsx from 'clsx'
-import type { DropDownProps, Smartphone } from '~/types/globals.type'
+import type { DropDownProps, NewDeviceNotificationType, Smartphone } from '~/types/globals.type'
 import { convertToTimeAgo } from '~/utils/formatDate'
-import { io } from 'socket.io-client'
-
-const socket = io('http://localhost:3000')
+import { io } from "socket.io-client";
 
 type NotificationBellProps = {
   open: DropDownProps
@@ -16,7 +14,7 @@ export default function NotificationBell({
   open,
   setOpen
 }: NotificationBellProps) {
-  const [ notifications, setNotifications ] = useState<Smartphone[]>([])
+  const [ notifications, setNotifications ] = useState<NewDeviceNotificationType[]>([])
 
   const toggleDropdown = () => {
     // we must close the other dropdown to avoid multiple opened dropdowns
@@ -27,12 +25,17 @@ export default function NotificationBell({
     setOpen(prev => ({...prev, isNotificationDropdown: !open.isNotificationDropdown}));
   }
   useEffect(() => {
-    socket.on("newDeviceNotification", (message: Smartphone) => {
-      console.log(message)
-      setNotifications(message)
+    const socket = io(import.meta.env.VITE_NOTIFICATION_SOCKET_NAMESPACE, {
+      withCredentials: true, 
     })
 
-    
+    socket.on("connect_error", (err) => {
+      console.error("connection error", err.message)
+    })
+
+    socket.on("newDeviceNotification", (message: NewDeviceNotificationType) => {
+      setNotifications((prev) => [message, ...prev])
+    })
 
     return () => {
       socket.disconnect();
@@ -54,7 +57,7 @@ export default function NotificationBell({
         </button>
       {/* </div> */}
 
-      <div className={`absolute right-0 w-80 rounded-lg bg-gray-800 shadow-xl text-white p-3 mt-1 z-50 transition-all duration-200 ${open.isNotificationDropdown ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"}`}>
+      <div className={`absolute right-0 w-90 rounded-lg bg-gray-800 shadow-xl text-white p-3 mt-1 z-50 transition-all duration-200 ${open.isNotificationDropdown ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"}`}>
         <div className="flex items-center gap-2 py-2 pl-2 text-sm text-muted-foreground">
           <CheckIcon className="w-4 h-4" />
           {/* <button onClick={() => setAllRead(true)} className="hover:underline">
@@ -62,17 +65,17 @@ export default function NotificationBell({
           </button> */}
         </div>
 
-        <div className="space-y-2 max-h-96 overflow-y-auto">
+        <ul className="space-y-2 max-h-96 overflow-y-auto">
           {Array.isArray(notifications) && notifications?.length > 0 ? notifications.map(notif => (
-              <div
+              <li
                 key={notif.id}
                 className="flex items-stretch cursor-pointer gap-4 rounded-md hover:bg-[#2c2c3e] transition p-3"
               >
-                <div className="flex-shrink-0 flex items-center justify-center rounded-sm p-2 bg-white">
+                <div className="flex items-center justify-center rounded-sm px-2 bg-white">
                   <img 
                     src={`/${notif.image}`} 
                     alt="thumb" 
-                    className="object-cover rounded-sm h-12 w-auto" 
+                    className="object-cover h-12 w-auto" 
                   />
                 </div>
                 
@@ -89,14 +92,14 @@ export default function NotificationBell({
                     {convertToTimeAgo(notif.date)}
                   </p>
                 </div>
-              </div>
+              </li>
             )) : null}
           {/* <div className="text-center py-4">No Notifications</div> */}
-        </div>
+        </ul>
 
         <div className="flex items-center justify-center rounded-sm h-10 mt-3 bg-gray-700 cursor-pointer">
           <button className="text-sm text-white cursor-pointer">
-            View alL
+            View all
           </button>
         </div>
       </div>
