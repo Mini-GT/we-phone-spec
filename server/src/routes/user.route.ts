@@ -1,4 +1,6 @@
-import { addNewUser, addToLikes, changeName, changePassword, deleteLikeDevice, deleteUser, getMe, getUserById, getUserLikeListSmartphones, getUserLikes, updateUser } from "@/controllers/user.controller"
+import { addNewUser, changeName, changePassword, deleteUser, getMe, getUserById, updateUser } from "@/controllers/user.controller"
+import { addToLikes, deleteLikeDevice, getUserLikeListSmartphones, getUserLikes } from "@/controllers/userLike.controller"
+import { addNotificationToUser, getUserNotifications } from "@/controllers/userNotification.controller"
 import { asyncWrapper } from "@/middlewares/asyncWrapper.middleware"
 import { actionAuth, requireAuth } from "@/middlewares/auth.middleware"
 import express from "express"
@@ -20,8 +22,9 @@ router.route("/like-list")
 router.route("/add-to-likes")
 .post(asyncWrapper(requireAuth), asyncWrapper(addToLikes)) 
 
-router.route("/:deviceId")
-.delete(asyncWrapper(requireAuth) ,asyncWrapper(deleteLikeDevice))
+router.route("/notification")
+.post(asyncWrapper(requireAuth), asyncWrapper(addNotificationToUser))
+.get(asyncWrapper(requireAuth), asyncWrapper(getUserNotifications))
 
 router.route("/change-password/:userId")
 .patch(asyncWrapper(requireAuth) ,asyncWrapper(changePassword))
@@ -29,11 +32,12 @@ router.route("/change-password/:userId")
 router.route("/change-name/:userId")
 .patch(asyncWrapper(requireAuth) ,asyncWrapper(changeName))
 
+router.route("/:deviceId")
+.delete(asyncWrapper(requireAuth) ,asyncWrapper(deleteLikeDevice))
+
 router.route("/:userId")
 .get(asyncWrapper(requireAuth), asyncWrapper(actionAuth), asyncWrapper(getUserById))
 .patch(asyncWrapper(requireAuth), asyncWrapper(actionAuth), asyncWrapper(updateUser))
 .delete(asyncWrapper(requireAuth), asyncWrapper(actionAuth), asyncWrapper(deleteUser))
-
-
 
 export default router
