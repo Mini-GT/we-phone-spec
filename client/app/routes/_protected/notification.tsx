@@ -7,10 +7,8 @@ import { Spinner } from "~/components/spinner";
 import authService from "~/services/auth.service";
 import type { Smartphone, UserType } from "~/types/globals.type";
 import { useEffect, useState } from "react";
-import { io } from 'socket.io-client'
 import { convertToTimeAgo } from "~/utils/formatDate";
-
-const socket = io('http://localhost:3000')
+import { io } from "socket.io-client";
 
 export function meta({}: MetaFunction) {
   return [
@@ -18,6 +16,7 @@ export function meta({}: MetaFunction) {
     { name: "description", content: "View and manage your notifications." },
   ];
 }
+
 
 export async function loader({request}: LoaderFunctionArgs) {
   const userId = authService.privateRoute(request);
@@ -29,10 +28,15 @@ export default function Notification() {
   const [ notification, setNotification ] = useState<Smartphone[] | null>([])
 
   useEffect(() => {
+    const socket = io('http://localhost:3000/notification', {
+      withCredentials: true, 
+    });
+
     socket.on("newDeviceNotification", (message: Smartphone) => {
       console.log(message)
       setNotification(message)
     })
+    // console.log("notification")
 
     return () => {
       socket.disconnect();
