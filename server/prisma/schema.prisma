@@ -53,10 +53,11 @@ model UserSmartphoneLike {
 enum NotificationType {
   newDevice
   maintenance
+  roleUpdate
 }
 
 model GlobalNotification {
-  id               String                 @unique
+  globalNotificationId               String                 @id
   type             NotificationType       @default(newDevice)
   name             String?
   title            String 
@@ -65,13 +66,19 @@ model GlobalNotification {
 }
 
 model UserNotification {
+  id                      String              @id @default(cuid())
+
   userId                  String
-  globalNotificationId    String
+  globalNotificationId    String?                
+  type NotificationType   @default(newDevice)
+  name                    String?
+  title                   String?
+  image                   String?
   createdAt               DateTime            @default(now())
   isRead                  Boolean             @default(false)
   
   user                    User                @relation(fields: [userId], references: [id])
   
-  @@id([userId, globalNotificationId])
+  @@unique([userId, globalNotificationId])
 }
 

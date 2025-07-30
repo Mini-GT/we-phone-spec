@@ -41,14 +41,15 @@ const createSmartphone = async (req: Request, res: Response) => {
   const deviceData = new deviceModel(req.body)
   const newDevice = await deviceData.save()
   
-  const newDeviceNotification = {
-    id: newDevice._id,
-    title: `${newDevice.name} - New Device [specification] available NOW!`,
-    image: newDevice.image,
-    date: newDevice.createdAt,
-    description: newDevice.description,
-    isRead: false,
-  }
+  const newDeviceNotification = await prisma.globalNotification.create({
+    data: {
+      globalNotificationId: newDevice.id,
+      title: `${newDevice.name} - New Device [specification] available NOW!`,
+      image: newDevice.image,
+      createdAt: newDevice.createdAt,
+      name: newDevice.name ?? ""
+    }
+  })
 
   notification.emit("newDeviceNotification", newDeviceNotification)
 

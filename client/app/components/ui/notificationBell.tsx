@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react'
 import { BellIcon, Bluetooth, CheckIcon } from 'lucide-react'
-import clsx from 'clsx'
 import type { ApiResponse, DropDownProps, NewDeviceNotificationType, Smartphone } from '~/types/globals.type'
 import { convertToTimeAgo } from '~/utils/formatDate'
 import { io } from "socket.io-client";
 import notificationService from '~/services/notification.service'
-import { Link, useMatches, type LoaderFunctionArgs } from 'react-router'
+import { Link } from 'react-router'
 
 type NotificationBellProps = {
   open: DropDownProps
@@ -14,26 +13,13 @@ type NotificationBellProps = {
 
 type NotificationType = ApiResponse["message"] & {
   notifications: NewDeviceNotificationType[]
-  userNotificationsFullData: UserNotificationFullData[]
-}
-
-type UserNotificationFullData = {
-  userId: string
-  globalNotificationId: string
-  createdAt: Date
-  isRead: boolean
 }
 
 export default function NotificationBell({
   open,
   setOpen
 }: NotificationBellProps) {
-  // const matches = useMatches()
-  // const { data } = matches[0] as NotificationType
-  // const notificationData = data.notif.notifications
   const [ notifications, setNotifications ] = useState<NewDeviceNotificationType[]>([])
-  const [ isRead, setIsRead ] = useState<UserNotificationFullData[]>([])
-  const unreadCount = isRead.filter(n => !n.isRead).length;
 
   const toggleDropdown = () => {
     // close the other dropdown to avoid multiple opened dropdowns
@@ -49,13 +35,11 @@ export default function NotificationBell({
       withCredentials: true, 
     })
 
+    // initial load of notification data
     const fetchNotifationData = async () => {
       const notificationData = await notificationService.getNotifications()
       if(notificationData.message.result === "success") {
         const data = (notificationData.message as NotificationType).notifications
-        const userNotif = (notificationData.message as NotificationType).userNotificationsFullData
-        console.log(userNotif)
-        setIsRead(userNotif)
         setNotifications(data)
       }
     }
@@ -81,7 +65,7 @@ export default function NotificationBell({
     console.log(id)
     // setIsRead()
   }
-
+  
   return (
     <div className="relative">
       {/* <div className="relative"> */}
@@ -91,7 +75,7 @@ export default function NotificationBell({
         >
           <BellIcon className="w-6 h-6 text-white cursor-pointer" />
           <span className="absolute -top-1 -right-1 bg-red-500 text-xs text-white rounded-full px-1.5">
-            {unreadCount ? unreadCount : null}
+            {/* {unreadCount ? unreadCount : null} */}
           </span>
         </button>
       {/* </div> */}
@@ -107,9 +91,9 @@ export default function NotificationBell({
         <div className="space-y-2 max-h-96 overflow-y-auto">
           {Array.isArray(notifications) && notifications?.length > 0 ? notifications.map((notif, i) => (
               <Link 
-                to={`/smartphones/${notif.name}-${notif.id}`} 
-                key={notif.id}
-                onClick={() => handleClick(notif.id)}
+                to={`/smartphones/${notif.name}-${notif.globalNotificationId}`} 
+                key={notif.globalNotificationId}
+                onClick={() => handleClick(notif.globalNotificationId)}
               >
                 <div
                   className="flex items-stretch cursor-pointer gap-4 rounded-md hover:bg-[#2c2c3e] transition p-3 z-10"
@@ -123,16 +107,11 @@ export default function NotificationBell({
                   </div>
                   
                   <div className="flex flex-col justify-between rounded-md flex-1 ">
-                    <p className={`text-sm ${isRead[i].isRead ? "font-semibold" : "font-normal"} text-pink-400 mb-2`}>
+                    <p className={`text-sm ${notif.isRead ? "font-semibold" : "font-normal"} text-pink-400 mb-2`}>
                       {notif.title}
                     </p>
-                    
-                    {/* <div className="text-pink-400 text-sm flex-1 mb-2 overflow-hidden line-clamp-4">
-                      {notif.description || "No description available."}
-                    </div> */}
-                    
                     <p className="text-xs text-gray-500 mt-auto">
-                      {convertToTimeAgo(notif.createdAt)}
+                      {convertToTimeAgo(notif.createdAt) || ""}
                     </p>
                   </div>
                 </div>
