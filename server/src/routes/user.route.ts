@@ -1,6 +1,6 @@
 import { addNewUser, changeName, changePassword, deleteUser, getMe, getUserById, updateUser } from "@/controllers/user.controller"
 import { addToLikes, deleteLikeDevice, getUserLikeListSmartphones, getUserLikes } from "@/controllers/userLike.controller"
-import { addNotificationToUser, getUserNotifications } from "@/controllers/userNotification.controller"
+import { addNotificationToUser, deleteNotification, getUserNotifications, markNotificationAsRead } from "@/controllers/userNotification.controller"
 import { asyncWrapper } from "@/middlewares/asyncWrapper.middleware"
 import { actionAuth, requireAuth } from "@/middlewares/auth.middleware"
 import express from "express"
@@ -25,6 +25,12 @@ router.route("/add-to-likes")
 router.route("/notification")
 .post(asyncWrapper(requireAuth), asyncWrapper(addNotificationToUser))
 .get(asyncWrapper(requireAuth), asyncWrapper(getUserNotifications))
+
+router.route("/notification/mark-read")
+.post(asyncWrapper(requireAuth), asyncWrapper(markNotificationAsRead))
+
+router.route("/notification/:notifId")
+.delete(asyncWrapper(requireAuth), asyncWrapper(deleteNotification))
 
 router.route("/change-password/:userId")
 .patch(asyncWrapper(requireAuth) ,asyncWrapper(changePassword))

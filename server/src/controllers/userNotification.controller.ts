@@ -11,12 +11,12 @@ const getUserNotifications = async (req: Request, res: Response) => {
       userId: user.id
     },
     select: {
-      globalNotificationId: true
+      globalNotificationId: true,
     }
   })
   
   const userNotifIds = userNotifications.map(n => n.globalNotificationId)
-  
+
   // find global notifs data thats not in userNotif's Id (we do this to see if user has missed some notifications)
   const unseenGlobalNotifs = await prisma.globalNotification.findMany({
     where: {
@@ -39,6 +39,7 @@ const getUserNotifications = async (req: Request, res: Response) => {
       title: notif.title,
       image: notif.image,
       createdAt: notif.createdAt,
+      description: notif.description,
     }))
     
     await prisma.userNotification.createMany({
@@ -47,9 +48,11 @@ const getUserNotifications = async (req: Request, res: Response) => {
     })
   }
 
+  // only fetch those notifs that are not deleted
   const notifications = await prisma.userNotification.findMany({
     where: {
-      userId: user.id
+      userId: user.id,
+      isDeleted: false
     }, 
     orderBy: {
       createdAt: "desc"
@@ -61,7 +64,8 @@ const getUserNotifications = async (req: Request, res: Response) => {
       type: true,
       image: true,
       isRead: true,
-      createdAt: true
+      createdAt: true,
+      description: true
     }
   })
   
@@ -80,13 +84,65 @@ const addNotificationToUser = async (req: Request, res: Response) => {
       title: newNotification.title,
       image: newNotification.image,
       createdAt: newNotification.createdAt,
+      description: newNotification.description
     }
   })
 
   return res.status(200).json({ result: "success", message: "Notification Added" })
 }
 
+const markNotificationAsRead = async (req: Request, res: Response) => {
+  const { notifId } = req.body
+  const user = req.user as User
+  
+  const existingNotification = await prisma.userNotification.findUnique({
+    where: {
+      userId_globalNotificationId: {
+        userId: user.id,
+        globalNotificationId: notifId
+      }
+    }
+  })
+
+  if(existingNotification) {
+    await prisma.userNotification.update({
+      where: {
+        userId_globalNotificationId: {
+          userId: user.id,
+          globalNotificationId: notifId
+        }
+      }, 
+      data: {
+        isRead: true
+      }
+    })
+  }
+
+  return res.status(200)
+}
+
+const deleteNotification = async (req: Request, res: Response) => {
+  const { notifId } = req.params
+  const user = req.user as User
+
+  if(!notifId) return res.status(403).json({ result: "failed", message: "No notification Id provide" })
+  
+  const resu = await prisma.userNotification.update({
+    where: {
+      userId_globalNotificationId: {
+        userId: user.id,
+        globalNotificationId: notifId
+      }
+    },
+    data: {
+      isDeleted: true
+    }
+  })
+}
+
 export {
   getUserNotifications,
   addNotificationToUser,
+  markNotificationAsRead,
+  deleteNotification,
 }
