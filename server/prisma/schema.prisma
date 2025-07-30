@@ -61,6 +61,7 @@ model GlobalNotification {
   type             NotificationType       @default(newDevice)
   name             String?
   title            String 
+  description      String               @default("")
   image            String
   createdAt        DateTime               @default(now())
 }
@@ -72,10 +73,12 @@ model UserNotification {
   globalNotificationId    String?                
   type NotificationType   @default(newDevice)
   name                    String?
+  description             String?
   title                   String?
   image                   String?
   createdAt               DateTime            @default(now())
   isRead                  Boolean             @default(false)
+  isDeleted               Boolean             @default(false)
   
   user                    User                @relation(fields: [userId], references: [id])
   
