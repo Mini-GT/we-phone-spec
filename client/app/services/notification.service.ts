@@ -47,8 +47,47 @@ class NotificationService {
   async getNotifications(token?: string): Promise<ApiResponse> {
     try {
       const response = await this.api.get(
-        "/notification", 
+        "/notification", {
+        headers: {
+          Cookie: token
+        }
+      });
+
+      const result = {
+        statusCode: response.status,
+        message: response.data
+      }
+      return result;
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+  
+  async markNotificationAsRead(notifId: string): Promise<ApiResponse> {
+    console.log(notifId)
+    try {
+      const response = await this.api.post(
+        "/notification/mark-read", { notifId }
       );
+
+      const result = {
+        statusCode: response.status,
+        message: response.data
+      }
+      return result;
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  async deleteNotification(token: string, notifId: string): Promise<ApiResponse> {
+    try {
+      const response = await this.api.delete(
+        `/notification/${notifId}`, {
+        headers: {
+          Cookie: token
+        }
+      })
 
       const result = {
         statusCode: response.status,
