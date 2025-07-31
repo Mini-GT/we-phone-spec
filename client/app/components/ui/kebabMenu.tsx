@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { Form, useFetcher } from "react-router";
+import { Form, useFetcher, useNavigation } from "react-router";
 import type { KebabMenuProps } from "~/types/globals.type";
 
-export default function KebabMenu({ deviceId }: KebabMenuProps) {
+export default function KebabMenu({ deviceId, action, setNotifications }: KebabMenuProps) {
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const fetcher = useFetcher()
+  const navigation = useNavigation()
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -20,20 +21,28 @@ export default function KebabMenu({ deviceId }: KebabMenuProps) {
   }, [])
 
   const handleRemove = () => {
+    if(setNotifications) {
+      setNotifications(prevItems => 
+        prevItems
+          .map(item => item.globalNotificationId === deviceId ? { ...item, isDeleted: true } : item)
+          .filter(item => !item.isDeleted)
+      )
+    }
+
     fetcher.submit(
       { smartphoneId: deviceId },
       {
         method: "post",
-        action: "/user/like-list"
+        action
       }
     )
   }
 
   return (
-    <div className="absolute top-1 right-1" ref={menuRef}> 
+    <div className="absolute top-1 right-1 z-10" ref={menuRef}> 
       <button
         onClick={() => setOpen(!open)}
-        className="w-8 h-8 flex items-center justify-center bg-gray-900 rounded-full text-white hover:bg-gray-700 cursor-pointer"
+        className="w-8 h-8 flex items-center justify-center bg-gray-800 rounded-full text-white hover:bg-gray-700 cursor-pointer"
       >
         <svg
           className="w-5 h-5"
@@ -48,6 +57,7 @@ export default function KebabMenu({ deviceId }: KebabMenuProps) {
         <div className="absolute right-0 mt-1 w-32 bg-white shadow-md rounded z-50 overflow-hidden">
           <button 
             className="block w-full text-left px-4 py-2 hover:bg-gray-200 active:bg-white text-sm text-red-700 cursor-pointer"
+            disabled={navigation.formAction === action}
             onClick={handleRemove}
           >
             Remove

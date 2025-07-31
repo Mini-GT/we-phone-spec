@@ -65,7 +65,8 @@ const getUserNotifications = async (req: Request, res: Response) => {
       image: true,
       isRead: true,
       createdAt: true,
-      description: true
+      description: true,
+      isDeleted: true,
     }
   })
   
@@ -138,6 +139,8 @@ const deleteNotification = async (req: Request, res: Response) => {
       isDeleted: true
     }
   })
+
+  console.log(resu.isDeleted)
 }
 
 export {
