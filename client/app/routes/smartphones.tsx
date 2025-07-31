@@ -31,7 +31,7 @@ export async function loader({request}: LoaderFunctionArgs) {
 export default function Smartphones() {
   const data = useLoaderData<typeof loader>()
   return (
-    <div className='flex gap-4 mx-15 my-4'>
+    <div className='flex flex-col lg:flex-row gap-4'>
       {/* Smartphones List */}
       <Pagination 
         data={data}
@@ -39,7 +39,7 @@ export default function Smartphones() {
       />
 
       {/* TOP 10 */}
-      <div className='w-full  my-4'>
+      <div className='w-[45%]'>
         <TopTenSection />
       </div>
     </div>

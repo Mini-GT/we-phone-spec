@@ -41,7 +41,7 @@ export default function AddDeviceForm({
       
       <div className="bg-white shadow-x w-[60vw]">
         <div className="flex h-full mx-8 justify-center">
-          {formData.image?.trim() ? <img src={formData.image} alt={formData.name} className='h-[15vh]' /> : null}
+          {formData.image?.trim() ? <img src={formData.image || undefined} alt={formData.name} className='h-[15vh]' /> : null}
         </div>
         <div className="flex flex-col lg:flex-row">
           {/* Form Content */}

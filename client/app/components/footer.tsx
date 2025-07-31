@@ -14,8 +14,8 @@ export default function Footer() {
   const [selectedBrand] = useState<string>("");
 
   return (
-    <div className="mx-15 mt-15 text-white">
-      <header className="flex items-center gap-8 border-b border-gray-300 pb-4 mb-4">
+    <div className="mt-15 text-white">
+      <header className="flex flex-col lg:flex-row items-center gap-8 border-b border-gray-300 pb-4 mb-4">
         <NavLink to="/" className="flex items-center mb-5 md:mb-0">
           <span className="text-4xl font-black text-gray-900 select-none">
               We<span className="text-indigo-600">PhoneSpec</span>

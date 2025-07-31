@@ -92,7 +92,7 @@ export default function LikeList() {
                     className="px-2 py-2"
                   >
                     <div className="relative">
-                      <img src={`/${item.image}`} alt={item.name} className="" />
+                      <img src={`/imgs/phones/${item.image || "phone_placeholder.svg"}`} alt={item.name} className="" />
                       <div className="flex px-2 bg-black rounded-sm gap-1 cursor-default absolute bottom-0 m-5">
                         <img src="/eyeVector.svg" alt="views" className="" />
                       </div>
@@ -105,7 +105,7 @@ export default function LikeList() {
                       </button>
                     </div>
                   </Link>
-                  <KebabMenu deviceId={item._id} />
+                  <KebabMenu action="/user/like-list" deviceId={item._id} />
                 </li>
               )) : null}
             </ul>

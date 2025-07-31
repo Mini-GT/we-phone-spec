@@ -223,7 +223,7 @@ export default function Smartphone() {
       <div className="flex bg-white rounded-b-2xl shadow-md">
         <div className="p-4 flex flex-col gap-6">
           <img
-            src={`/${smartphone.image}`}
+            src={`/imgs/phones/${smartphone.image || "phone_placeholder.svg"}`}
             alt={smartphone.name}
             className="w-1/5 h-1/4 max-w-xs mx-auto rounded-lg"
           />

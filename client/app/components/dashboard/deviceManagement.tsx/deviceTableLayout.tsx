@@ -91,7 +91,7 @@ export default function DeviceTableLayout({
               <td className=" max-w-[10vw]">
                 <div className="flex items-center gap-3">
                   <img 
-                    src={device.image ?? "/userIcon.svg"} 
+                    src={`/imgs/phones/${device.image || "phone_placeholder.svg"}`} 
                     alt={device.name}
                     className="w-8 h-8 object-cover"
                   />

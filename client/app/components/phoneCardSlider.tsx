@@ -122,7 +122,7 @@ export default function PhoneCardSlider({
                 </div>
                 <div className="bg-white flex justify-end md:w-1/2">
                   <div className="overflow-hidden rounded-md">
-                    <img src={phone.image} alt={phone.name} className="w-[350px]" />
+                    <img src={`/imgs/phones/${phone.image || "phone_placeholder.svg"}`} alt={phone.name} className="w-[350px]" />
                   </div>
                 </div>
               </div>

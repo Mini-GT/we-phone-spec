@@ -91,7 +91,7 @@ export default function UserMenuNav({
           {/* <Heart fill="#e74c3c" strokeWidth={0} className="mr-1 w-5 h-5" />
           <span>Like List</span> */}
         </NavLink>
-        <NavLink 
+        {/* <NavLink 
           to="/user/notification"
           className={`flex items-center ${tab === "notificaton" ? "text-pink-300" : "text-gray-400" } pb-2 cursor-pointer hover:text-pink-300`}
         >
@@ -106,9 +106,7 @@ export default function UserMenuNav({
               </div>
             </div>
           )}
-          {/* <Bell fill="yellow" strokeWidth={0} className="mr-1 w-5 h-5" />
-          <span>Notification</span> */}
-        </NavLink>
+        </NavLink> */}
         <NavLink 
           to="/user/settings"
           className={`flex items-center ${tab === "settings" ? "text-pink-300" : "text-gray-400" } pb-2 cursor-pointer hover:text-pink-300`}

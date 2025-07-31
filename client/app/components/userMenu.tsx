@@ -112,13 +112,13 @@ export default function UserMenu({
             >
               Like List
             </NavLink>
-            <NavLink
+            {/* <NavLink
               to="/user/notification"
               className="flex text-left px-4 py-2 rounded hover:bg-gray-700 text-white"
               onClick={() => setOpen(prev => ({...prev, isProfileMenu: false}))} // Close the dropdown when navigating
             >
               Notification
-            </NavLink>
+            </NavLink> */}
             <NavLink
               to="/user/settings"
               className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white"

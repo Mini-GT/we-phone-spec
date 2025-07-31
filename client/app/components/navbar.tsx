@@ -4,6 +4,7 @@ import { usePopupButton } from "~/context/popupButtonContext"
 import UserMenu from "./userMenu"
 import { useAuth } from "~/context/authContext"
 import type { UserType } from "~/types/globals.type"
+import NotificationBell from "./ui/notificationBell"
 
 export default function Navbar() {
   const { setPopupButton } = usePopupButton()
@@ -17,8 +18,8 @@ export default function Navbar() {
   }
 
   return (
-    <header className="w-full text-gray-700 bg-white shadow-sm">
-      <div className="mx-15 flex flex-col justify-between md:flex-row items-center py-5">
+    <header className="w-full text-gray-700 bg-white border-b-1">
+      <div className="lg:mx-15 md:mx-10 sm:mx-5 flex flex-col justify-between md:flex-row items-center gap-2 py-5">
         <div className="flex flex-col md:flex-row items-center">
           <NavLink to="/" className="flex items-center mb-5 md:mb-0">
             <span className="text-4xl font-black text-gray-900 select-none">
@@ -61,7 +62,7 @@ export default function Navbar() {
             </NavLink>
             <NavLink
               to="/about"
-              className="mr-5 font-medium text-gray-600 hover:text-gray-900"
+              className="font-medium text-gray-600 hover:text-gray-900"
             >
               About
             </NavLink>

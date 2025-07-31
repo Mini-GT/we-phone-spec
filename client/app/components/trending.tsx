@@ -36,8 +36,8 @@ export default function Trending({
           {smartphones.map((phone, index) => (
             <div key={phone._id} className="py-4 pr-4 overflow-hidden">
               <div className="flex">
-                <div className="flex items-end text-black h-54 overflow-hidden">
-                  <div className="flex flex-col">
+                <div className="items-end text-black">
+                  <div className="flex flex-col w-fit">
                     <div className="flex items-start">
                       <span className="mb-2 h-40 text-nowrap vertical_text text-sm text-black mt-2 text-start overflow-hidden truncate">{phone.name}</span>
                     </div> 
@@ -48,7 +48,7 @@ export default function Trending({
                 </div>
                 <div>
                   <img               
-                    src={`/${phone.image}`}
+                    src={`/imgs/phones/${phone.image || "phone_placeholder.svg"}`}
                     alt={phone.name}
                     className="w-44"
                   />
