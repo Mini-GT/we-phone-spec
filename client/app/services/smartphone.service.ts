@@ -105,6 +105,19 @@ async updateSmartphone(id: string, updatedForm: Partial<Smartphone>, token: stri
     }
   }
 
+  // get smartphone by search
+  async searchSmartphone(query: string) {
+    try {
+      const response = await this.api.get("/smartphones/search", {
+        params: { q: query }
+      });
+      console.log(response.data)
+      return response.data
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
   // Price range filter
   // async getSmartphonesByPriceRange(minPrice: number, maxPrice: number): Promise<Smartphone[]> {
   //   return this.getSmartphones({ minPrice, maxPrice });
