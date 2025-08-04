@@ -9,15 +9,39 @@ const getAllSmartphones = async (req: Request, res: Response)=> {
   res.json({ phones: smartphones })
 }
 
-const getSmartphone = async (req: Request, res: Response) => {
-  const { deviceId } = req.params
-  const result = await deviceModel.findById(deviceId).lean().exec()
+const createSmartphone = async (req: Request, res: Response) => {
+  // console.log(req.body)
+  const deviceData = new deviceModel(req.body)
+  const newDevice = await deviceData.save()
   
-  if(!result) {
-    return res.json({ msg: "No Device found"})
+  const newDeviceNotification = await prisma.globalNotification.create({
+    data: {
+      globalNotificationId: newDevice.id,
+      title: `${newDevice.name} - New Device [specification] available NOW!`,
+      image: newDevice.image,
+      createdAt: newDevice.createdAt,
+      name: newDevice.name ?? "",
+      description: newDevice.description
+    }
+  })
+
+  notification.emit("newDeviceNotification", newDeviceNotification)
+
+  res.status(201).json({ result: "success" })
+}
+
+const searchSmartphone = async (req: Request, res: Response) => {
+  const { q } = req.query;
+
+  if (typeof q !== "string") {
+    return res.status(400).json({ result: "failed", message: "Query is not valid" });
   }
 
-  res.json({ msg: result })
+  const data = await deviceModel.find({
+    name: { $regex: q, $options: "i" },
+  }).limit(5)
+
+  return res.status(200).json({ result: "success", data })
 }
 
 const getSmartphonesByBrand = async (req: Request, res: Response) => {
@@ -36,24 +60,15 @@ const getSmartphonesByBrand = async (req: Request, res: Response) => {
   res.json({ result })
 }
 
-const createSmartphone = async (req: Request, res: Response) => {
-  // console.log(req.body)
-  const deviceData = new deviceModel(req.body)
-  const newDevice = await deviceData.save()
+const getSmartphone = async (req: Request, res: Response) => {
+  const { deviceId } = req.params
+  const result = await deviceModel.findById(deviceId).lean().exec()
   
-  const newDeviceNotification = await prisma.globalNotification.create({
-    data: {
-      globalNotificationId: newDevice.id,
-      title: `${newDevice.name} - New Device [specification] available NOW!`,
-      image: newDevice.image,
-      createdAt: newDevice.createdAt,
-      name: newDevice.name ?? ""
-    }
-  })
+  if(!result) {
+    return res.json({ msg: "No Device found"})
+  }
 
-  notification.emit("newDeviceNotification", newDeviceNotification)
-
-  res.status(201).json({ result: "success" })
+  res.json({ msg: result })
 }
 
 const updateSmartphone = async (req: Request, res: Response) => {
@@ -87,5 +102,6 @@ export {
   createSmartphone,
   getSmartphonesByBrand,
   updateSmartphone,
-  deleteSmartphone
+  deleteSmartphone,
+  searchSmartphone
 }
