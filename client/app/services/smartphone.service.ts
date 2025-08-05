@@ -111,6 +111,16 @@ async updateSmartphone(id: string, updatedForm: Partial<Smartphone>, token: stri
       const response = await this.api.get("/smartphones/search", {
         params: { q: query }
       });
+      return response.data
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  // get smartphone by search
+  async viewSmartphone(devicecId: string) {
+    try {
+      const response = await this.api.patch(`/smartphones/view/${devicecId}`);
       console.log(response.data)
       return response.data
     } catch (error) {

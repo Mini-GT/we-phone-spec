@@ -1,11 +1,10 @@
-import { phones } from 'mockData';
-import { useState } from 'react';
-import { Link, NavLink, useLoaderData, type LoaderFunctionArgs } from 'react-router';
+import { useLoaderData, type LoaderFunctionArgs } from 'react-router';
 import TopTenSection from '~/components/topTenSection';
-import { formatNumberToCompact } from '~/utils/formatNumber';
 import type { Route } from './+types/smartphones';
 import Pagination from '~/components/pagination';
 import smartphoneService from '~/services/smartphone.service';
+import { useState } from 'react';
+import type { SelectedTabType } from '~/types/globals.type';
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -13,6 +12,7 @@ export function meta({}: Route.MetaArgs) {
     { name: "description", content: "Check the specification of your favorite smartphone!" },
   ];
 }
+
 
 export async function loader({request}: LoaderFunctionArgs) {
   try {
@@ -30,6 +30,8 @@ export async function loader({request}: LoaderFunctionArgs) {
 
 export default function Smartphones() {
   const data = useLoaderData<typeof loader>()
+  const [selectedTab, setSelectedTab] = useState<SelectedTabType>('Today');
+
   return (
     <div className='flex flex-col lg:flex-row gap-4'>
       {/* Smartphones List */}
@@ -39,8 +41,13 @@ export default function Smartphones() {
       />
 
       {/* TOP 10 */}
-      <div className='w-[45%]'>
-        <TopTenSection />
+      <div className='flex flex-col gap-2 w-full'>
+        <TopTenSection selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
+        <div className="mt-4">
+          {selectedTab === 'Today' && <div>Showing Today data</div>}
+          {selectedTab === 'Week' && <div>Showing Weekly data</div>}
+          {selectedTab === 'Month' && <div>Showing Monthly data</div>}
+        </div>
       </div>
     </div>
   );

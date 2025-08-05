@@ -1,6 +1,16 @@
 import mongoose, { type InferSchemaType } from 'mongoose';
 
 const deviceSchema = new mongoose.Schema({
+    stats: {
+      today: { type: Number, default: 0 },
+      week: { type: Number, default: 0 },
+      month: { type: Number, default: 0 },
+      lastReset: {
+        today: { type: Date, default: null },
+        week: { type: Date, default: null },
+        month: { type: Date, default: null },
+      },
+    },
     name: {type: String, trim: true},
     brand: {type: String, trim: true},
     views: {type: Number, default: 0},
@@ -78,6 +88,9 @@ deviceSchema.index({ brand: 1 })
 deviceSchema.index({ name: 1 })
 deviceSchema.index({ views: -1 })
 deviceSchema.index({ likes: -1 })
+deviceSchema.index({ "stats.today": 1 })
+deviceSchema.index({ "stats.week": 1 })
+deviceSchema.index({ "stats.month": 1 })
 
 type Device = InferSchemaType<typeof deviceSchema>
 

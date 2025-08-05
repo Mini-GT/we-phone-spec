@@ -3,6 +3,7 @@ import { phones } from "mockData";
 import deviceModel from "@/models/device.model";
 import prisma from "@/prismaClient";
 import { notification } from "@/server";
+import { changeDeviceStats } from "@/utils/smartphoneView";
 
 const getAllSmartphones = async (req: Request, res: Response)=> {
   const smartphones = await deviceModel.find().lean()
@@ -96,6 +97,13 @@ const deleteSmartphone = async (req: Request, res: Response) => {
   res.status(200).json({ result: "success", deleteDevice })
 }
 
+const viewSmartphone = async (req: Request, res: Response) => {
+  const { deviceId } = req.params
+  if(!deviceId) return res.status(404).json({ error: "Device not found" })
+  changeDeviceStats(deviceId)
+  res.status(204)
+}
+
 export {
   getAllSmartphones,
   getSmartphone,
@@ -103,5 +111,6 @@ export {
   getSmartphonesByBrand,
   updateSmartphone,
   deleteSmartphone,
-  searchSmartphone
+  searchSmartphone,
+  viewSmartphone,
 }

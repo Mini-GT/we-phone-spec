@@ -5,7 +5,8 @@ import {
   createSmartphone, 
   updateSmartphone, 
   deleteSmartphone, 
-  searchSmartphone 
+  searchSmartphone, 
+  viewSmartphone
 } from "@/controllers/smartphones.controller"
 import { asyncWrapper } from "@/middlewares/asyncWrapper.middleware"
 import { actionAuth, requireAuth } from "@/middlewares/auth.middleware"
@@ -24,6 +25,9 @@ router.route("/search")
 
 router.route("/brand-list/:brand")
 .get(asyncWrapper(getSmartphonesByBrand))
+
+router.route("/view/:deviceId")
+.patch(asyncWrapper(viewSmartphone))
 
 router.route("/:deviceId")
 .get(asyncWrapper(getSmartphone))
