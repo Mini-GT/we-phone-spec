@@ -12,13 +12,16 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader({request}: Route.LoaderArgs) {
-  const res = await smartphoneService.getSmartphones()
-  const smartphone = res?.data
-  return smartphone.phones
+  const res = await smartphoneService.getTopDeviceViewStats()
+  const smartphone = res?.topToday
+  return smartphone
 }
 
 export default function Home() {
 const smartphones = useLoaderData<typeof loader>()
+  if (!smartphones) {
+    return <p>Loading...</p>;
+  }
   return (
     <div className="lg:mx-15 overflow-x-hidden">
       <PhoneCardSlider smartphones={smartphones} />
