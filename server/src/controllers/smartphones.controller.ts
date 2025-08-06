@@ -10,6 +10,22 @@ const getAllSmartphones = async (req: Request, res: Response)=> {
   res.json({ phones: smartphones })
 }
 
+const getTopDeviceViewStats = async (req: Request, res: Response) => {
+  const topToday = await deviceModel.find()
+  .sort({ "stats.today": 1 })
+  .limit(10)
+
+  const topWeek = await deviceModel.find()
+  .sort({ "stats.week": 1 })
+  .limit(10)
+
+  const topMonth = await deviceModel.find()
+  .sort({ "stats.month": 1 })
+  .limit(10)
+
+  res.status(200).json({ result: "success", topToday, topWeek, topMonth})
+} 
+
 const createSmartphone = async (req: Request, res: Response) => {
   // console.log(req.body)
   const deviceData = new deviceModel(req.body)
@@ -100,9 +116,11 @@ const deleteSmartphone = async (req: Request, res: Response) => {
 const viewSmartphone = async (req: Request, res: Response) => {
   const { deviceId } = req.params
   if(!deviceId) return res.status(404).json({ error: "Device not found" })
-  changeDeviceStats(deviceId)
-  res.status(204)
+  await changeDeviceStats(deviceId)
+  res.sendStatus(200)
 }
+
+
 
 export {
   getAllSmartphones,
@@ -113,4 +131,5 @@ export {
   deleteSmartphone,
   searchSmartphone,
   viewSmartphone,
+  getTopDeviceViewStats,
 }

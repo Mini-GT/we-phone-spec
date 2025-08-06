@@ -6,7 +6,8 @@ import {
   updateSmartphone, 
   deleteSmartphone, 
   searchSmartphone, 
-  viewSmartphone
+  viewSmartphone,
+  getTopDeviceViewStats,
 } from "@/controllers/smartphones.controller"
 import { asyncWrapper } from "@/middlewares/asyncWrapper.middleware"
 import { actionAuth, requireAuth } from "@/middlewares/auth.middleware"
@@ -22,6 +23,9 @@ router.route("/")
 
 router.route("/search")
 .get(asyncWrapper(searchSmartphone))
+
+router.route("/top-view-stats")
+.get(asyncWrapper(getTopDeviceViewStats))
 
 router.route("/brand-list/:brand")
 .get(asyncWrapper(getSmartphonesByBrand))
