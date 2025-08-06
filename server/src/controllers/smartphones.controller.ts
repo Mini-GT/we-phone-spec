@@ -14,14 +14,17 @@ const getTopDeviceViewStats = async (req: Request, res: Response) => {
   const topToday = await deviceModel.find()
   .sort({ "stats.today": 1 })
   .limit(10)
+  .lean()
 
   const topWeek = await deviceModel.find()
   .sort({ "stats.week": 1 })
   .limit(10)
+  .lean()
 
   const topMonth = await deviceModel.find()
   .sort({ "stats.month": 1 })
   .limit(10)
+  .lean()
 
   res.status(200).json({ result: "success", topToday, topWeek, topMonth})
 } 
