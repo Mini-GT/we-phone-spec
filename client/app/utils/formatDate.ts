@@ -1,3 +1,8 @@
+import dayjs from "dayjs"
+import relativeTime from "dayjs/plugin/relativeTime"
+
+dayjs.extend(relativeTime)
+
 const toReadableDate = (isoString: string): string => {
   const date = new Date(isoString);
   const year = date.getUTCFullYear();
@@ -6,6 +11,11 @@ const toReadableDate = (isoString: string): string => {
   return `${year}-${month}-${day}`;
 };
 
+const convertToTimeAgo = (timestamp: Date) => {
+  return dayjs(timestamp).fromNow()
+}
+
 export {
   toReadableDate,
+  convertToTimeAgo 
 }
