@@ -101,6 +101,66 @@ const updateSmartphone = async (req: Request, res: Response) => {
   res.json({ result: "success", updated });
 }
 
+const getTopViewedSmartphones = async (req: Request, res: Response) => {
+  const limitNumber = parseInt(req.query.limitNumber as string)
+  const sort = req.query.sort as "asc" | "desc"
+
+  if (isNaN(limitNumber) || !['asc', 'desc'].includes(sort)) {
+    return res.status(400).json({ error: "Invalid query parameters" });
+  }
+  
+  const topViewed = await deviceModel.find()
+    .sort({ views: sort === 'asc' ? 1 : -1 })
+    .limit(limitNumber ?? null)
+    .lean()
+
+  if (!topViewed || topViewed.length === 0) {
+    return res.status(404).json({ error: "No top viewed smartphones found" });
+  }
+
+  res.status(200).json({ result: "success", topViewed });
+}
+
+const getTopLikedSmartphones = async (req: Request, res: Response) => {
+  const limitNumber = parseInt(req.query.limitNumber as string)
+  const sort = req.query.sort as "asc" | "desc"
+
+  if (isNaN(limitNumber) || !['asc', 'desc'].includes(sort)) {
+    return res.status(400).json({ error: "Invalid query parameters" });
+  }
+  
+  const topLiked = await deviceModel.find()
+    .sort({ likes: sort === 'asc' ? 1 : -1 })
+    .limit(limitNumber ?? null)
+    .lean()
+
+  if (!topLiked || topLiked.length === 0) {
+    return res.status(404).json({ error: "No top viewed smartphones found" });
+  }
+
+  res.status(200).json({ result: "success", topLiked});
+}
+
+const getNewAddedSmartphones = async (req: Request, res: Response) => {
+  const limitNumber = parseInt(req.query.limitNumber as string)
+  const sort = req.query.sort as "asc" | "desc"
+
+  if (isNaN(limitNumber) || !['asc', 'desc'].includes(sort)) {
+    return res.status(400).json({ error: "Invalid query parameters" });
+  }
+  
+  const newAddedSmartphones = await deviceModel.find()
+    .sort({ createdAt: sort === 'asc' ? 1 : -1 })
+    .limit(limitNumber ?? null)
+    .lean()
+
+  if (!newAddedSmartphones || newAddedSmartphones.length === 0) {
+    return res.status(404).json({ error: "No top viewed smartphones found" });
+  }
+
+  res.status(200).json({ result: "success", newAddedSmartphones });
+}
+
 const deleteSmartphone = async (req: Request, res: Response) => {
   const { deviceId } = req.params
   
@@ -116,7 +176,7 @@ const deleteSmartphone = async (req: Request, res: Response) => {
   res.status(200).json({ result: "success", deleteDevice })
 }
 
-const viewSmartphone = async (req: Request, res: Response) => {
+const incrementViewSmartphone = async (req: Request, res: Response) => {
   const { deviceId } = req.params
   if(!deviceId) return res.status(404).json({ error: "Device not found" })
   await changeDeviceStats(deviceId)
@@ -133,6 +193,9 @@ export {
   updateSmartphone,
   deleteSmartphone,
   searchSmartphone,
-  viewSmartphone,
+  incrementViewSmartphone,
   getTopDeviceViewStats,
+  getTopViewedSmartphones,
+  getTopLikedSmartphones,
+  getNewAddedSmartphones ,
 }
