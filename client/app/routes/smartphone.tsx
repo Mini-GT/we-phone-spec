@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import type { Route } from "./+types/smartphone";
 import smartphoneService from "~/services/smartphone.service";
 import { Card, CardContent } from "../components/ui/card";
@@ -6,12 +5,12 @@ import { Button } from "../components/ui/button";
 import { Calendar, Smartphone as SmartphoneCard, Camera, Battery, HardDrive, Cpu, Settings } from "lucide-react"; 
 import DeviceSpec from "~/components/deviceSpecs";
 import type { ApiResponse, Smartphone as SmartphoneType, UserType } from "~/types/globals.type";
-import { Form, useFetcher, useLoaderData, useMatches, type ActionFunctionArgs, type MetaArgs } from "react-router";
-import Cookies from 'js-cookie';
+import { useFetcher, useLoaderData, useMatches, type ActionFunctionArgs } from "react-router";
 import authService from "~/services/auth.service";
 import { useEffect, useState } from "react";
 import userService from "~/services/user.service";
 import { usePopupButton } from "~/context/popupButtonContext";
+import incrementViewToSmartphone from "~/utils/viewSmartphone";
 
 type SmartphoneIdType = {
   smartphoneId: string
@@ -33,7 +32,11 @@ export async function action({request}: ActionFunctionArgs) {
   const token = authService.privateRoute(request) || ""
   let formData = await request.formData()
   const smartphoneLikesId = formData.get("smartphoneLikes") as SmartphoneType["_id"]
-  // const smartphoneViewsId = formData.get("smartphoneViews")
+  const smartphoneViewId = formData.get("smartphoneViewId") as SmartphoneType["_id"]
+  if(smartphoneViewId) {
+    const res = await incrementViewToSmartphone(smartphoneViewId)
+    return res
+  }
   if(smartphoneLikesId) {
     if(!token) return { actionError: true, message: "Must be signed in" }
     const result = await userService.addToLikes(token, smartphoneLikesId)
@@ -60,7 +63,6 @@ export async function loader({params, request}: Route.LoaderArgs) {
   return { smartphone, isLiked }
 }
 
-
 export default function Smartphone() {
   const data = useLoaderData<typeof loader>();
   const matches = useMatches()
@@ -70,7 +72,6 @@ export default function Smartphone() {
   const [ userLiked, setUserLiked ] = useState<boolean>(isLiked)
   const [ userLikesCount, setUserLikesCount ] = useState<number>(smartphone.likes)
   const { setPopupButton } = usePopupButton()
-
   const fetcher = useFetcher()
   useEffect(() => {
     if(!user) return
@@ -106,16 +107,6 @@ export default function Smartphone() {
     { icon: <HardDrive className="w-5 h-5 text-blue-500" />, label: "Storage", value: smartphone?.specs.memory.internal },
     { icon: <Cpu className="w-5 h-5 text-blue-500" />, label: "Hardware", value: smartphone?.specs.platform.chipset },
     { icon: <Settings className="w-5 h-5 text-blue-500" />, label: "OS", value: smartphone?.specs.platform.os },
-  ];
-
-  const deviceStats = [{
-    name: "Likes",
-    counts: smartphone?.likes
-  },
-  {
-    name: "Views",
-    counts: smartphone?.views
-  }
   ];
 
   const sections = [
