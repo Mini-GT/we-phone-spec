@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
-import type { ApiResponse, Smartphone } from '~/types/globals.type';
+import type { ApiResponse, ApiTopDeviceResponse, Smartphone } from '~/types/globals.type';
 
 class SmartphoneService {
   private api: AxiosInstance = axios.create({
@@ -121,12 +121,48 @@ async updateSmartphone(id: string, updatedForm: Partial<Smartphone>, token: stri
   async viewSmartphone(devicecId: string) {
     try {
       const response = await this.api.patch(`/smartphones/view/${devicecId}`);
-      console.log(response.data)
       return response.data
     } catch (error) {
       this.handleError(error);
     }
   }
+
+  async getTopDeviceViewStats(): Promise<ApiTopDeviceResponse | undefined> {
+    try {
+      const response = await this.api.get("/smartphones/top-view-stats");
+      return response.data
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+  
+  async getTopViewedSmartphones(query: string): Promise<ApiTopDeviceResponse | undefined> {
+    try {
+      const response = await this.api.get(`/smartphones/views/top${query}`);
+      return response.data
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+  
+  async getTopLikedSmartphones(query: string): Promise<ApiTopDeviceResponse | undefined> {
+    try {
+      const response = await this.api.get(`/smartphones/likes/top${query}`);
+      return response.data
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  async getNewAddedSmartphones(query: string): Promise<ApiTopDeviceResponse | undefined> {
+    try {
+      const response = await this.api.get(`/smartphones/new-added${query}`);
+      return response.data
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
 
   // Price range filter
   // async getSmartphonesByPriceRange(minPrice: number, maxPrice: number): Promise<Smartphone[]> {
