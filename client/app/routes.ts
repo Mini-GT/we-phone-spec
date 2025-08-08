@@ -6,6 +6,9 @@ export default [
   route("about", "routes/about.tsx"),
   // route("mostpopular", "routes/mostPopular.tsx"),
   route("login", "routes/login.tsx"),
+  route("most-viewed", "routes/mostViewed.tsx"),
+  route("most-liked", "routes/mostLiked.tsx"),
+  route("new-added", "routes/newAdded.tsx"),
 
   // Protected Routes by role and permission
   route("users", "routes/_protected/users.tsx"),
