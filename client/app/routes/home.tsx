@@ -3,6 +3,8 @@ import type { Route } from "./+types/home";
 import PhoneCardSlider from "~/components/phoneCardSlider";
 import Trending from "~/components/trending";
 import smartphoneService from "~/services/smartphone.service";
+import type { ApiTopDeviceResponse } from "~/types/globals.type";
+import SmartphonesFeatured from "~/components/smartphonesFeatured";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -12,20 +14,23 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader({request}: Route.LoaderArgs) {
-  const res = await smartphoneService.getTopDeviceViewStats()
-  const smartphone = res?.topToday
-  return smartphone
+  const { topToday } = await smartphoneService.getTopDeviceViewStats() as ApiTopDeviceResponse
+  const { topViewed } = await smartphoneService.getTopViewedSmartphones("?limitNumber=5&sort=desc") as ApiTopDeviceResponse
+  const { topLiked } = await smartphoneService.getTopLikedSmartphones("?limitNumber=5&sort=desc") as ApiTopDeviceResponse
+  const { newAddedSmartphones } = await smartphoneService.getNewAddedSmartphones("?limitNumber=5&sort=desc") as ApiTopDeviceResponse
+  return { topToday, topViewed, topLiked, newAddedSmartphones }
 }
 
 export default function Home() {
-const smartphones = useLoaderData<typeof loader>()
-  if (!smartphones) {
+const { topToday, topViewed, topLiked, newAddedSmartphones } = useLoaderData<typeof loader>()
+  if (!topToday || !topViewed || !topLiked || !newAddedSmartphones) {
     return <p>Loading...</p>;
   }
   return (
-    <div className="lg:mx-15 overflow-x-hidden">
-      <PhoneCardSlider smartphones={smartphones} />
-      <Trending smartphones={smartphones} />
+    <div className="mx-15 lg:mx-0 overflow-x-hidden">
+      <PhoneCardSlider smartphones={topToday} />
+      <Trending smartphones={topToday} />
+      <SmartphonesFeatured topViewed={topViewed} topLiked={topLiked} newAdded={newAddedSmartphones} />
     </div>
   );
 }
