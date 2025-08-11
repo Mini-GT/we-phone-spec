@@ -4,36 +4,34 @@ import smartphonesRouter from "./routes/smartphones.route"
 import authRouter from "./routes/auth.route"
 import userRouter from "./routes/user.route"
 import usersRouter from "./routes/users.route"
+import commentsRouter from "./routes/comments.route"
 import { connectMongoDB } from './db/connect'
 import cookieParser from 'cookie-parser' 
-import session from 'express-session'
 import passport from './services/passport'
 import emailRouter from "./routes/email.route"
-import path from "path"
-import { sign } from 'crypto'
 import { signJwt, verifyJwt } from './utils/jwt'
 import type { User } from '@prisma/client'
-import { requireAuth, type DecodedToken } from './middlewares/auth.middleware'
-import { asyncWrapper } from './middlewares/asyncWrapper.middleware'
+import { type DecodedToken } from './middlewares/auth.middleware'
 import notFound from './middlewares/notFound.middleware'
 import errorHandlerMiddleware from './middlewares/errorHandler.middleware'
 import http from 'http'
-import { Server } from 'socket.io'
+import { Server, Socket } from 'socket.io'
 import prisma from './prismaClient'
 import type { ServerToClientEvents, SocketData } from './types/types'
 
 export const app = express()
 const server = http.createServer(app)
 const PORT = process.env.PORT || 3000
+const clientUrl = process.env.CLIENT_URL || "http://localhost:5173"
 
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: ["http://localhost:5173", clientUrl],
   credentials: true,   
 }))
 
 export const io = new Server<SocketData, ServerToClientEvents>(server, {
   cors: {
-    origin: 'http://localhost:5173',
+    origin: ["http://localhost:5173", clientUrl],
     methods: ['GET', 'POST'],
     credentials: true
   }
@@ -56,6 +54,8 @@ app.use("/api/v1/smartphones", smartphonesRouter)
 app.use("/api/v1/auth", authRouter)
 
 app.use("/api/v1/user", userRouter)
+
+app.use("/api/v1/comments", commentsRouter)
 
 app.use("/api/v1/users", usersRouter)
 
@@ -91,7 +91,9 @@ app.use(errorHandlerMiddleware)
 // webSocket
 io.on("connection", socket => {
   console.log("User connected:", socket.id)
-
+  // socket.on("test", smartphoneId => {
+  //   console.log(smartphoneId)
+  // })
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id)
   })
@@ -100,10 +102,12 @@ io.on("connection", socket => {
 })
 
 export const notification = io.of("/notification")
+export const comments = io.of("/comments")
 
+// MIDDLEWARE
 notification.use(async (socket, next) => {
   const token = socket.handshake.headers.cookie?.split("=")[1] || ''
-
+  
   try {
     const decoded = verifyJwt(token) as DecodedToken
 
@@ -118,13 +122,63 @@ notification.use(async (socket, next) => {
   }
 })
 
+comments.use(async (socket, next) => {
+  const token = socket.handshake.headers.cookie?.split("=")[1] || ''
+
+  // if empty token, pass socket id so unregistered users can still receive live comments 
+  if(!token) {
+    next()
+    return
+  } 
+
+  try {
+    const decoded = verifyJwt(token) as DecodedToken
+    const user = await prisma.user.findUnique({ where: { id: decoded.id } })
+    if(!user) return next(new Error("Unauthorized"))
+
+    socket.data.user = user
+    next()
+  } catch (error) {
+    next(error as Error)
+  }
+})
+
+
 notification.on("connection", socket => {
   console.log("User connected in notification:", socket.data.name)
 
   socket.on('disconnect', () => {
-    console.log('User disconnected from /notification:', socket.data.name);
+    console.log('User disconnected from notification:', socket.data.name);
   });
   // notification.disconnectSockets()
+})
+
+comments.on("connection", (socket: Socket<ServerToClientEvents>)  => {
+  socket.on("joinSmartphoneRoom", (smartphoneId: string) => {
+    socket.join(smartphoneId)
+    console.log(`${socket.data.user.name ?? `user-${socket.id}`} joined smartphone room ${smartphoneId}`);
+  })
+
+  socket.on("add-comment", async (comment, smartphoneId) => {
+    console.log(comment)
+    if(!socket.data.user.name) return // block unregistered users so they cant send comment, but they can still receive comments
+    const user = socket.data.user as User
+    const newComment = await prisma.smartphoneComments.create({
+      data: {
+        name: user.name!,
+        userId: user.id,
+        deviceId: smartphoneId,
+        message: comment
+      }
+    })
+    socket.to(smartphoneId).emit("new-comment", newComment)
+    // comment.disconnectSockets()
+  })
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected from comments:', socket.id);
+  })
+  // comments.disconnectSockets()
 })
 
 server.listen(PORT, () => {

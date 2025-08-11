@@ -5,12 +5,14 @@ import { Button } from "../components/ui/button";
 import { Calendar, Smartphone as SmartphoneCard, Camera, Battery, HardDrive, Cpu, Settings } from "lucide-react"; 
 import DeviceSpec from "~/components/deviceSpecs";
 import type { ApiResponse, Smartphone as SmartphoneType, UserType } from "~/types/globals.type";
-import { useFetcher, useLoaderData, useMatches, type ActionFunctionArgs } from "react-router";
+import { useFetcher, useLoaderData, useMatches, type ActionFunctionArgs, type ClientLoaderFunctionArgs } from "react-router";
 import authService from "~/services/auth.service";
 import { useEffect, useState } from "react";
 import userService from "~/services/user.service";
 import { usePopupButton } from "~/context/popupButtonContext";
 import incrementViewToSmartphone from "~/utils/viewSmartphone";
+import CommentsSection from "~/components/commentSection";
+import commentService from "~/services/comment.service";
 
 type SmartphoneIdType = {
   smartphoneId: string
@@ -45,30 +47,28 @@ export async function action({request}: ActionFunctionArgs) {
 }
 
 export async function loader({params, request}: Route.LoaderArgs) {
-  const token = authService.publicRoute(request) || ""
+  const token = authService.privateRoute(request) || "" 
   const data = params.smartphoneData
   const id = data?.split("-").pop()
   if(!id) throw new Error("No Id Found")
   const smartphone = await smartphoneService.getSmartphoneById(id)
-
-  if(token) {
+  const { comments } = await commentService.getSmartphoneComments(id) 
+  if(token !== "") {
     const result = await userService.getUserLikes(token)
     const { likedSmartphoneId } = result.message as UserLikeResponse
     const likedIds = new Set(likedSmartphoneId.map(item => item.smartphoneId))
     // check if this smartphone is liked 
     const isLiked = likedIds.has(id) 
-    return { smartphone, isLiked }
+    return { smartphone, isLiked, comments }
   }
   const isLiked = false
-  return { smartphone, isLiked }
+  return { smartphone, isLiked, comments }
 }
 
 export default function Smartphone() {
-  const data = useLoaderData<typeof loader>();
+  const { smartphone, isLiked, comments } = useLoaderData<typeof loader>();
   const matches = useMatches()
   const user = matches[0].data as UserType
-  const { isLiked }= data
-  const smartphone: SmartphoneType = data.smartphone 
   const [ userLiked, setUserLiked ] = useState<boolean>(isLiked)
   const [ userLikesCount, setUserLikesCount ] = useState<number>(smartphone.likes)
   const { setPopupButton } = usePopupButton()
@@ -77,7 +77,6 @@ export default function Smartphone() {
     if(!user) return
     setUserLiked(isLiked)
   }, [isLiked, user])
-
   const handleLikeBtn = () => {
     if(!user) {
       setPopupButton(prevState => ({
@@ -206,107 +205,110 @@ export default function Smartphone() {
   // if(isError) return <div>Error loading data</div>;
 
   return (
-    <div className="max-w-5xl mx-auto p-6 text-gray-800">
-      <div className="bg-[#061f70] text-white rounded-t-2xl p-4">
-        <h1 className="text-2xl font-bold">{smartphone.name}</h1>
-      </div>
-
-      <div className="flex bg-white rounded-b-2xl shadow-md">
-        <div className="p-4 flex flex-col gap-6">
-          <img
-            src={`/imgs/phones/${smartphone.image || "phone_placeholder.svg"}`}
-            alt={smartphone.name}
-            className="w-1/5 h-1/4 max-w-xs mx-auto rounded-lg"
-          />
-
-          <div className="flex justify-between flex-col gap-3 flex-1">
-            <div className="space-y-3">
-              <div>
-                <Button className="self-start bg-[#1991ff] text-white hover:bg-[#1071cc] rounded-lg">COMPARE ▼</Button>
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold mb-1">DESCRIPTION</h2>
-              </div>
-              <div>
-                <p className="text-lg">
-                  {smartphone.description}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <div
-                className="border rounded-md overflow-hidden"
-              >
-                <button 
-                  className="flex justify-between items-center w-full py-2 px-4 bg-gray-200 hover:bg-gray-300"
-                  value={smartphone._id}
-                  name={`smartphoneViews`}
-                >
-                  <span className="font-medium">Views</span>
-                  <span className="text-sm">{smartphone.views.toLocaleString()}</span>
-                </button>
-              </div>
-
-              <div
-                className="border rounded-md overflow-hidden"
-              >
-                <button 
-                  className={`flex justify-between items-center w-full py-2 px-4 cursor-pointer ${userLiked ? "bg-[#1991ff] hover:bg-[#1071cc]/90 text-white" : "bg-gray-200 hover:bg-gray-300"}`}
-                  // value={smartphone._id}
-                  // name={`smartphoneLikes`}
-                  onClick={handleLikeBtn}
-                >
-                  <span className="font-medium">{userLiked ? "You Liked" : "Likes" }</span>
-                  <span className="text-sm">{userLikesCount.toLocaleString()}</span>
-                </button>
-              </div>
-              {/* {deviceStats.map((stat, index) => (
-                <Card key={index} className="bg-gray-50 border border-gray-200 overflow-hidden hover:border-gray-400">
-                  <Form 
-                    method="post" 
-                    action={`/smartphones/${smartphone.name}-${smartphone._id}`}
-                  >
-                    <button 
-                      className="flex justify-between items-center w-full py-2 px-4 cursor-pointer hover:bg-gray-200"
-                      value={smartphone._id}
-                      name={`smartphone${stat.name}`}
-                    >
-                      <span className="font-medium">{stat.name}</span>
-                      <span className="text-sm text-gray-500">{stat.counts?.toLocaleString()}</span>
-                    </button>
-                  </Form>
-                </Card>
-              ))} */}
-            </div>
-          </div>
+    <>
+      <div className="max-w-5xl mx-auto p-6 text-gray-800">
+        <div className="bg-[#061f70] text-white rounded-t-2xl p-4">
+          <h1 className="text-2xl font-bold">{smartphone.name}</h1>
         </div>
-        <div className="p-4 flex flex-col gap-3 min-w-[300px]">
-            {specItems.map((item, index) => (
-              <Card key={index} className="border hover:border-[#1991ff] hover:bg-blue-50 cursor-pointer py-0 border-gray-200">
-                <CardContent className="flex items-center gap-3 py-3 px-4">
-                  <div className="w-5">
-                    {item.icon}
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-500 font-semibold">{item.label}</div>
-                    <div className="text-sm whitespace-pre-line">{item.value}</div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-      </div>
 
-      {sections.map((section, index) => {
-        return (
-          <DeviceSpec 
-            key={index}
-            title={section.title}
-            data={section.data}
-          />
-        )
-      })}
-    </div>
+        <div className="flex bg-white rounded-b-2xl shadow-md">
+          <div className="p-4 flex flex-col gap-6">
+            <img
+              src={`/imgs/phones/${smartphone.image || "phone_placeholder.svg"}`}
+              alt={smartphone.name}
+              className="w-1/5 h-1/4 max-w-xs mx-auto rounded-lg"
+            />
+
+            <div className="flex justify-between flex-col gap-3 flex-1">
+              <div className="space-y-3">
+                <div>
+                  <Button className="self-start bg-[#1991ff] text-white hover:bg-[#1071cc] rounded-lg">COMPARE ▼</Button>
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold mb-1">DESCRIPTION</h2>
+                </div>
+                <div>
+                  <p className="text-lg">
+                    {smartphone.description}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <div
+                  className="border rounded-md overflow-hidden"
+                >
+                  <button 
+                    className="flex justify-between items-center w-full py-2 px-4 bg-gray-200 hover:bg-gray-300"
+                    value={smartphone._id}
+                    name={`smartphoneViews`}
+                  >
+                    <span className="font-medium">Views</span>
+                    <span className="text-sm">{smartphone.views.toLocaleString()}</span>
+                  </button>
+                </div>
+
+                <div
+                  className="border rounded-md overflow-hidden"
+                >
+                  <button 
+                    className={`flex justify-between items-center w-full py-2 px-4 cursor-pointer ${userLiked ? "bg-[#1991ff] hover:bg-[#1071cc]/90 text-white" : "bg-gray-200 hover:bg-gray-300"}`}
+                    // value={smartphone._id}
+                    // name={`smartphoneLikes`}
+                    onClick={handleLikeBtn}
+                  >
+                    <span className="font-medium">{userLiked ? "You Liked" : "Likes" }</span>
+                    <span className="text-sm">{userLikesCount.toLocaleString()}</span>
+                  </button>
+                </div>
+                {/* {deviceStats.[]map((stat, index) => (
+                  <Card key={index} className="bg-gray-50 border border-gray-200 overflow-hidden hover:border-gray-400">
+                    <Form 
+                      method="post" 
+                      action={`/smartphones/${smartphone.name}-${smartphone._id}`}
+                    >
+                      <button 
+                        className="flex justify-between items-center w-full py-2 px-4 cursor-pointer hover:bg-gray-200"
+                        value={smartphone._id}
+                        name={`smartphone${stat.name}`}
+                      >
+                        <span className="font-medium">{stat.name}</span>
+                        <span className="text-sm text-gray-500">{stat.counts?.toLocaleString()}</span>
+                      </button>
+                    </Form>
+                  </Card>
+                ))} */}
+              </div>
+            </div>
+          </div>
+          <div className="p-4 flex flex-col gap-3 min-w-[300px]">
+              {specItems.map((item, index) => (
+                <Card key={index} className="border hover:border-[#1991ff] hover:bg-blue-50 cursor-pointer py-0 border-gray-200">
+                  <CardContent className="flex items-center gap-3 py-3 px-4">
+                    <div className="w-5">
+                      {item.icon}
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-500 font-semibold">{item.label}</div>
+                      <div className="text-sm whitespace-pre-line">{item.value}</div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+        </div>
+
+        {sections.map((section, index) => {
+          return (
+            <DeviceSpec 
+              key={index}
+              title={section.title}
+              data={section.data}
+            />
+          )
+        })}
+      </div>
+    <CommentsSection smartphoneId={smartphone._id} smartphoneComments={comments} />
+    </>
   );
 }
