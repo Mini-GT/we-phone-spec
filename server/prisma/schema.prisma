@@ -8,21 +8,71 @@ datasource db {
 }
 
 model User {
-  id                String    @id @default(cuid())
-  googleId          String?   @unique
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt @default(now())
-  email             String    @unique
-  status            Status    @default(unverified)
-  verifyToken       String?
-  verifyTokenExpiry DateTime?
-  role              Role      @default(USER)
-  name              String?
-  password          String?
-  profileImage      String?
+  id                 String               @id @default(cuid())
+  googleId           String?              @unique
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @default(now()) @updatedAt
+  email              String               @unique
+  status             Status               @default(unverified)
+  verifyToken        String?
+  verifyTokenExpiry  DateTime?
+  role               Role                 @default(USER)
+  name               String?
+  password           String?
+  profileImage       String?
+  SmartphoneComments SmartphoneComments[]
+  userNotifications  UserNotification[]
+  likedSmartphones   UserSmartphoneLike[]
+}
 
-  likedSmartphones  UserSmartphoneLike[]
-  userNotifications UserNotification[]
+model UserSmartphoneLike {
+  userId       String
+  smartphoneId String
+  likedAt      DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@id([userId, smartphoneId])
+}
+
+model GlobalNotification {
+  type                 NotificationType @default(newDevice)
+  name                 String?
+  title                String
+  image                String
+  createdAt            DateTime         @default(now())
+  globalNotificationId String           @id
+  description          String           @default("")
+}
+
+model UserNotification {
+  id                   String           @id @default(cuid())
+  userId               String
+  globalNotificationId String?
+  type                 NotificationType @default(newDevice)
+  name                 String?
+  title                String?
+  image                String?
+  createdAt            DateTime         @default(now())
+  isRead               Boolean          @default(false)
+  description          String?
+  isDeleted            Boolean          @default(false)
+  user                 User             @relation(fields: [userId], references: [id])
+
+  @@unique([userId, globalNotificationId])
+}
+
+model SmartphoneComments {
+  userId    String
+  deviceId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  likes     Int      @default(0)
+  dislikes  Int      @default(0)
+  isDeleted Boolean  @default(false)
+  message   String
+  id        Int      @id @default(autoincrement())
+  name      String
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 enum Role {
@@ -40,48 +90,8 @@ enum Status {
   suspended
 }
 
-model UserSmartphoneLike {
-  userId        String
-  smartphoneId  String
-  likedAt       DateTime            @default(now())
-
-  user          User                @relation(fields: [userId], references: [id])
-
-  @@id([userId, smartphoneId])
-}
-
 enum NotificationType {
   newDevice
   maintenance
   roleUpdate
 }
-
-model GlobalNotification {
-  globalNotificationId               String                 @id
-  type             NotificationType       @default(newDevice)
-  name             String?
-  title            String 
-  description      String               @default("")
-  image            String
-  createdAt        DateTime               @default(now())
-}
-
-model UserNotification {
-  id                      String              @id @default(cuid())
-
-  userId                  String
-  globalNotificationId    String?                
-  type NotificationType   @default(newDevice)
-  name                    String?
-  description             String?
-  title                   String?
-  image                   String?
-  createdAt               DateTime            @default(now())
-  isRead                  Boolean             @default(false)
-  isDeleted               Boolean             @default(false)
-  
-  user                    User                @relation(fields: [userId], references: [id])
-  
-  @@unique([userId, globalNotificationId])
-}
-
