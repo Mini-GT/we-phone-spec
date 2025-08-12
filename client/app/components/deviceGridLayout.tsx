@@ -1,13 +1,14 @@
-import { useState } from "react";
-import { Link } from "react-router";
-import type { DeviceGridLayoutProps, Smartphone } from "~/types/globals.type";
+import { NavLink } from "react-router";
+import { useAddViewToSmartphone } from "~/hooks/useAddViewToSmartphone";
+import type { DeviceGridLayoutProps } from "~/types/globals.type";
 import { formatNumberToCompact } from "~/utils/formatNumber";
-import viewSmartphone from "~/utils/viewSmartphone";
 
 export default function DeviceGridLayout({
   items,
   title
 }: DeviceGridLayoutProps) {
+  const addView = useAddViewToSmartphone()
+
   return (
     <div className='flex flex-col gap-2'>
       <h1 className="text-xl font-bold my-4">{title}</h1>
@@ -15,15 +16,15 @@ export default function DeviceGridLayout({
         {items.map(item => (
           <li key={item._id} data-id={item._id} className="relative bg-white border rounded-sm w-full cursor-pointer transform transition-transform duration-300 ease-in-out hover:scale-102 overflow-hidden">
             <div className="relative flex flex-col justify-between h-full overflow-hidden">
-              <Link 
+              <NavLink 
                 to={`/smartphones/${item.name}-${item._id}`} 
                 className="p-2"
-                onClick={() => viewSmartphone(item._id)}
+                onClick={() => addView(item.name, item._id)}
               >
                 <div className="relative">
                   <img src={`/imgs/phones/${item.image || "phone_placeholder.svg"}`} alt={item.name} className="" />
                 </div>
-              </Link>
+              </NavLink>
               <button className="pl-1 text-start hover:text-pink-600 cursor-pointer w-full">
                 <div className="truncate w-full px-2">
                   {item.name}

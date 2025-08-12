@@ -1,4 +1,5 @@
 import { NavLink } from "react-router";
+import { useAddViewToSmartphone } from "~/hooks/useAddViewToSmartphone";
 import type { Smartphone } from "~/types/globals.type";
 
 type SectionProps = {
@@ -8,6 +9,8 @@ type SectionProps = {
 }
 
 export default function SmartphonesFeaturedSection({ title, smartphones, viewMore}: SectionProps) {
+  const addView = useAddViewToSmartphone()
+  
   return (
     <div>
       <h2 className="text-pink-300 font-bold text-3xl mb-3 px-4">{title}</h2>
@@ -17,6 +20,7 @@ export default function SmartphonesFeaturedSection({ title, smartphones, viewMor
             <NavLink
               to={`/smartphones/${smartphone.name}-${smartphone._id}`} 
               className="flex items-stretch gap-4 px-3 py-5 rounded-md hover:bg-blue-50 transition z-10"
+              onClick={() => addView(smartphone.name, smartphone._id)}
             >
               <div
                 className={`flex items-stretch cursor-pointer gap-4 rounded-md transition z-10`}

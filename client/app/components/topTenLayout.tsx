@@ -1,4 +1,5 @@
-import { Link } from "react-router";
+import { NavLink } from "react-router";
+import { useAddViewToSmartphone } from "~/hooks/useAddViewToSmartphone";
 import type { Smartphone } from "~/types/globals.type";
 
 type TopTenSectionProps = {
@@ -6,12 +7,15 @@ type TopTenSectionProps = {
 }
 
 export default function TopTenLayout({ smartphones }: TopTenSectionProps) {
+  const addView = useAddViewToSmartphone()
+
   return (
     <div className="space-y-2 max-h-96 overflow-y-auto">
       {Array.isArray(smartphones) &&smartphones?.length > 0 ?smartphones.map((smartphone, i) => (
         <div className="relative border rounded-md" key={smartphone._id}>
-          <Link
+          <NavLink
             to={`/smartphones/${smartphone.name}-${smartphone._id}`} 
+            onClick={() => addView(smartphone.name, smartphone._id)}
           >
             <div
               className={`flex items-stretch cursor-pointer gap-4 rounded-md hover:bg-blue-50 transition p-2 z-10`}
@@ -24,7 +28,7 @@ export default function TopTenLayout({ smartphones }: TopTenSectionProps) {
                 />
               </div>
               
-              <div className="flex flex-col space-y-1 justify-between flex-1 ">
+              <div className="flex flex-col space-y-1 justify-between flex-1 py-2">
                 <p className={`text-sm font-semibold text-black mb-2`}>
                   {smartphone.name}
                 </p>
@@ -39,7 +43,7 @@ export default function TopTenLayout({ smartphones }: TopTenSectionProps) {
                 </p>
               </div>
             </div>
-          </Link>
+          </NavLink>
         </div>
         )) : null}
       {/* <div className="text-center py-4">No Notifications</div> */}
