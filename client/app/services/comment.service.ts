@@ -2,7 +2,7 @@ import axios, { type AxiosInstance } from "axios";
 
 class CommentsService {
   private api: AxiosInstance = axios.create({
-    baseURL: `${import.meta.env.VITE_SMARTPHONE_API_URL}`,
+    baseURL: `${import.meta.env.VITE_SMARTPHONE_API_URL}/comments`,
     withCredentials: true,  });
   
   private handleError(error: unknown) {
@@ -25,9 +25,11 @@ class CommentsService {
     };
   }
 
-  async getSmartphoneComments(smartphoneId: string) {
+  async getSmartphoneComments(smartphoneId: string, skip?: number, take?: number) {
     try {
-      const response = await this.api.get(`/comments/${smartphoneId}`);
+      const response = await this.api.get("/", {
+        params: { smartphoneId, skip, take}
+      })
       return response.data
     } catch (error) {
       this.handleError(error);

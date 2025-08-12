@@ -2,15 +2,19 @@ import type { Request, Response } from "express"
 import prisma from "@/prismaClient"
 
 const getSmartphoneComments = async (req: Request, res: Response)=> {
-  const { smartphoneId } = req.params
+  const { smartphoneId, skip, take } = req.query
+  
+  const skipNum = Number(skip) || 0
+  const takeNum = Number(take) || 5
 
   const comments = await prisma.smartphoneComments.findMany({
-    take: 5,
+    skip: skipNum,
+    take: takeNum,
     where: {
-      deviceId: smartphoneId
+      deviceId: smartphoneId as string
     },
     orderBy: {
-      createdAt: "desc"
+      likes: "desc"
     },
     select: {
       id: true,

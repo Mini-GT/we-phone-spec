@@ -4,8 +4,8 @@ import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Calendar, Smartphone as SmartphoneCard, Camera, Battery, HardDrive, Cpu, Settings } from "lucide-react"; 
 import DeviceSpec from "~/components/deviceSpecs";
-import type { ApiResponse, Smartphone as SmartphoneType, UserType } from "~/types/globals.type";
-import { useFetcher, useLoaderData, useMatches, type ActionFunctionArgs, type ClientLoaderFunctionArgs } from "react-router";
+import type { ApiResponse, Smartphone, SmartphoneCommentsDataType, Smartphone as SmartphoneType, UserType } from "~/types/globals.type";
+import { useFetcher, useLoaderData, useMatches, type ActionFunctionArgs } from "react-router";
 import authService from "~/services/auth.service";
 import { useEffect, useState } from "react";
 import userService from "~/services/user.service";
@@ -35,6 +35,12 @@ export async function action({request}: ActionFunctionArgs) {
   let formData = await request.formData()
   const smartphoneLikesId = formData.get("smartphoneLikes") as SmartphoneType["_id"]
   const smartphoneViewId = formData.get("smartphoneViewId") as SmartphoneType["_id"]
+  const smartphoneCommentsData = formData.get("smartphoneCommentsId") as string
+  const parsedSmartphoneCommentsData = JSON.parse(smartphoneCommentsData) as SmartphoneCommentsDataType
+  if(parsedSmartphoneCommentsData?.smartphoneId) {
+    const { comments } = await commentService.getSmartphoneComments(parsedSmartphoneCommentsData.smartphoneId as string, parsedSmartphoneCommentsData.skip)
+    return comments 
+  }
   if(smartphoneViewId) {
     const res = await incrementViewToSmartphone(smartphoneViewId)
     return res
@@ -66,7 +72,7 @@ export async function loader({params, request}: Route.LoaderArgs) {
 }
 
 export default function Smartphone() {
-  const { smartphone, isLiked, comments } = useLoaderData<typeof loader>();
+  const { smartphone, isLiked, comments } = useLoaderData<typeof loader>()
   const matches = useMatches()
   const user = matches[0].data as UserType
   const [ userLiked, setUserLiked ] = useState<boolean>(isLiked)
@@ -88,7 +94,6 @@ export default function Smartphone() {
     const newUserLike = !userLiked
     setUserLiked(newUserLike)
     setUserLikesCount(prevLikeCount => newUserLike ? prevLikeCount + 1 : prevLikeCount - 1)
-
     fetcher.submit(
       { smartphoneLikes: smartphone._id },
       { 
@@ -97,7 +102,7 @@ export default function Smartphone() {
       }
     )
   }
-
+  
   const specItems = [
     { icon: <Calendar className="w-5 h-5 text-blue-500" />, label: "Released", value: smartphone?.launch.released },
     { icon: <SmartphoneCard className="w-5 h-5 text-blue-500" />, label: "Display", value: `${smartphone?.specs.display.size}\n${smartphone?.specs.display.resolution}` },
@@ -203,7 +208,6 @@ export default function Smartphone() {
   // if(isLoading) return <div>Fetching data...</div>;
   if(!smartphone) return <div>no smartphone</div>;
   // if(isError) return <div>Error loading data</div>;
-
   return (
     <>
       <div className="max-w-5xl mx-auto p-6 text-gray-800">
@@ -308,7 +312,8 @@ export default function Smartphone() {
           )
         })}
       </div>
-    <CommentsSection smartphoneId={smartphone._id} smartphoneComments={comments} />
+    <CommentsSection smartphoneId={smartphone._id} smartphoneComments={comments}  
+    />
     </>
   );
 }
