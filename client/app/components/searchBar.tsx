@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import useDebounce from "~/hooks/useDebounse";
+import useDebounce from "~/hooks/useDebounce";
 import smartphoneService from "~/services/smartphone.service";
 import type { Smartphone } from "~/types/globals.type";
 
