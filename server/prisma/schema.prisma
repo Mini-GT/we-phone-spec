@@ -70,7 +70,7 @@ model SmartphoneComments {
   dislikes  Int      @default(0)
   isDeleted Boolean  @default(false)
   message   String
-  id        Int      @id @default(autoincrement())
+  id        String   @id
   name      String
   user      User     @relation(fields: [userId], references: [id])
 }
