@@ -111,11 +111,19 @@ notification.use(async (socket, next) => {
   try {
     const decoded = verifyJwt(token) as DecodedToken
 
-    const user = await prisma.user.findUnique({ where: { id: decoded.id } })
+    const user = await prisma.user.findUnique({ 
+      where: { 
+        id: decoded.id 
+      },
+      select: {
+        id: true,
+        name: true
+      }
+    })
 
     if(!user) return next(new Error("Unauthorized"))
 
-    socket.data.name = user.name
+    socket.data.user = user
     next()
   } catch (error) {
     next(error as Error)
@@ -127,13 +135,22 @@ comments.use(async (socket, next) => {
 
   // if empty token, pass socket id so unregistered users can still receive live comments 
   if(!token) {
+    socket.data.user = { name: null, id: null }
     next()
     return
   } 
 
   try {
     const decoded = verifyJwt(token) as DecodedToken
-    const user = await prisma.user.findUnique({ where: { id: decoded.id } })
+    const user = await prisma.user.findUnique({ 
+      where: { 
+        id: decoded.id 
+      }, 
+      select: { 
+        id: true, 
+        name: true } 
+    })
+
     if(!user) return next(new Error("Unauthorized"))
 
     socket.data.user = user
@@ -145,10 +162,10 @@ comments.use(async (socket, next) => {
 
 
 notification.on("connection", socket => {
-  console.log("User connected in notification:", socket.data.name)
+  console.log(`${socket.data.user.name ?? "unregistered-user"} connected in notification`)
 
   socket.on('disconnect', () => {
-    console.log('User disconnected from notification:', socket.data.name);
+    console.log(`${socket.data.user.name ?? "unregistered-user"} disconnected from notification`);
   });
   // notification.disconnectSockets()
 })
@@ -156,27 +173,26 @@ notification.on("connection", socket => {
 comments.on("connection", (socket: Socket<ServerToClientEvents>)  => {
   socket.on("joinSmartphoneRoom", (smartphoneId: string) => {
     socket.join(smartphoneId)
-    console.log(`${socket.data.user.name ?? `user-${socket.id}`} joined smartphone room ${smartphoneId}`);
+    console.log(`${socket.data.user.name ?? `unregistered-${socket.id}`} joined smartphone room ${smartphoneId}`);
   })
 
   socket.on("add-comment", async (comment, smartphoneId) => {
-    console.log(comment)
     if(!socket.data.user.name) return // block unregistered users so they cant send comment, but they can still receive comments
     const user = socket.data.user as User
     const newComment = await prisma.smartphoneComments.create({
       data: {
+        id: comment.id,
         name: user.name!,
         userId: user.id,
         deviceId: smartphoneId,
-        message: comment
+        message: comment.message
       }
     })
     socket.to(smartphoneId).emit("new-comment", newComment)
-    // comment.disconnectSockets()
   })
 
   socket.on('disconnect', () => {
-    console.log('User disconnected from comments:', socket.id);
+    console.log(`${socket.data.user.name ?? "unregistered-user"} disconnected from comments`)
   })
   // comments.disconnectSockets()
 })
