@@ -2,9 +2,9 @@ import { NavLink, useMatches } from "react-router"
 import { Button } from "./ui/button"
 import { usePopupButton } from "~/context/popupButtonContext"
 import UserMenu from "./userMenu"
-import { useAuth } from "~/context/authContext"
 import type { UserType } from "~/types/globals.type"
-import NotificationBell from "./ui/notificationBell"
+import SearchBar from "./searchBar"
+import ProgressBar from "./progressBar"
 
 export default function Navbar() {
   const { setPopupButton } = usePopupButton()
@@ -17,6 +17,7 @@ export default function Navbar() {
     }))
   }
 
+  
   return (
     <header className="w-full text-gray-700 bg-white border-b-1">
       <div className="lg:mx-15 md:mx-10 sm:mx-5 flex flex-col justify-between md:flex-row items-center gap-2 py-5">
@@ -26,37 +27,33 @@ export default function Navbar() {
               We<span className="text-indigo-600">PhoneSpec</span>
             </span>
           </NavLink>
-          <nav className="flex flex-wrap items-center ml-0 md:ml-8 md:border-l md:pl-8">
-            
+          <nav className="flex flex-wrap gap-5 items-center ml-0 md:ml-8 md:border-l md:pl-8">
+            <SearchBar />
             {/* <div className="mr-5 font-medium text-gray-600 hover:text-gray-900">
-              <div className="flex items-center border border-gray-400 rounded-lg focus-within:border-gray-900">
-                <input
-                  type="text"
-                  className="border-none outline-none px-3 py-2 flex-1 rounded-l-lg"
-                  placeholder="Search smartphone..."
-                />
-                <button type="submit" className="p-2">
-                  <img src="/search.svg" alt="search" className="w-5 h-5" />
-                </button>
-              </div>
+              
             </div> */}
 
             <NavLink
               to="/"
               end
-              className="mr-5 font-medium text-gray-600 hover:text-gray-900"
+              className="font-medium text-gray-600 hover:text-gray-900"
             >
               Home
             </NavLink>
             <NavLink
               to="/smartphones"
-              className="mr-5 font-medium text-gray-600 hover:text-gray-900"
+              className="font-medium text-gray-600 hover:text-gray-900"
             >
-              Smartphones
+              {({ isPending }) => (
+                <>
+                  <ProgressBar isPending={isPending} />
+                  <span>Smartphones</span>
+                </>
+              )}
             </NavLink>
             <NavLink
               to="/mostpopular"
-              className="mr-5 font-medium text-gray-600 hover:text-gray-900"
+              className="font-medium text-gray-600 hover:text-gray-900"
             >
               Most Popular
             </NavLink>
