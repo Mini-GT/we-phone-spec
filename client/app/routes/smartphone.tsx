@@ -38,7 +38,7 @@ export async function action({request}: ActionFunctionArgs) {
   const smartphoneCommentsData = formData.get("smartphoneCommentsId") as string
   const parsedSmartphoneCommentsData = JSON.parse(smartphoneCommentsData) as SmartphoneCommentsDataType
   if(parsedSmartphoneCommentsData?.smartphoneId) {
-    const { comments } = await commentService.getSmartphoneComments(parsedSmartphoneCommentsData.smartphoneId as string, parsedSmartphoneCommentsData.skip)
+    const { comments } = await commentService.getSmartphoneComments(parsedSmartphoneCommentsData.smartphoneId, parsedSmartphoneCommentsData.skip, 5)
     return comments 
   }
   if(smartphoneViewId) {
@@ -58,7 +58,7 @@ export async function loader({params, request}: Route.LoaderArgs) {
   const id = data?.split("-").pop()
   if(!id) throw new Error("No Id Found")
   const smartphone = await smartphoneService.getSmartphoneById(id)
-  const { comments } = await commentService.getSmartphoneComments(id) 
+  const { comments } = await commentService.getSmartphoneComments(id, 0, 5) 
   if(token !== "") {
     const result = await userService.getUserLikes(token)
     const { likedSmartphoneId } = result.message as UserLikeResponse
@@ -94,6 +94,7 @@ export default function Smartphone() {
     const newUserLike = !userLiked
     setUserLiked(newUserLike)
     setUserLikesCount(prevLikeCount => newUserLike ? prevLikeCount + 1 : prevLikeCount - 1)
+
     fetcher.submit(
       { smartphoneLikes: smartphone._id },
       { 
@@ -225,9 +226,9 @@ export default function Smartphone() {
 
             <div className="flex justify-between flex-col gap-3 flex-1">
               <div className="space-y-3">
-                <div>
+                {/* <div>
                   <Button className="self-start bg-[#1991ff] text-white hover:bg-[#1071cc] rounded-lg">COMPARE ▼</Button>
-                </div>
+                </div> */}
                 <div>
                   <h2 className="text-lg font-semibold mb-1">DESCRIPTION</h2>
                 </div>
@@ -265,23 +266,6 @@ export default function Smartphone() {
                     <span className="text-sm">{userLikesCount.toLocaleString()}</span>
                   </button>
                 </div>
-                {/* {deviceStats.[]map((stat, index) => (
-                  <Card key={index} className="bg-gray-50 border border-gray-200 overflow-hidden hover:border-gray-400">
-                    <Form 
-                      method="post" 
-                      action={`/smartphones/${smartphone.name}-${smartphone._id}`}
-                    >
-                      <button 
-                        className="flex justify-between items-center w-full py-2 px-4 cursor-pointer hover:bg-gray-200"
-                        value={smartphone._id}
-                        name={`smartphone${stat.name}`}
-                      >
-                        <span className="font-medium">{stat.name}</span>
-                        <span className="text-sm text-gray-500">{stat.counts?.toLocaleString()}</span>
-                      </button>
-                    </Form>
-                  </Card>
-                ))} */}
               </div>
             </div>
           </div>

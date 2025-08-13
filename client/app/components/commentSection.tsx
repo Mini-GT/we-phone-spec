@@ -1,11 +1,8 @@
 import { useEffect, useState } from "react";
 import {
-  Reply,
   ThumbsUp,
   ThumbsDown,
   MoreHorizontal,
-  Pin,
-  Shield,
   ChevronDown,
   Check,
 } from "lucide-react";
@@ -14,14 +11,20 @@ import type { Smartphone, SmartphoneCommentType } from "~/types/globals.type";
 import { useUser } from "~/context/userContext";
 import { nanoid } from "nanoid"
 import { usePopupButton } from "~/context/popupButtonContext";
-import { toReadableDate } from "~/utils/formatDate";
+import { convertToTimeAgo, toReadableDate } from "~/utils/formatDate";
+import { useFetcher } from "react-router";
+import { Spinner } from "./spinner";
+import commentService from "~/services/comment.service";
 
 type CommentsSectionProps = {
   smartphoneId: Smartphone["_id"]
   smartphoneComments: Omit<SmartphoneCommentType[], "userId" | "deviceId" | "updatedAt">
 }
 
+const take = 5
+
 export default function CommentsSection({ smartphoneId, smartphoneComments }: CommentsSectionProps) {
+  const fetcher = useFetcher()
   const { user } = useUser()
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -29,6 +32,10 @@ export default function CommentsSection({ smartphoneId, smartphoneComments }: Co
   const [ newSocket, setNewSocket ] = useState<Socket| null>(null)
   const { setPopupButton } = usePopupButton()
   const [comments, setComments ] = useState<Omit<SmartphoneCommentType[], "userId" | "deviceId" | "updatedAt">>(smartphoneComments)
+  const [ openCommentSettingsId, setOpenCommentSettingsId ] = useState<boolean>(false)
+  const [ commentId, setCommentId ] = useState<string | null>(null)
+  const moreComments = fetcher.data as Omit<SmartphoneCommentType[], "userId" | "deviceId" | "updatedAt">
+  const [ skip, setSkip ] = useState(5)
   useEffect(() => {
     const socket = io(import.meta.env.VITE_COMMENTS_SOCKET_NAMESPACE, {
       withCredentials: true, 
@@ -42,9 +49,7 @@ export default function CommentsSection({ smartphoneId, smartphoneComments }: Co
     socket.emit("joinSmartphoneRoom", smartphoneId)
 
     socket.on("new-comment", (newComment) => {
-      console.log(newComment)
-      
-      setComments((prev) => [...prev, newComment])
+      setComments((prev) => [newComment, ...prev])
     })
 
     return () => {
@@ -52,23 +57,31 @@ export default function CommentsSection({ smartphoneId, smartphoneComments }: Co
     }
 
   }, [])
-  console.log(comments)
+  
+  useEffect(() => {
+    if(moreComments) {
+      console.log(moreComments)
+      setComments((prev) => [...prev, ...moreComments])
+    }
+  }, [moreComments])
+
   const handleTextarea = () => {
-    // if(!user.email) {
-    //   setPopupButton(prevState => ({
-    //     ...prevState,
-    //     isLoginClicked: true,
-    //   }))
-    // }
+    if(!user || !user.id) {
+      setPopupButton(prevState => ({
+        ...prevState,
+        isLoginClicked: true,
+      }))
+    }
   } 
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
-      if (!commentText.trim() || !user.email) return
+      if (!commentText.trim() || !user.id) return
       const newComment: SmartphoneCommentType = {
         id: nanoid(),
         name: user.name,
+        userId: user.id,
         message: commentText,
         createdAt: new Date(),
         likes: 0,
@@ -76,57 +89,136 @@ export default function CommentsSection({ smartphoneId, smartphoneComments }: Co
         isDeleted: false
       }
       setComments((prev) => [newComment, ...prev])
-      newSocket?.emit("add-comment", commentText, smartphoneId)
+      newSocket?.emit("add-comment", newComment, smartphoneId)
       setCommentText("")
     }
   }
 
-  // const sortedComments = [...comments].sort((a, b) => {
-  //   if (sortOrder === "newest") return b.date.getTime() - a.date.getTime();
-  //   return a.date.getTime() - b.date.getTime();
-  // });
+  const handleViewMore = () => {
+    setSkip(prev => prev + take)
+    fetcher.submit(
+      { smartphoneCommentsId: JSON.stringify({ smartphoneId, skip })},
+      { 
+        method: "post",
+      }
+    )
+  }
+  
+  const handleLike = async (id: string) => {
+    if(!user || !user.id) {
+      setPopupButton(prevState => ({
+        ...prevState,
+        isLoginClicked: true,
+      }))
+      return
+    }
+    setComments(prev =>
+      prev.map(comment =>
+        comment.id === id ? { ...comment, likes: comment.likes + 1 } : comment
+      )
+    )
+    await commentService.addLikeToComment(id)
+  }
 
+  const handleDislike = async (id: string) => {
+    if(!user || !user.id) {
+      setPopupButton(prevState => ({
+        ...prevState,
+        isLoginClicked: true,
+      }))
+      return
+    }
+    setComments(prev =>
+      prev.map(comment =>
+        comment.id === id ? { ...comment, likes: comment.likes - 1 } : comment
+      )
+    )
+    await commentService.dislikeToComment(id)
+  }
+
+  const handleCommentSettings = (id: string) => {
+    if(!user || !user.id) {
+      setPopupButton(prevState => ({
+        ...prevState,
+        isLoginClicked: true,
+      }))
+      return
+    }
+    if(id === commentId) {
+      setCommentId(null)
+    } else {
+      setCommentId(id)
+    }
+  }
+  
+  // const handleEdit = () => {
+  //   setComments(prev =>
+  //     prev.map(comment =>
+  //       comment.id === commentId ? { ...comment, likes: comment.likes - 1 } : comment
+  //     )
+  //   )
+  // }
+
+  const handleDelete = async () => {
+    if(!user || !user.id) {
+      setPopupButton(prevState => ({
+        ...prevState,
+        isLoginClicked: true,
+      }))
+      return
+    }
+    setComments(prev =>
+      prev.map(comment =>
+        comment.id === commentId ? { ...comment, isDeleted: true } : comment
+      )
+    )
+
+    setComments(prev => prev.filter(comment => !(comment.id === commentId && comment.isDeleted)))
+    if(commentId) {
+      await commentService.deleteComment(commentId)
+    }
+  }
   return (
     <div className="p-4 border-1 shadow-lg rounded-md max-w-full mt-10 mx-auto relative">
       {/* Header */}
       <div className="flex justify-between items-center border-b border-gray-700 pb-4 mb-4">
         <h2 className="text-xl font-bold">Comments</h2>
-        <div className="relative">
+        {/* <div className="relative">
           <button
             onClick={() => setDropdownOpen((prev) => !prev)}
-            className="flex items-center gap-1 text-sm text-gray-400 hover:text-white"
+            className="flex items-center gap-1 text-sm hover:text-gray-600 cursor-pointer"
           >
             Sort by <ChevronDown size={14} />
           </button>
 
           {dropdownOpen && (
-            <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-700 rounded-md shadow-lg">
+            <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-700 rounded-md shadow-lg overflow-hidden">
               <button
-                className="flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-700"
+                className="flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
                 onClick={() => {
                   setSortOrder("newest");
                   setDropdownOpen(false);
                 }}
               >
-                Newest {sortOrder === "newest" && <Check size={14} />}
+                Oldest {sortOrder === "newest" && <Check size={14} />}
               </button>
               <button
-                className="flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-700"
+                className="flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
                 onClick={() => {
                   setSortOrder("oldest");
                   setDropdownOpen(false);
                 }}
               >
-                Oldest {sortOrder === "oldest" && <Check size={14} />}
+                Newest {sortOrder === "oldest" && <Check size={14} />}
               </button>
             </div>
           )}
-        </div>
+        </div> */}
       </div>
 
       {/* Login Notice */}
       <div 
-        className="p-4 rounded-md mb-4"
+        className="rounded-md mb-4"
         onClick={handleTextarea}
       >
         <p className="text-gray-400 text-sm">
@@ -150,17 +242,7 @@ export default function CommentsSection({ smartphoneId, smartphoneComments }: Co
               {/* User Info */}
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-semibold">{c.name}</span>
-                {/* {c.role && (
-                  <span className="flex items-center gap-1 bg-blue-500 text-xs px-2 py-0.5 rounded-md">
-                    <Shield size={12} /> {c.role}
-                  </span>
-                )} */}
-                {/* {c.pinned && (
-                  <span className="flex items-center gap-1 bg-gray-600 text-xs px-2 py-0.5 rounded-md">
-                    <Pin size={12} /> Pinned
-                  </span>
-                )} */}
-                <span className="text-xs text-gray-400">{toReadableDate(c.createdAt)}</span>
+                <span className="text-xs text-gray-400">{convertToTimeAgo(c.createdAt)}</span>
               </div>
 
               {/* Comment */}
@@ -168,32 +250,60 @@ export default function CommentsSection({ smartphoneId, smartphoneComments }: Co
 
               {/* Actions */}
               <div className="flex items-center gap-4 mt-2 text-gray-400 text-sm">
-                {/* <button className="flex items-center gap-1 hover:text-white">
-                  <Reply size={14} /> Reply
-                </button> */}
                 <div className="flex items-center justify-center gap-3">
-                  <button className="flex items-center gap-1 hover:text-black cursor-pointer">
+                  <button 
+                    className="flex items-center gap-1 hover:text-black cursor-pointer"
+                    onClick={() => handleLike(c.id)}
+                  >
                     <ThumbsUp size={14} /> {c.likes}
                   </button>
-                  <button className="flex items-center gap-1 hover:text-black cursor-pointer">
+                  <button 
+                    className="flex items-center gap-1 hover:text-black cursor-pointer"
+                    onClick={() => handleDislike(c.id)}
+                  >
                     <ThumbsDown size={14} /> {c.dislikes}
                   </button>
                 </div>
-                <button className="hover:text-black cursor-pointer">
-                  <MoreHorizontal size={14} />
-                </button>
-              </div>
+                  
+                {user && user.id !== c.userId && // show comment settings if there is a user and userId is equal to commenter userId 
+                  <div className={`relative hover:text-black ${commentId === c.id && "text-black"} cursor-pointer`}>
+                    <button 
+                      onClick={() => handleCommentSettings(c.id)}
+                    >
+                      <MoreHorizontal className="cursor-pointer" size={14} />
+                    </button>
 
-              {/* Replies */}
-              {/* {c.replies && (
-                <button className="text-pink-500 text-sm mt-1">
-                  View {c.replies} replies
-                </button>
-              )} */}
+                    {commentId === c.id &&  (
+                      <div className="absolute left-0 w-40 bg-white border border-gray-700 rounded-md shadow-lg overflow-hidden">
+                        {/* <button
+                          className="flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
+                          onClick={handleEdit}  
+                        >
+                          Edit  
+                        </button> */}
+                        <button
+                          className="flex items-center justify-between text-black w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
+                          onClick={handleDelete}  
+                        >
+                          Delete 
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                }
+              </div>
             </div>
           </div>
         ))}
       </div>
+      <button 
+        className="flex items-center text-sm mt-4 cursor-pointer hover:underline underline-offset-2"
+        disabled={fetcher.state === "submitting"}
+        onClick={handleViewMore}
+      >
+        <ChevronDown size={20} /> View More 
+        {fetcher.state === "submitting" && <Spinner parentClassName="ml-2" spinSize="h-4" />}
+      </button>
     </div>
   )
 }
