@@ -7,17 +7,16 @@ import AddUserForm from "./dashboard/usersManagement/addUserForm";
 import { Form, useNavigation } from "react-router";
 import { Spinner } from "./spinner";
 import type { UserFormPath } from "~/types/globals.type";
-import { useUser } from "~/context/userContext";
+import { useSelectedUser } from "~/context/selectedUserContext";
 
 export default function CardModal() {
   const { popupButton, setPopupButton } = usePopupButton();
   const { smartphoneFormData: formData, setSmartphoneFormData } = useSmartphone()
-  const { user } = useUser() 
   const navigation = useNavigation()
-  const { setUser } = useUser() 
+  const { selectedUser, setSelectedUser } = useSelectedUser() 
 
   const handleInputChange = (path: UserFormPath, value: string | number | boolean) => {
-    setUser(prev => {
+    setSelectedUser(prev => {
       const newData = structuredClone(prev);
       const keys = path.split('.');
       let current: any = newData;
@@ -152,7 +151,7 @@ export default function CardModal() {
                   type="submit" 
                   disabled={navigation.formAction === "/users"}
                   name="userFormData" 
-                  value={JSON.stringify(user)}
+                  value={JSON.stringify(selectedUser)}
                 >
                   {navigation.formAction === "/users" ? <Spinner parentClassName="w-full h-full" spinSize="ml-1 w-5 h-5" /> : "Submit"}
                 </button>

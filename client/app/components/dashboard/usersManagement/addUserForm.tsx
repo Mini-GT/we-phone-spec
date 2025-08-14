@@ -1,10 +1,10 @@
 import { FormSection } from "~/components/form/formSection";
 import { FormField } from "~/components/form/formField";
-import { useUser } from "~/context/userContext";
 import { Spinner } from "~/components/spinner";
 import type { ReactNode } from "react";
 import FormSelectOption from "~/components/form/formSelectOption";
 import type { UserFormPath } from "~/types/globals.type";
+import { useSelectedUser } from "~/context/selectedUserContext";
 
 
 type AddUserFormType = {
@@ -18,7 +18,7 @@ export default function AddUserForm({
   newInputField,
   handleInputChange
 }: AddUserFormType) {
-  const { user, setUser } = useUser()
+  const { selectedUser, setSelectedUser } = useSelectedUser()
   return (
     <div className="flex flex-col justify-start items-center relative rounded-xl overflow-y-auto">
       <div className="flex flex-col justify-center items-center">
@@ -31,18 +31,18 @@ export default function AddUserForm({
             <div className="flex flex-col lg:flex-row">
               
               <div className="flex flex-col flex-1">
-                {user ?
+                {selectedUser ?
                   <div className="space-y-6">
                     <FormSection title="User Information">
                       <FormField 
                         label="Full Name"
-                        value={user.name}
+                        value={selectedUser.name}
                         onChange={(val) => handleInputChange("name", val)}
                       />
                       <FormField 
                         label="Email"
-                        value={user.email}
-                        readOnly={user.email ? true : false}
+                        value={selectedUser.email}
+                        readOnly={selectedUser.email ? true : false}
                         onChange={(val) => handleInputChange("email", val)}
                       />
                       {newInputField}
@@ -51,18 +51,18 @@ export default function AddUserForm({
                           label="Status"
                           field="status"
                           option={["Verified", "Unverified", "Banned", "Pending", "Suspended"]}
-                          user={user}
-                          setUser={setUser}
-                          selectValue={user.status}
+                          user={selectedUser}
+                          setUser={setSelectedUser}
+                          selectValue={selectedUser.status}
                         />
                         
                         <FormSelectOption 
                           label="Role"
                           field="role"
                           option={["Admin", "Moderator", "User", "Demo"]}
-                          user={user}
-                          setUser={setUser}
-                          selectValue={user.role}
+                          user={selectedUser}
+                          setUser={setSelectedUser}
+                          selectValue={selectedUser.role}
                         />
                       </div>
                     </FormSection>

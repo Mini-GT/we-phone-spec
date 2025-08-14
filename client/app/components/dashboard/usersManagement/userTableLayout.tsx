@@ -1,9 +1,12 @@
-import { Edit2, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import type { TableSortConfig, UserStatus, UserType } from "~/types/globals.type"
 import { toReadableDate } from "~/utils/formatDate";
 import _ from "lodash";
-import { Form } from "react-router";
+import { Form, useFetcher } from "react-router";
 import { usePopupButton } from "~/context/popupButtonContext";
+import { getStatusColor } from "~/utils/statusStyle";
+import { useState } from "react";
+import { useSelectedUser } from "~/context/selectedUserContext";
 
 type UsersTableLayoutProps = {
   getSortIcon: (iconTpe: TableSortConfig["key"]) => React.ReactNode;
@@ -17,25 +20,16 @@ export default function UsersTableLayout({
   currentUsers,
 }: UsersTableLayoutProps) {
   const { setPopupButton } = usePopupButton()
+  const { setSelectedUser } = useSelectedUser()
 
-  function handlePopupForm() {
+  function handlePopupForm(selectedUser: UserType) {
     setPopupButton(prevState => ({
       ...prevState,
       popup: true,
       isAddUserClicked: true
     }));
+    setSelectedUser(selectedUser)
   }
-
-  const getStatusColor = (status: UserStatus) => {
-    switch (status) {
-      case "verified": return 'bg-green-100 text-green-800';
-      case 'banned': return 'bg-gray-300 text-gray-900';
-      case "unverified": return 'bg-red-100 text-red-800';
-      case 'pending': return 'bg-blue-100 text-blue-800';
-      case 'suspended': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   return (
     <div className="overflow-x-auto">
@@ -112,19 +106,19 @@ export default function UsersTableLayout({
                 </span>
               </td>
               <td className="p-4 text-gray-700">{_.capitalize(user.role)}</td>
-              <td className="p-4 text-gray-700">{toReadableDate(user.createdAt || "")}</td>
+              <td className="p-4 text-gray-700">{user.createdAt ? toReadableDate(user.createdAt) : ""}</td>
               <td className="p-4">
                 <div className="flex items-center gap-2">
-                  <Form method="post"> 
+                  {/* <Form method="post">  */}
                     <button 
-                      name="getUserById" 
-                      value={user.id} 
+                      // name="getUserById" 
+                      // value={user.id} 
                       // type="submit" 
-                      onClick={handlePopupForm}
+                      onClick={() => handlePopupForm(user)}
                     >
                       Edit
                     </button>
-                  </Form>
+                  {/* </Form> */}
                   <Form method="delete">
                     <button 
                       className="p-1 text-gray-500 hover:text-red-600 transition-colors"
