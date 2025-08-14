@@ -21,10 +21,17 @@ const getSmartphoneComments = async (req: Request, res: Response)=> {
       id: true,
       createdAt: true,
       likes: true,
+      userId: true,
       dislikes: true,
       isDeleted: true,
       message: true,
-      name: true
+      name: true,
+      user: {
+        select: {
+          name: true, 
+          role: true,
+        }
+      }
     }
   })
 
