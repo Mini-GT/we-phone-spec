@@ -5,36 +5,42 @@ import {
   MoreHorizontal,
   ChevronDown,
   Check,
+  BadgeCheck,
 } from "lucide-react";
 import { io, Socket } from "socket.io-client";
 import type { Smartphone, SmartphoneCommentType } from "~/types/globals.type";
 import { useUser } from "~/context/userContext";
 import { nanoid } from "nanoid"
 import { usePopupButton } from "~/context/popupButtonContext";
-import { convertToTimeAgo, toReadableDate } from "~/utils/formatDate";
+import { convertToTimeAgo } from "~/utils/formatDate";
 import { useFetcher } from "react-router";
 import { Spinner } from "./spinner";
 import commentService from "~/services/comment.service";
+import { getRoleColor } from "~/utils/statusStyle";
+import { getRole } from "~/utils/role";
+import { hasPermission } from "~/utils/permissions";
 
 type CommentsSectionProps = {
   smartphoneId: Smartphone["_id"]
-  smartphoneComments: Omit<SmartphoneCommentType[], "userId" | "deviceId" | "updatedAt">
+  smartphoneComments: CommentsType[]
 }
+
+type CommentsType = Omit<SmartphoneCommentType, "deviceId" | "updatedAt">
 
 const take = 5
 
 export default function CommentsSection({ smartphoneId, smartphoneComments }: CommentsSectionProps) {
   const fetcher = useFetcher()
   const { user } = useUser()
-  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "mostLiked">("mostLiked");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [ newSocket, setNewSocket ] = useState<Socket| null>(null)
   const { setPopupButton } = usePopupButton()
-  const [comments, setComments ] = useState<Omit<SmartphoneCommentType[], "userId" | "deviceId" | "updatedAt">>(smartphoneComments)
+  const [comments, setComments ] = useState<CommentsType[]>(smartphoneComments)
   const [ openCommentSettingsId, setOpenCommentSettingsId ] = useState<boolean>(false)
   const [ commentId, setCommentId ] = useState<string | null>(null)
-  const moreComments = fetcher.data as Omit<SmartphoneCommentType[], "userId" | "deviceId" | "updatedAt">
+  const moreComments = fetcher.data as CommentsType[]
   const [ skip, setSkip ] = useState(5)
   useEffect(() => {
     const socket = io(import.meta.env.VITE_COMMENTS_SOCKET_NAMESPACE, {
@@ -60,11 +66,10 @@ export default function CommentsSection({ smartphoneId, smartphoneComments }: Co
   
   useEffect(() => {
     if(moreComments) {
-      console.log(moreComments)
       setComments((prev) => [...prev, ...moreComments])
     }
   }, [moreComments])
-
+  
   const handleTextarea = () => {
     if(!user || !user.id) {
       setPopupButton(prevState => ({
@@ -86,7 +91,11 @@ export default function CommentsSection({ smartphoneId, smartphoneComments }: Co
         createdAt: new Date(),
         likes: 0,
         dislikes: 0,
-        isDeleted: false
+        isDeleted: false, 
+        user: {
+          name: user.name,
+          role: user.role
+        }
       }
       setComments((prev) => [newComment, ...prev])
       newSocket?.emit("add-comment", newComment, smartphoneId)
@@ -160,6 +169,7 @@ export default function CommentsSection({ smartphoneId, smartphoneComments }: Co
   // }
 
   const handleDelete = async () => {
+    // show login modal if there no user
     if(!user || !user.id) {
       setPopupButton(prevState => ({
         ...prevState,
@@ -167,6 +177,8 @@ export default function CommentsSection({ smartphoneId, smartphoneComments }: Co
       }))
       return
     }
+
+    // remove comment in client
     setComments(prev =>
       prev.map(comment =>
         comment.id === commentId ? { ...comment, isDeleted: true } : comment
@@ -174,16 +186,30 @@ export default function CommentsSection({ smartphoneId, smartphoneComments }: Co
     )
 
     setComments(prev => prev.filter(comment => !(comment.id === commentId && comment.isDeleted)))
+
+    // update deleted comment in server
     if(commentId) {
       await commentService.deleteComment(commentId)
     }
-  }
+  } 
+  
+  const sortedComments = [...comments].sort((a, b) => {
+    switch (sortOrder) {
+      case "oldest":
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      case "mostLiked":
+        return b.likes - a.likes;
+      default:
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+  })
+  
   return (
     <div className="p-4 border-1 shadow-lg rounded-md max-w-full mt-10 mx-auto relative">
       {/* Header */}
       <div className="flex justify-between items-center border-b border-gray-700 pb-4 mb-4">
         <h2 className="text-xl font-bold">Comments</h2>
-        {/* <div className="relative">
+        <div className="relative">
           <button
             onClick={() => setDropdownOpen((prev) => !prev)}
             className="flex items-center gap-1 text-sm hover:text-gray-600 cursor-pointer"
@@ -196,11 +222,11 @@ export default function CommentsSection({ smartphoneId, smartphoneComments }: Co
               <button
                 className="flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
                 onClick={() => {
-                  setSortOrder("newest");
+                  setSortOrder("mostLiked");
                   setDropdownOpen(false);
                 }}
               >
-                Oldest {sortOrder === "newest" && <Check size={14} />}
+                Most Liked {sortOrder === "mostLiked" && <Check size={14} />}
               </button>
               <button
                 className="flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
@@ -209,11 +235,20 @@ export default function CommentsSection({ smartphoneId, smartphoneComments }: Co
                   setDropdownOpen(false);
                 }}
               >
-                Newest {sortOrder === "oldest" && <Check size={14} />}
+                Oldest {sortOrder === "oldest" && <Check size={14} />}
+              </button>
+              <button
+                className="flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
+                onClick={() => {
+                  setSortOrder("newest");
+                  setDropdownOpen(false);
+                }}
+              >
+                Newest {sortOrder === "newest" && <Check size={14} />}
               </button>
             </div>
           )}
-        </div> */}
+        </div>
       </div>
 
       {/* Login Notice */}
@@ -235,13 +270,19 @@ export default function CommentsSection({ smartphoneId, smartphoneComments }: Co
 
       {/* Comments */}
       <div className="space-y-6">
-        {comments.map((c) => (
+        {sortedComments.map((c) => (
           <div key={c.id} className="flex items-start gap-3">
             <img src="/userIcon.svg" alt="avatar" className="w-10 h-10 rounded-full" />
             <div className="flex-1">
               {/* User Info */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-semibold">{c.name}</span>
+              <div className="relative flex items-center gap-2 flex-wrap">
+                <span className="font-semibold">{c.user?.name}</span> 
+                {c.user?.role !== "USER" && (
+                  <div className={`relative flex items-center text-[0.6rem] p-[0.1rem] rounded-sm font-bold ${getRoleColor(c.user?.role)}`}>
+                    <span>{getRole(c.user?.role)?.toUpperCase()}</span>
+                    <BadgeCheck size={12} className="text-red-900" />
+                  </div>
+                )}
                 <span className="text-xs text-gray-400">{convertToTimeAgo(c.createdAt)}</span>
               </div>
 
@@ -265,32 +306,41 @@ export default function CommentsSection({ smartphoneId, smartphoneComments }: Co
                   </button>
                 </div>
                   
-                {user && user.id !== c.userId && // show comment settings if there is a user and userId is equal to commenter userId 
-                  <div className={`relative hover:text-black ${commentId === c.id && "text-black"} cursor-pointer`}>
-                    <button 
-                      onClick={() => handleCommentSettings(c.id)}
-                    >
-                      <MoreHorizontal className="cursor-pointer" size={14} />
-                    </button>
+                
+                  {/* <ProtectedRoute requiredRoles={["ADMIN", "MODERATOR", "USER"]} requiredPermission="delete_comments"> */}
+                    {
+                      // show comment settings if there is a user and userId is equal to commenter userId and user has role that can delete or admin permission 
+                      (
+                        hasPermission(user.role, "delete_own_comments") && user.id === c.userId || 
+                        hasPermission(user.role, "delete_all_comments")
+                      )
+                      &&  
+                        <div className={`relative hover:text-black ${commentId === c.id && "text-black"} cursor-pointer`}>
+                          <button 
+                            onClick={() => handleCommentSettings(c.id)}
+                          >
+                            <MoreHorizontal className="cursor-pointer" size={14} />
+                          </button>
 
-                    {commentId === c.id &&  (
-                      <div className="absolute left-0 w-40 bg-white border border-gray-700 rounded-md shadow-lg overflow-hidden">
-                        {/* <button
-                          className="flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
-                          onClick={handleEdit}  
-                        >
-                          Edit  
-                        </button> */}
-                        <button
-                          className="flex items-center justify-between text-black w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
-                          onClick={handleDelete}  
-                        >
-                          Delete 
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                }
+                          {commentId === c.id && (
+                            <div className="absolute left-0 w-40 bg-white z-20 border border-gray-700 rounded-md shadow-lg overflow-hidden">
+                              {/* <button
+                                className="flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
+                                onClick={handleEdit}  
+                              >
+                                Edit  
+                              </button> */}
+                              <button
+                                className="flex items-center justify-between text-black w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
+                                onClick={handleDelete}  
+                              >
+                                Delete 
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                    }
+                  {/* </ProtectedRoute> */}
               </div>
             </div>
           </div>

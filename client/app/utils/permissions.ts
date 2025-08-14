@@ -10,6 +10,10 @@ const PERMISSIONS = {
   DELETE_DEVICE: 'delete_device',
   ADD_DEVICE: 'add_device',
   VIEW_DEVICES: 'view_devices',
+
+  // comment management
+  DELETE_ALL_COMMENTS: 'delete_all_comments',
+  DELETE_OWN_COMMENTS: 'delete_own_comments'
 } as const
 
 export type Permission = typeof PERMISSIONS[keyof typeof PERMISSIONS];
@@ -22,15 +26,18 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     PERMISSIONS.ADD_DEVICE, 
     PERMISSIONS.VIEW_USERS,
     PERMISSIONS.VIEW_DEVICES,
+    PERMISSIONS.DELETE_ALL_COMMENTS
   ],
   MODERATOR: [
     PERMISSIONS.ADD_USER, 
     PERMISSIONS.ADD_DEVICE, 
     PERMISSIONS.VIEW_USERS,
-    PERMISSIONS.VIEW_DEVICES
+    PERMISSIONS.VIEW_DEVICES,
+    PERMISSIONS.DELETE_OWN_COMMENTS
   ],
   USER: [
-    PERMISSIONS.VIEW_DEVICES
+    PERMISSIONS.VIEW_DEVICES,
+    PERMISSIONS.DELETE_OWN_COMMENTS
   ],
 }
 
