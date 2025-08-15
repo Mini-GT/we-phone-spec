@@ -28,15 +28,10 @@ class SmartphoneService {
   }
 
   // fetch all smartphones with optional filters
-  async getSmartphones() {
+  async getSmartphones()  {
     try {
-      const response = await this.api.get("/smartphones");
-
-      if (!response) {
-        throw new Error("Failed to fetch users");
-      }
-
-      return response;
+      const { data } = await this.api.get("/smartphones")
+      return data 
     } catch (error) {
       this.handleError(error);
     }
@@ -127,7 +122,7 @@ async updateSmartphone(id: string, updatedForm: Partial<Smartphone>, token: stri
     }
   }
 
-  async getTopDeviceViewStats(): Promise<ApiTopDeviceResponse | undefined> {
+  async getTopDevicesByViewStats(): Promise<ApiTopDeviceResponse | undefined> {
     try {
       const response = await this.api.get("/smartphones/top-view-stats");
       return response.data
@@ -136,7 +131,7 @@ async updateSmartphone(id: string, updatedForm: Partial<Smartphone>, token: stri
     }
   }
   
-  async getTopViewedSmartphones(query: string): Promise<ApiTopDeviceResponse | undefined> {
+  async getTopAllTimeViewedSmartphones(query: string): Promise<ApiTopDeviceResponse | undefined> {
     try {
       const response = await this.api.get(`/smartphones/views/top${query}`);
       return response.data

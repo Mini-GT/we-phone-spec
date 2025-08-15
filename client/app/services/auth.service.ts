@@ -26,6 +26,7 @@ class AuthService {
   
   publicRoute(request: Request): string | null {
     const userCookieToken = request.headers.get("Cookie")
+    if(!userCookieToken) return null
     // check token expiration
     const valid = isTokenValid(userCookieToken);
 
@@ -34,6 +35,7 @@ class AuthService {
   
   privateRoute(request: Request): string | null {
     const userCookieToken = request.headers.get("Cookie")
+    if(!userCookieToken) return null
     const valid = isTokenValid(userCookieToken);
 
     if(!valid) throw redirect("unauthorized")

@@ -5,7 +5,7 @@ import type { ApiResponse, ChangePasswordType, Smartphone, UserType } from "~/ty
 class UserService {
   private api: AxiosInstance = axios.create({
     baseURL: `${import.meta.env.VITE_SMARTPHONE_API_URL}/user`,
-  });
+  })
 
   private handleError(error: unknown) {
     if (axios.isAxiosError(error)) {
