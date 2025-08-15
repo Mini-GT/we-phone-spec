@@ -1,10 +1,9 @@
-import { useLoaderData } from 'react-router';
 import TopTenSection from '~/components/topTenSection';
 import type { Route } from './+types/smartphones';
 import Pagination from '~/components/pagination';
 import smartphoneService from '~/services/smartphone.service';
 import { useState } from 'react';
-import { queryKeysType, type ApiTopDeviceResponse, type SelectedTabType, type Smartphone, type TopViewStatsType } from '~/types/globals.type';
+import { queryKeysType, type SelectedTabType, type TopViewStatsType } from '~/types/globals.type';
 import TopTenLayout from '~/components/topTenLayout';
 import { useQuery } from '@tanstack/react-query';
 import { Spinner } from '~/components/spinner';
@@ -30,8 +29,7 @@ export function meta({}: Route.MetaArgs) {
 // }
 
 export default function Smartphones() {
-  // const { devices, topViewDevices } = useLoaderData<typeof loader>()
-  // console.log(devices)
+  const [selectedTab, setSelectedTab] = useState<SelectedTabType>('Today')
 
   const { 
     data: smartphones, 
@@ -65,7 +63,6 @@ export default function Smartphones() {
   }
 
   const { phones: devices } = smartphones 
-  const [selectedTab, setSelectedTab] = useState<SelectedTabType>('Today')
   const { topToday, topWeek, topMonth } = topDevicesByViewStats as TopViewStatsType
 
   return (
