@@ -3,12 +3,9 @@ import {
   Links,
   Meta,
   Outlet,
-  redirect,
   Scripts,
   ScrollRestoration,
-  useNavigation,
-  type ActionFunctionArgs,
-  type ClientActionFunctionArgs,
+  useLoaderData,
   type LoaderFunctionArgs,
 } from "react-router";
 
@@ -16,20 +13,20 @@ import type { Route } from "./+types/root";
 import "./app.css";
 import Navbar from "./components/navbar";
 import { PopupButtonProvider, usePopupButton } from "./context/popupButtonContext";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { dehydrate, HydrationBoundary, QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import LoginRegister from "./components/loginRegister";
 import { AuthProvider } from "./context/authContext";
 import Footer from "./components/footer";
 import NotFound from "./routes/notFound";
-import AddUser from "./components/dashboard/usersManagement/addUserForm";
 import { SmartphoneProvider } from "./context/smartphoneContext";
-import AddDevice from "./components/cardModal";
-import AddDeviceForm from "./components/dashboard/deviceManagement.tsx/addDeviceForm";
 import CardModal from "./components/cardModal";
 import userService from "./services/user.service";
 import authService from "./services/auth.service";
-import { Spinner } from "./components/spinner";
-import { UserProvider } from "./context/userContext";
+import { UserProvider, useUser } from "./context/userContext";
+import { useEffect, useState } from "react";
+import { SelectedUserProvider } from "./context/selectedUserContext";
+import smartphoneService from "./services/smartphone.service";
+import { queryKeysType, type Smartphone } from "./types/globals.type";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -48,26 +45,86 @@ export const links: Route.LinksFunction = () => [
 //   request,
 // }: ActionFunctionArgs) {
 //   let formData = await request.formData()
-//   const email = formData.get("email") as string
-//   const password = formData.get("password") as string
-//   const response = await authService.login({ email, password })
-//   // console.log(response.error)
+//   const selectedUserData = formData.get("selectedUser") as string
+//   return selectedUserData 
 // }
 
-export async function loader({request}: LoaderFunctionArgs) {
-  const token = authService.publicRoute(request)
-  
-  if(!token) {
-    return
-  } else {
-    const user = await userService.getMe(token)
-    return user
-  } 
+export async function loader({ request }: LoaderFunctionArgs) {
+  const queryClient = new QueryClient();
+  const token = authService.privateRoute(request);
+  let user = null;
+
+  try {
+    if (token) {
+      user = await queryClient.fetchQuery({
+        queryKey: queryKeysType.me,
+        queryFn: () => userService.getMe(token),
+      })
+    }
+
+    const smartphonesPromise = queryClient.fetchQuery({
+      queryKey: queryKeysType.smartphones,
+      queryFn: () => smartphoneService.getSmartphones(),
+      staleTime: 5 * 60 * 1000,
+    })
+
+    queryClient.prefetchQuery({
+      queryKey: queryKeysType.topDevicesByViewStats,
+      queryFn: () => smartphoneService.getTopDevicesByViewStats(),
+      staleTime: 5 * 60 * 1000,
+    })
+
+    queryClient.prefetchQuery({
+      queryKey: queryKeysType.topAllTimeViewed,
+      queryFn: () => smartphoneService.getTopAllTimeViewedSmartphones("?limitNumber=5&sort=desc"),
+      staleTime: 5 * 60 * 1000,
+    })
+
+    queryClient.prefetchQuery({
+      queryKey: queryKeysType.topAllTimeLiked,
+      queryFn: () => smartphoneService.getTopLikedSmartphones("?limitNumber=5&sort=desc"),
+      staleTime: 5 * 60 * 1000,
+    })
+
+    queryClient.prefetchQuery({
+      queryKey: queryKeysType.newAddedSmartphones,
+      queryFn: () => smartphoneService.getNewAddedSmartphones("?limitNumber=5&sort=desc"),
+      staleTime: 5 * 60 * 1000,
+    })
+
+    // prefetch each phone's details
+    const smartphonesData = await smartphonesPromise;
+    const phones: Smartphone[] = smartphonesData?.phones || [];
+
+    await Promise.all(
+      phones.map(phone =>
+        queryClient.prefetchQuery({
+          queryKey: queryKeysType.smartphone(phone._id),
+          queryFn: () => smartphoneService.getSmartphoneById(phone._id),
+          staleTime: 5 * 60 * 1000,
+        })
+      )
+    );
+  } catch (error) {
+    console.error(error)
+  }
+
+  return { user, dehydratedState: dehydrate(queryClient) }
 }
 
-const queryClient = new QueryClient()
-
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { dehydratedState } = useLoaderData<typeof loader>()
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: Infinity,
+          },
+        },
+      }),
+  )
+
   return (
     <html lang="en">
       <head>
@@ -78,15 +135,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <QueryClientProvider client={queryClient}>
-          <PopupButtonProvider>
-            <AuthProvider>
-              <SmartphoneProvider>
-                <UserProvider>
-                  {children}
-                </UserProvider>
-              </SmartphoneProvider>
-            </AuthProvider>
-          </PopupButtonProvider>
+          <HydrationBoundary state={dehydratedState}>
+            <PopupButtonProvider>
+              <AuthProvider>
+                <SmartphoneProvider>
+                  <UserProvider>
+                    <SelectedUserProvider>
+                      {children}
+                    </SelectedUserProvider>
+                  </UserProvider>
+                </SmartphoneProvider>
+              </AuthProvider>
+            </PopupButtonProvider>
+          </HydrationBoundary>
         </QueryClientProvider>
         <ScrollRestoration/>
         <Scripts />
@@ -97,17 +158,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   const {popupButton} = usePopupButton()
-  const navigation = useNavigation()
-  const isNavigating = navigation.location?.pathname === "/"
+  const { user } = useLoaderData<typeof loader>()
+  const { setUser } = useUser()
+  // console.log(user)
+  useEffect(() => {
+    setUser(user)
+  }, [user])
 
   return (
     <div>
-      {isNavigating && <Spinner spinSize="w-12 h-12" />}
+      {/* {isNavigating && <Spinner spinSize="w-12 h-12" />} */}
       {popupButton.isLoginClicked && <LoginRegister />}
       {popupButton.popup && <CardModal />}
       <Navbar />
-      <Outlet />
-      <Footer />
+      <div className="lg:mx-15 md:mx-10 sm:mx-5">
+        <Outlet />
+        <Footer />
+      </div>
     </div>
   );
 }

@@ -3,8 +3,10 @@ import type { Route } from "./+types/home";
 import PhoneCardSlider from "~/components/phoneCardSlider";
 import Trending from "~/components/trending";
 import smartphoneService from "~/services/smartphone.service";
-import type { ApiTopDeviceResponse } from "~/types/globals.type";
+import { queryKeysType, type ApiTopDeviceResponse, type TopViewStatsType } from "~/types/globals.type";
 import SmartphonesFeatured from "~/components/smartphonesFeatured";
+import { useQuery } from "@tanstack/react-query";
+import { Spinner } from "~/components/spinner";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -14,23 +16,90 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader({request}: Route.LoaderArgs) {
-  const { topToday } = await smartphoneService.getTopDeviceViewStats() as ApiTopDeviceResponse
-  const { topViewed } = await smartphoneService.getTopViewedSmartphones("?limitNumber=5&sort=desc") as ApiTopDeviceResponse
+  const { topToday } = await smartphoneService.getTopDevicesByViewStats() as ApiTopDeviceResponse
+  const { topViewed } = await smartphoneService.getTopAllTimeViewedSmartphones("?limitNumber=5&sort=desc") as ApiTopDeviceResponse
   const { topLiked } = await smartphoneService.getTopLikedSmartphones("?limitNumber=5&sort=desc") as ApiTopDeviceResponse
   const { newAddedSmartphones } = await smartphoneService.getNewAddedSmartphones("?limitNumber=5&sort=desc") as ApiTopDeviceResponse
   return { topToday, topViewed, topLiked, newAddedSmartphones }
 }
 
 export default function Home() {
-const { topToday, topViewed, topLiked, newAddedSmartphones } = useLoaderData<typeof loader>()
-  if (!topToday || !topViewed || !topLiked || !newAddedSmartphones) {
-    return <p>Loading...</p>;
+  const { 
+    data: topDevicesByViewStats, 
+    isLoading: topDevicesByViewStatsIsLoading, 
+    isError: topDevicesByViewStatsIsError, 
+    error: topDevicesByViewStatsError 
+  } = useQuery({
+    queryKey: queryKeysType.topDevicesByViewStats,
+    queryFn: () => smartphoneService.getTopDevicesByViewStats(),
+  })
+
+  const { 
+    data: topAllTimeViewed, 
+    isLoading: topAllTimeViewedIsLoading, 
+    isError: topAllTimeViewedIsError, 
+    error: topAllTimeViewedError 
+  } = useQuery({
+    queryKey: queryKeysType.topAllTimeViewed,
+    queryFn: () => smartphoneService.getTopAllTimeViewedSmartphones("?limitNumber=5&sort=desc"),
+  })
+
+  const { 
+    data: topAllTimeLiked, 
+    isLoading: topAllTimeLikedIsLoading, 
+    isError: topAllTimeLikedIsError, 
+    error: topAllTimeLikedError 
+  } = useQuery({
+    queryKey: queryKeysType.topAllTimeLiked,
+    queryFn: () => smartphoneService.getTopLikedSmartphones("?limitNumber=5&sort=desc"),
+  })
+
+  const { 
+    data: newAddedSmartphones, 
+    isLoading: newAddedSmartphonesIsLoading, 
+    isError: newAddedSmartphonesIsError, 
+    error: newAddedSmartphonesError 
+  } = useQuery({
+    queryKey: queryKeysType.newAddedSmartphones,
+    queryFn: () => smartphoneService.getNewAddedSmartphones("?limitNumber=5&sort=desc"),
+  })
+
+  const isAnyLoading =
+    topDevicesByViewStatsIsLoading ||
+    topAllTimeViewedIsLoading ||
+    topAllTimeLikedIsLoading ||
+    newAddedSmartphonesIsLoading
+
+  const isAnyError =
+    topDevicesByViewStatsIsError ||
+    topAllTimeViewedIsError ||
+    topAllTimeLikedIsError ||
+    newAddedSmartphonesIsError
+
+  const error =
+    topDevicesByViewStatsError ||
+    topAllTimeViewedError ||
+    topAllTimeLikedError ||
+    newAddedSmartphonesError
+
+  if (isAnyLoading) {
+    return <Spinner spinSize="w-12" />
   }
+
+  if (isAnyError) {
+    return <div className="text-red-500 text-center py-10">{String(error)}</div>
+  }
+
+  const topToday = (topDevicesByViewStats?.topToday ?? []) as TopViewStatsType["topToday"]
+  const allTimeViewed = (topAllTimeViewed?.topViewed ?? []) as ApiTopDeviceResponse["topViewed"]
+  const allTimeLiked = (topAllTimeLiked?.topLiked ?? []) as ApiTopDeviceResponse["topLiked"]
+  const newAdded = (newAddedSmartphones?.newAddedSmartphones ?? []) as ApiTopDeviceResponse["newAddedSmartphones"]
+  
   return (
     <div className="mx-15 lg:mx-0 overflow-x-hidden">
       <PhoneCardSlider smartphones={topToday} />
       <Trending smartphones={topToday} />
-      <SmartphonesFeatured topViewed={topViewed} topLiked={topLiked} newAdded={newAddedSmartphones} />
+      <SmartphonesFeatured topViewed={allTimeViewed} topLiked={allTimeLiked} newAdded={newAdded} />
     </div>
   );
 }
