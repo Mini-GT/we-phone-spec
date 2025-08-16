@@ -8,6 +8,9 @@ const router = express.Router()
 router.route("/")
 .get(asyncWrapper(getSmartphoneComments))
 
+// router.route("/view-more")
+// .get(asyncWrapper(getViewMoreSmartphoneComments))
+
 router.route("/sort/:sortOrder")
 .get(asyncWrapper(sortComment))
 
