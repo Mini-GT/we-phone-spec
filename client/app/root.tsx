@@ -62,11 +62,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
       })
     }
 
-    const smartphonesPromise = queryClient.fetchQuery({
-      queryKey: queryKeysType.smartphones,
-      queryFn: () => smartphoneService.getSmartphones(),
-      staleTime: 5 * 60 * 1000,
-    })
+    // queryClient.fetchQuery({
+    //   queryKey: queryKeysType.smartphones,
+    //   queryFn: () => smartphoneService.getSmartphones(),
+    //   staleTime: 5 * 60 * 1000,
+    // })
 
     queryClient.prefetchQuery({
       queryKey: queryKeysType.topDevicesByViewStats,
@@ -92,19 +92,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       staleTime: 5 * 60 * 1000,
     })
 
-    // prefetch each phone's details
-    const smartphonesData = await smartphonesPromise;
-    const phones: Smartphone[] = smartphonesData?.phones || [];
-
-    await Promise.all(
-      phones.map(phone =>
-        queryClient.prefetchQuery({
-          queryKey: queryKeysType.smartphone(phone._id),
-          queryFn: () => smartphoneService.getSmartphoneById(phone._id),
-          staleTime: 5 * 60 * 1000,
-        })
-      )
-    );
+    
   } catch (error) {
     console.error(error)
   }
@@ -160,7 +148,7 @@ export default function App() {
   const {popupButton} = usePopupButton()
   const { user } = useLoaderData<typeof loader>()
   const { setUser } = useUser()
-  // console.log(user)
+  
   useEffect(() => {
     setUser(user)
   }, [user])

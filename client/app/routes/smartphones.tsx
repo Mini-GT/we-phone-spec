@@ -5,7 +5,7 @@ import smartphoneService from '~/services/smartphone.service';
 import { useState } from 'react';
 import { queryKeysType, type SelectedTabType, type TopViewStatsType } from '~/types/globals.type';
 import TopTenLayout from '~/components/topTenLayout';
-import { useQuery } from '@tanstack/react-query';
+import { QueryClient, useQuery } from '@tanstack/react-query';
 import { Spinner } from '~/components/spinner';
 
 export function meta({}: Route.MetaArgs) {
@@ -16,17 +16,25 @@ export function meta({}: Route.MetaArgs) {
 }
 
 
-// export async function loader({request}: Route.LoaderArgs) {
-//     const data = await smartphoneService.getSmartphones()
-//     const topViewDevices  = await smartphoneService.getTopDeviceViewStats()
+export async function loader({request}: Route.LoaderArgs) {
+  const queryClient = new QueryClient();
+  
+  queryClient.fetchQuery({
+    queryKey: queryKeysType.smartphones,
+    queryFn: () => smartphoneService.getSmartphones(),
+    staleTime: 5 * 60 * 1000,
+  })
 
-//     if (!data) {
-//       throw new Error("Failed to fetch smartphones");
-//     }
+    // const data = await smartphoneService.getSmartphones()
+    // const topViewDevices  = await smartphoneService.getTopDeviceViewStats()
 
-//     const devices = data.phones
-//     return {devices, topViewDevices};
-// }
+    // if (!data) {
+    //   throw new Error("Failed to fetch smartphones");
+    // }
+
+    // const devices = data.phones
+    // return {devices, topViewDevices};
+}
 
 export default function Smartphones() {
   const [selectedTab, setSelectedTab] = useState<SelectedTabType>('Today')
