@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ThumbsUp,
   ThumbsDown,
@@ -8,40 +8,40 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import { io, Socket } from "socket.io-client";
-import type { Smartphone, SmartphoneCommentType } from "~/types/globals.type";
+import type { Smartphone, SmartphoneCommentType, SortOrderType } from "~/types/globals.type";
 import { useUser } from "~/context/userContext";
 import { nanoid } from "nanoid"
 import { usePopupButton } from "~/context/popupButtonContext";
 import { convertToTimeAgo } from "~/utils/formatDate";
-import { useFetcher } from "react-router";
+import { useFetcher, useNavigate } from "react-router";
 import { Spinner } from "./spinner";
 import commentService from "~/services/comment.service";
 import { getRoleColor } from "~/utils/statusStyle";
 import { getRole } from "~/utils/role";
 import { hasPermission } from "~/utils/permissions";
+import { getSortQuery } from "~/utils/getSortQuery";
 
 type CommentsSectionProps = {
   smartphoneId: Smartphone["_id"]
-  smartphoneComments: CommentsType[]
 }
 
 type CommentsType = Omit<SmartphoneCommentType, "deviceId" | "updatedAt">
 
 const take = 5
 
-export default function CommentsSection({ smartphoneId, smartphoneComments }: CommentsSectionProps) {
+export default function CommentsSection({ smartphoneId }: CommentsSectionProps) {
   const fetcher = useFetcher()
   const { user } = useUser()
-const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "mostLiked">("mostLiked");
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [sortOrder, setSortOrder] = useState<SortOrderType>("mostLiked");
+  const [dropdownOpen, setDropdownOpen] = useState(false)
   const [commentText, setCommentText] = useState("");
   const [ newSocket, setNewSocket ] = useState<Socket| null>(null)
   const { setPopupButton } = usePopupButton()
-  const [comments, setComments ] = useState<CommentsType[]>(smartphoneComments)
-  const [ openCommentSettingsId, setOpenCommentSettingsId ] = useState<boolean>(false)
+  const initialComments = fetcher.data as CommentsType[]
+  const [ comments, setComments ] = useState<CommentsType[]>([])
   const [ commentId, setCommentId ] = useState<string | null>(null)
-  const moreComments = fetcher.data as CommentsType[]
   const [ skip, setSkip ] = useState(5)
+
   useEffect(() => {
     const socket = io(import.meta.env.VITE_COMMENTS_SOCKET_NAMESPACE, {
       withCredentials: true, 
@@ -63,12 +63,33 @@ const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "mostLiked">("m
     }
 
   }, [])
-  
+
+  // fetch initial comments data on mount
   useEffect(() => {
-    if(moreComments) {
-      setComments((prev) => [...prev, ...moreComments])
+    const { orderBy, sortDirection } = getSortQuery(sortOrder)
+      fetcher.submit(
+      {
+        initialCommentsData: JSON.stringify({
+          smartphoneId: smartphoneId,
+          skip: 0,
+          take: 5,
+          orderBy,
+          sortDirection,
+        }),
+      },
+      { method: "post" }
+    )
+  }, [sortOrder])
+
+  useEffect(() => {
+    if (!initialComments) return
+    
+    if (skip === 5) {
+      setComments(initialComments)
+    } else {
+      setComments(prev => [...prev, ...initialComments]);
     }
-  }, [moreComments])
+  }, [initialComments, sortOrder])
   
   const handleTextarea = () => {
     if(!user || !user.id) {
@@ -82,7 +103,7 @@ const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "mostLiked">("m
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
-      if (!commentText.trim() || !user.id) return
+      if (!commentText.trim() || !user?.id) return
       const newComment: SmartphoneCommentType = {
         id: nanoid(),
         name: user.name,
@@ -105,14 +126,15 @@ const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "mostLiked">("m
 
   const handleViewMore = () => {
     setSkip(prev => prev + take)
+    const { orderBy, sortDirection  } = getSortQuery(sortOrder)
     fetcher.submit(
-      { smartphoneCommentsId: JSON.stringify({ smartphoneId, skip })},
+      { viewMoreCommentsData: JSON.stringify({ smartphoneId, skip, take, orderBy, sortDirection })},
       { 
         method: "post",
       }
     )
   }
-  
+    
   const handleLike = async (id: string) => {
     if(!user || !user.id) {
       setPopupButton(prevState => ({
@@ -144,7 +166,7 @@ const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "mostLiked">("m
     )
     await commentService.dislikeToComment(id)
   }
-
+  
   const handleCommentSettings = (id: string) => {
     if(!user || !user.id) {
       setPopupButton(prevState => ({
@@ -167,7 +189,7 @@ const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "mostLiked">("m
   //     )
   //   )
   // }
-
+  
   const handleDelete = async () => {
     // show login modal if there no user
     if(!user || !user.id) {
@@ -193,16 +215,16 @@ const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "mostLiked">("m
     }
   } 
   
-  const sortedComments = [...comments].sort((a, b) => {
-    switch (sortOrder) {
-      case "oldest":
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      case "mostLiked":
-        return b.likes - a.likes;
-      default:
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    }
-  })
+  // const sortedComments = [...comments].sort((a, b) => {
+  //   switch (sortOrder) {
+  //     case "oldest":
+  //       return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+  //     case "newest":
+  //       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  //     default:
+  //       return b.likes - a.likes;
+  //   }
+  // })
   
   return (
     <div className="p-4 border-1 shadow-lg rounded-md max-w-full mt-10 mx-auto relative">
@@ -222,7 +244,20 @@ const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "mostLiked">("m
               <button
                 className="flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
                 onClick={() => {
+                  setSortOrder("newest");
+                  setComments([]);
+                  setSkip(5);
+                  setDropdownOpen(false);
+                }}
+              >
+                Newest {sortOrder === "newest" && <Check size={14} />}
+              </button>
+              <button
+                className="flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
+                onClick={() => {
                   setSortOrder("mostLiked");
+                  setComments([]);
+                  setSkip(5);
                   setDropdownOpen(false);
                 }}
               >
@@ -232,20 +267,13 @@ const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "mostLiked">("m
                 className="flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
                 onClick={() => {
                   setSortOrder("oldest");
+                  setComments([]);
+                  setSkip(5);
                   setDropdownOpen(false);
                 }}
               >
                 Oldest {sortOrder === "oldest" && <Check size={14} />}
-              </button>
-              <button
-                className="flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
-                onClick={() => {
-                  setSortOrder("newest");
-                  setDropdownOpen(false);
-                }}
-              >
-                Newest {sortOrder === "newest" && <Check size={14} />}
-              </button>
+              </button>           
             </div>
           )}
         </div>
@@ -270,7 +298,7 @@ const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "mostLiked">("m
 
       {/* Comments */}
       <div className="space-y-6">
-        {sortedComments.map((c) => (
+        {comments?.map((c) => (
           <div key={c.id} className="flex items-start gap-3">
             <img src="/userIcon.svg" alt="avatar" className="w-10 h-10 rounded-full" />
             <div className="flex-1">
@@ -311,8 +339,8 @@ const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "mostLiked">("m
                     {
                       // show comment settings if there is a user and userId is equal to commenter userId and user has role that can delete or admin permission 
                       (
-                        hasPermission(user.role, "delete_own_comments") && user.id === c.userId || 
-                        hasPermission(user.role, "delete_all_comments")
+                        hasPermission(user?.role, "delete_own_comments") && user?.id === c.userId || 
+                        hasPermission(user?.role, "delete_all_comments")
                       )
                       &&  
                         <div className={`relative hover:text-black ${commentId === c.id && "text-black"} cursor-pointer`}>
@@ -352,7 +380,7 @@ const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "mostLiked">("m
         onClick={handleViewMore}
       >
         <ChevronDown size={20} /> View More 
-        {fetcher.state === "submitting" && <Spinner parentClassName="ml-2" spinSize="h-4" />}
+        {fetcher.state === "loading" && <Spinner parentClassName="ml-2" spinSize="h-4" />}
       </button>
     </div>
   )

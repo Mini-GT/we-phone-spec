@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance } from "axios";
+import type { SmartphoneCommentsDataType, SmartphoneCommentType } from "~/types/globals.type";
 
 class CommentsService {
   private api: AxiosInstance = axios.create({
@@ -25,10 +26,27 @@ class CommentsService {
     };
   }
 
-  async getSmartphoneComments(smartphoneId: string, skip: number, take: number) {
+  // async getSmartphoneComments(smartphoneId: string, skip: number, take: number) {
+  //   try {
+  //     const response = await this.api.get("/", {
+  //       params: { smartphoneId, skip, take }
+  //     })
+  //     return response.data
+  //   } catch (error) {
+  //     this.handleError(error);
+  //   }
+  // }
+
+  async getSmartphoneComments(
+    smartphoneId: string, 
+    skip: number, 
+    take: number, 
+    orderBy: SmartphoneCommentsDataType["orderBy"], 
+    sortDirection: SmartphoneCommentsDataType["sortDirection"]
+  ) {
     try {
       const response = await this.api.get("/", {
-        params: { smartphoneId, skip, take }
+        params: { smartphoneId, skip, take, orderBy, sortDirection }
       })
       return response.data
     } catch (error) {

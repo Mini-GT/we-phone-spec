@@ -1,11 +1,10 @@
 import type { Route } from "./+types/smartphone";
 import smartphoneService from "~/services/smartphone.service";
 import { Card, CardContent } from "../components/ui/card";
-import { Button } from "../components/ui/button";
 import { Calendar, Smartphone as SmartphoneCard, Camera, Battery, HardDrive, Cpu, Settings } from "lucide-react"; 
 import DeviceSpec from "~/components/deviceSpecs";
-import type { ApiResponse, Smartphone, SmartphoneCommentsDataType, Smartphone as SmartphoneType, UserType } from "~/types/globals.type";
-import { useFetcher, useLoaderData, useMatches, type ActionFunctionArgs } from "react-router";
+import { queryKeysType, type ApiResponse, type Smartphone, type SmartphoneCommentsDataType, type Smartphone as SmartphoneType, type UserType } from "~/types/globals.type";
+import { useFetcher, useLoaderData, useMatches, type ActionFunctionArgs, type ClientActionFunction, type ClientActionFunctionArgs } from "react-router";
 import authService from "~/services/auth.service";
 import { useEffect, useState } from "react";
 import userService from "~/services/user.service";
@@ -13,6 +12,8 @@ import { usePopupButton } from "~/context/popupButtonContext";
 import incrementViewToSmartphone from "~/utils/viewSmartphone";
 import CommentsSection from "~/components/commentSection";
 import commentService from "~/services/comment.service";
+import { QueryClient } from "@tanstack/react-query";
+import { useUser } from "~/context/userContext";
 
 type SmartphoneIdType = {
   smartphoneId: string
@@ -35,16 +36,38 @@ export async function action({request}: ActionFunctionArgs) {
   let formData = await request.formData()
   const smartphoneLikesId = formData.get("smartphoneLikes") as SmartphoneType["_id"]
   const smartphoneViewId = formData.get("smartphoneViewId") as SmartphoneType["_id"]
-  const smartphoneCommentsData = formData.get("smartphoneCommentsId") as string
-  const parsedSmartphoneCommentsData = JSON.parse(smartphoneCommentsData) as SmartphoneCommentsDataType
-  if(parsedSmartphoneCommentsData?.smartphoneId) {
-    const { comments } = await commentService.getSmartphoneComments(parsedSmartphoneCommentsData.smartphoneId, parsedSmartphoneCommentsData.skip, 5)
+  const initialCommentsData = formData.get("initialCommentsData") as string
+  const viewMoreCommentsData = formData.get("viewMoreCommentsData") as string
+  const parsedInitialCommentsData = JSON.parse(initialCommentsData) as SmartphoneCommentsDataType
+  const parsedViewMoreCommentsData = JSON.parse(viewMoreCommentsData) as SmartphoneCommentsDataType
+  
+  if(parsedInitialCommentsData?.smartphoneId) {
+    const { comments } = await commentService.getSmartphoneComments(
+      parsedInitialCommentsData.smartphoneId, 
+      parsedInitialCommentsData.skip, 
+      parsedInitialCommentsData.take, 
+      parsedInitialCommentsData.orderBy, 
+      parsedInitialCommentsData.sortDirection,
+    )
     return comments 
   }
+
+  if(parsedViewMoreCommentsData?.smartphoneId) {
+    const { comments } = await commentService.getSmartphoneComments(
+      parsedViewMoreCommentsData.smartphoneId, 
+      parsedViewMoreCommentsData.skip, 
+      parsedViewMoreCommentsData.take, 
+      parsedViewMoreCommentsData.orderBy, 
+      parsedViewMoreCommentsData.sortDirection,
+    )
+    return comments 
+  }
+
   if(smartphoneViewId) {
     const res = await incrementViewToSmartphone(smartphoneViewId)
     return res
   }
+
   if(smartphoneLikesId) {
     if(!token) return { actionError: true, message: "Must be signed in" }
     const result = await userService.addToLikes(token, smartphoneLikesId)
@@ -52,29 +75,72 @@ export async function action({request}: ActionFunctionArgs) {
   }
 }
 
+  // const skip = parseInt(url.searchParams.get("skip") || "0")
+  // const sortOrder = url.searchParams.get("sortOrder") || "likes"
+  // const take = parseInt(url.searchParams.get("take") || "5")
+    
+  // let orderBy: string
+  // let sortType: string
+  // switch(sortOrder) {
+  //   case "newest":
+  //     orderBy = "createdAt"
+  //     sortType = "desc"
+  //     break
+  //   case "oldest":
+  //     orderBy = "createdAt"
+  //     sortType = "asc"
+  //     break
+  //   default:
+  //     orderBy = "likes"
+  //     sortType = "desc"
+  // }
+
+  // await Promise.all(
+  //   phones.map(phone =>
+  //     queryClient.prefetchQuery({
+  //       queryKey: queryKeysType.smartphone(phone._id),
+  //       queryFn: () => smartphoneService.getSmartphoneById(phone._id),
+  //       staleTime: 5 * 60 * 1000,
+  //     })
+  //   )
+  // );
+
+  // const smartphone = await smartphoneService.getSmartphoneById(id)
+
+
 export async function loader({params, request}: Route.LoaderArgs) {
+  const queryClient = new QueryClient();
   const token = authService.privateRoute(request) || "" 
+  // const url = new URL(request.url)
   const data = params.smartphoneData
   const id = data?.split("-").pop()
   if(!id) throw new Error("No Id Found")
-  const smartphone = await smartphoneService.getSmartphoneById(id)
-  const { comments } = await commentService.getSmartphoneComments(id, 0, 5) 
+
+  const smartphone = await queryClient.fetchQuery({
+    queryKey: queryKeysType.smartphone(id),
+    queryFn: () => smartphoneService.getSmartphoneById(id),
+    staleTime: 5 * 60 * 1000,
+  })
+  
+  const skip = 0
+  const take = 5
+  // const { comments } = await commentService.getSmartphoneComments(id, skip , take) 
+
   if(token !== "") {
     const result = await userService.getUserLikes(token)
     const { likedSmartphoneId } = result.message as UserLikeResponse
     const likedIds = new Set(likedSmartphoneId.map(item => item.smartphoneId))
     // check if this smartphone is liked 
     const isLiked = likedIds.has(id) 
-    return { smartphone, isLiked, comments }
+    return { smartphone, isLiked }
   }
   const isLiked = false
-  return { smartphone, isLiked, comments }
+  return { smartphone, isLiked }
 }
 
 export default function Smartphone() {
-  const { smartphone, isLiked, comments } = useLoaderData<typeof loader>()
-  const matches = useMatches()
-  const user = matches[0].data as UserType
+  const { smartphone, isLiked } = useLoaderData<typeof loader>()
+  const { user } = useUser()
   const [ userLiked, setUserLiked ] = useState<boolean>(isLiked)
   const [ userLikesCount, setUserLikesCount ] = useState<number>(smartphone.likes)
   const { setPopupButton } = usePopupButton()
@@ -296,8 +362,7 @@ export default function Smartphone() {
           )
         })}
       </div>
-    <CommentsSection smartphoneId={smartphone._id} smartphoneComments={comments}  
-    />
+    <CommentsSection smartphoneId={smartphone._id} />
     </>
   );
 }
