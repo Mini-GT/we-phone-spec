@@ -1,10 +1,8 @@
 import { UsersRound } from "lucide-react";
-import { useLoaderData, useMatches, type ActionFunctionArgs, type ClientActionFunctionArgs, type ClientLoaderFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
+import { useLoaderData, useMatches, type ActionFunctionArgs, type MetaFunction } from "react-router";
 import UserMenuNav from "~/components/userMenuNav";
-import { useAuth } from "~/context/authContext";
 import Unauthorized from "../unauthorized";
 import { ProtectedRoute } from "~/components/protectedRoute";
-import ManagementDashoard from "~/components/dashboard/usersManagement/userManagementDashboard";
 import userService from "~/services/user.service";
 import usersService from "~/services/users.service";
 import type { Route } from "./+types/users";
@@ -29,15 +27,11 @@ export async function action({
   const token = authService.privateRoute(request) || ""
   let formData = await request.formData();
   const deleteId = formData.get("deleteUser") as string
-  const userId = formData.get("getUserById") as string
   const rawData = formData.get("userFormData") as string
   if(deleteId) {
     const deleteResult = await userService.deleteUser(token, deleteId)
   }
-  if(userId) {
-    const user = await userService.getUserById(token, userId)
-    return user.user
-  }
+
   if(rawData) {
     const userFormData = JSON.parse(rawData)
     const {
@@ -86,19 +80,11 @@ try {
 //   return <div className="h-screen">Loading.ssssssssssssssssssssssasdasda..</div>
 // }
 
-export default function Users({
-  actionData
-}: Route.ComponentProps) {
-  const matches = useMatches()
-  const user = matches[0].data as UserType
+export default function Users() {
+  const { user } = useUser()
   const users = useLoaderData<typeof loader>()
-  const { setUser } = useUser()
   // const { user, isLoading, error } = useAuth()
   const { setPopupButton } = usePopupButton()
-  useEffect(() => {
-    setUser(actionData)
-  }, [actionData, setUser])
-
   function handleAddUser() {
     // Logic to add a new user
     setPopupButton(prevState => ({
@@ -106,16 +92,15 @@ export default function Users({
       isAddUserClicked: true,
     }));
   }
-  
+
   if (!user || !users) {
     return (
       <Spinner spinSize="w-12 h-12" />
     )
   }
-
   return (
     <ProtectedRoute requiredRoles={["ADMIN", "MODERATOR"]} fallback={<Unauthorized />}>
-      <div className="min-h-screen bg-gray-800 bg-opacity-90 flex flex-col items-center py-12 px-15">
+      <div className="min-h-screen bg-gray-800 bg-opacity-90 flex flex-col items-center py-12 sm:px-15">
         <UserMenuNav
           tab={"users"}
           name={user?.name}

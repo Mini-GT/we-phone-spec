@@ -1,10 +1,9 @@
-import { useMatches, type LoaderFunctionArgs, type MetaFunction } from "react-router";
+import { type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import UserMenuNav from "~/components/userMenuNav";
-import { useAuth } from "~/context/authContext";
 import { SettingsIcon } from "lucide-react";
 import { Spinner } from "~/components/spinner";
 import authService from "~/services/auth.service";
-import type { UserType } from "~/types/globals.type";
+import { useUser } from "~/context/userContext";
 
 export function meta({}: MetaFunction) {
   return [
@@ -18,9 +17,7 @@ export async function loader({request}: LoaderFunctionArgs) {
 }
 
 export default function Settings() {
-  // const { user } = useAuth()
-  const matches = useMatches()
-  const user = matches[0].data as UserType
+  const { user } = useUser()
 
   if (!user) {
     return (

@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Mail, Lock, AlertTriangle, Edit2, UserCheck, UserRound } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { Lock, AlertTriangle, Edit2, UserCheck, UserRound } from 'lucide-react';
 import { toReadableDate } from '~/utils/formatDate';
-import { Form, NavLink, redirect, useLoaderData, useMatches, useNavigate, useNavigation, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from 'react-router';
+import { Form, useMatches, useNavigation, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from 'react-router';
 import UserMenuNav from '~/components/userMenuNav';
-import { useAuth } from '~/context/authContext';
 import { AnimatePresence, motion } from "motion/react"
 import EmailService from '../../services/email.service';
 import authService from '~/services/auth.service';
@@ -13,9 +11,9 @@ import userService from '~/services/user.service';
 import type { Route } from './+types/profile';
 import type { UserType } from '~/types/globals.type';
 import { FormField } from '~/components/form/formField';
-import { Input } from '~/components/ui/input';
 import { changeName, changePassword } from '~/schema/profile.schema';
 import { z } from "zod";
+import { useUser } from '~/context/userContext';
 
 export function meta({}: MetaFunction) {
   return [
@@ -91,14 +89,13 @@ export async function loader({request}: LoaderFunctionArgs) {
 export default function Profile({
   actionData
 }: Route.ComponentProps) {
-  const matches = useMatches()
-  const user = matches[0].data as UserType
+  const { user } = useUser()
   const navigation = useNavigation()
   const [showPasswordFields, setShowPasswordFields] = useState(false);
   const [ formData, setFormData ] = useState({
-    id: user.id,
-    name: user.name,
-    oldName: user.name,
+    id: user?.id,
+    name: user?.name,
+    oldName: user?.name,
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
@@ -147,14 +144,14 @@ export default function Profile({
   }
 
   return (
-    <div className="min-h-screen bg-gray-800 bg-opacity-90 flex flex-col items-center py-12 px-4">
+    <div className="min-h-screen bg-gray-800 bg-opacity-90 flex flex-col items-center py-12 sm:px-4">
       {/* Header */}
       <UserMenuNav tab={"profile"} name={user.name} />
 
       <div className="w-full max-w-3xl bg-gray-900 rounded-lg overflow-hidden">
-        <div className="p-8">
-          <div className="flex items-center mb-8">
-            <div className="text-3xl font-bold text-white flex items-center">
+        <div className="space-y-6 p-4 sm:p-8">
+          <div className="flex items-center">
+            <div className="text-xl sm:text-3xl font-bold text-white flex items-center">
               {/* <span className="mr-3">👤</span> */}
               {/* <UserRound className="mr-3 h-6 w-6" /> */}
               <UserRound fill="#8e44ad" strokeWidth={0} className="mr-3 h-7 w-7" />
@@ -163,14 +160,32 @@ export default function Profile({
           </div>
 
           <div className="flex flex-col md:flex-row">
-            <div className="flex-1 pr-0 md:pr-8">
+            <div className="flex-1 space-y-6 pr-0 md:pr-8">
+              {/* Profile Picture */}
+              <div className="sm:mt-8 flex justify-center">
+                <div className="relative">
+                  <div className="relative">
+                    <div className="relative overflow-hidden z-0 w-22 h-22 rounded-full bg-purple-700 flex items-center justify-center border-4 border-purple-600">
+                      <img 
+                        src={user.profileImage || "/userIcon.svg"} 
+                        alt="Profile" 
+                        className="object-cover w-full"
+                      />
+                    </div>
+                    <button className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-lg cursor-pointer hover:opacity-90">
+                      <Edit2 className="h-4 w-4 text-gray-800" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               {/* Email */}
               <div className="mb-6">
                 <FormField 
                   label="Email Address"
                   name="email"
                   value={user.email}
-                  labelStyle="block text-gray-400 text-sm mb-2 uppercase tracking-wide"
+                  labelStyle="block text-gray-400 text-xs font-bold mb-2 uppercase tracking-wide"
                   inputStyle="w-full bg-gray-800 rounded px-4 py-3 text-white focus:outline-none"
                   readOnly={true}
                 />
@@ -184,14 +199,14 @@ export default function Profile({
                 <span>Verified</span>
               </div> :
               // not verified
-              <div className="mb-6 bg-gray-900 border border-gray-800 rounded p-4">
-                <div className="flex items-start">
-                  <AlertTriangle className="text-yellow-500 mr-2 h-5 w-5" />
+              <div className="mb-6 bg-gray-900 border border-gray-800 rounded sm:p-4">
+                <div className="flex items-center text-sm">
+                  <AlertTriangle className="text-yellow-500 mr-2 h-auto w-10" />
                   <div>
                     <p className="text-white">
                       Your account has not been verified.
                       <button 
-                        className="ml-1 text-pink-400 cursor-pointer hover:underline"
+                        className="text-pink-400 cursor-pointer hover:underline"
                         onClick={sendEmailVerification}
                       >
                         Click here
@@ -208,9 +223,9 @@ export default function Profile({
                   <FormField 
                     label="YOUR NAME"
                     name="name"
-                    value={formData.name}
+                    value={formData.name ?? ""}
                     onChangeEvent={handleChange}
-                    labelStyle="block text-gray-400 text-sm mb-2 uppercase tracking-wide"
+                    labelStyle="block text-gray-400 text-xs font-bold mb-2 uppercase tracking-wide"
                     inputStyle={`w-full bg-gray-800 rounded px-4 py-3 text-white ${fieldError.nameError ? "border border-2 border-red-400 shake" : null }`}
                   />
                   {fieldError.nameError ?
@@ -223,8 +238,8 @@ export default function Profile({
                 <FormField 
                   label="Joined"
                   name="email"
-                  value={toReadableDate(user.createdAt || "")}
-                  labelStyle="block text-gray-400 text-sm mb-2 uppercase tracking-wide"
+                  value={toReadableDate(user.createdAt ?? "")}
+                  labelStyle="block text-gray-400 text-xs font-bold mb-2 uppercase tracking-wide"
                   inputStyle="w-full bg-gray-800 rounded px-4 py-3 text-white focus:outline-none"
                   readOnly={true}
                 />
@@ -256,7 +271,7 @@ export default function Profile({
                             type="password"
                             value={formData.currentPassword}
                             onChangeEvent={handleChange}
-                            labelStyle="block text-gray-400 text-sm mb-2 uppercase tracking-wide"
+                            labelStyle="block text-gray-400 text-xs font-bold mb-2 uppercase tracking-wide"
                             inputStyle={`w-full bg-gray-800 rounded px-4 py-3 text-white ${fieldError.currentPasswordError ? "border border-2 border-red-400 shake" : null }`}
                           />
                           {fieldError.currentPasswordError ?
@@ -270,7 +285,7 @@ export default function Profile({
                             type="password"
                             value={formData.newPassword}
                             onChangeEvent={handleChange}
-                            labelStyle="block text-gray-400 text-sm mb-2 uppercase tracking-wide"
+                            labelStyle="block text-gray-400 text-xs font-bold mb-2 uppercase tracking-wide"
                             inputStyle={`w-full bg-gray-800 rounded px-4 py-3 text-white ${fieldError.newPasswordError ? "border border-2 border-red-400 shake" : null }`}
                           />
                           {fieldError.newPasswordError ?
@@ -284,7 +299,7 @@ export default function Profile({
                             type="password"
                             value={formData.confirmPassword}
                             onChangeEvent={handleChange}
-                            labelStyle="block text-gray-400 text-sm mb-2 uppercase tracking-wide"
+                            labelStyle="block text-gray-400 text-xs font-bold mb-2 uppercase tracking-wide"
                             inputStyle={`w-full bg-gray-800 rounded px-4 py-3 text-white ${fieldError.confirmPasswordError ? "border border-2 border-red-400 shake" : null }`}
                           />
                           {fieldError.confirmPasswordError ?
@@ -310,23 +325,7 @@ export default function Profile({
               </Form>
             </div>
 
-            {/* Profile Picture */}
-            <div className="mt-8 md:mt-0 flex justify-center">
-              <div className="relative">
-                <div className="relative">
-                  <div className="relative overflow-hidden z-0 w-32 h-32 rounded-full bg-purple-700 flex items-center justify-center border-4 border-purple-600">
-                    <img 
-                      src={user.profileImage || "/userIcon.svg"} 
-                      alt="Profile" 
-                      className="object-cover w-full"
-                    />
-                  </div>
-                  <button className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-lg cursor-pointer hover:opacity-90">
-                    <Edit2 className="h-4 w-4 text-gray-800" />
-                  </button>
-                </div>
-              </div>
-            </div>
+            
           </div>
         </div>
       </div>

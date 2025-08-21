@@ -1,15 +1,12 @@
-import { Link, NavLink, useLoaderData, useMatches, useNavigate, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
-import { Mail, Lock, AlertTriangle, Edit2, Heart } from 'lucide-react';
-import { toReadableDate } from "~/utils/formatDate";
+import { Link, useLoaderData, useMatches, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
+import { Heart } from 'lucide-react';
 import UserMenuNav from "~/components/userMenuNav";
-import { useAuth } from "~/context/authContext";
-import type { Route } from "../_protected/+types/likeList";
 import { Spinner } from "~/components/spinner";
 import authService from "~/services/auth.service";
 import type { ApiResponse, Smartphone, UserType } from "~/types/globals.type";
 import userService from "~/services/user.service";
-import { formatNumberToCompact } from "~/utils/formatNumber";
 import KebabMenu from "~/components/ui/kebabMenu";
+import { useUser } from "~/context/userContext";
 
 export function meta({}: MetaFunction) {
   return [
@@ -53,8 +50,7 @@ export async function loader({request}: LoaderFunctionArgs) {
 
 export default function LikeList() {
   const smartphones = useLoaderData<typeof loader>();
-  const matches = useMatches()
-  const user = matches[0].data as UserType
+  const { user } = useUser() 
   if (!user) {
     return (
       <Spinner spinSize="w-12 h-12" />
@@ -67,10 +63,9 @@ export default function LikeList() {
         name={user?.name}
       />
 
-      <div className="w-1/2 rounded-lg overflow-hidden">
-        <div className="h-full">
-          <div className="flex p-8 bg-gray-900 items-center">
-            <div className="text-3xl font-bold text-white flex items-center">
+      <div className="w-full max-w-3xl rounded-lg overflow-hidden">
+          <div className="flex p-2 sm:p-8 bg-gray-900 items-center">
+            <div className="text-2xl sm:text-3xl font-bold text-white flex items-center">
               {/* <span className="mr-3">👤</span> */}
               {/* <Heart className="mr-3 h-6 w-6" /> */}
               <Heart fill="#e74c3c" strokeWidth={0} className="mr-3 h-7 w-7" />
@@ -78,24 +73,23 @@ export default function LikeList() {
             </div>
           </div>
 
-          <div className="bg-gray-900 px-4 w-full h-full">
-            <ul className="grid grid-cols-5 grid-rows-2 gap-2">
+          <div className="bg-gray-900 px-2 sm:px-8 sm:pb-8 w-full h-full">
+            <ul className="grid grid-cols-2 sm:grid-cols-5 grid-rows-2 gap-2">
               {Array.isArray(smartphones) && smartphones.length > 0 ? 
               smartphones.map(item => (
                 <li
                   key={item._id} data-id={item._id}
-                  className="relative bg-white mb-4 border rounded-sm flex flex-col w-full cursor-pointer transform transition-transform duration-300 ease-in-out hover:scale-102 overflow-hidden"
-
+                  className="relative bg-white border rounded-sm flex flex-col w-full cursor-pointer transform transition-transform duration-300 ease-in-out hover:scale-102"
                 >
                   <Link 
                     to={`/smartphones/${item.name}-${item._id}`}
-                    className="px-2 py-2"
+                    className="px-1 py-1 sm:px-2 sm:py-2"
                   >
                     <div className="relative">
-                      <img src={`/imgs/phones/${item.image || "phone_placeholder.svg"}`} alt={item.name} className="" />
-                      <div className="flex px-2 bg-black rounded-sm gap-1 cursor-default absolute bottom-0 m-5">
+                      <img src={`/imgs/phones/${item.image || "phone_placeholder.svg"}`} alt={item.name} className="object-cover" loading="lazy" />
+                      {/* <div className="flex px-2 bg-black rounded-sm gap-1 cursor-default absolute bottom-0 m-5">
                         <img src="/eyeVector.svg" alt="views" className="" />
-                      </div>
+                      </div> */}
                     </div>
                     <div className="bg-white w-full">
                       <button className="ml-1 text-start hover:text-pink-600 cursor-pointer w-full">
@@ -105,12 +99,13 @@ export default function LikeList() {
                       </button>
                     </div>
                   </Link>
-                  <KebabMenu action="/user/like-list" deviceId={item._id} />
+                  <div className="absolute right-5 top-1">
+                    <KebabMenu action="/user/like-list" deviceId={item._id} />
+                  </div>
                 </li>
               )) : null}
             </ul>
           </div>
-        </div>
       </div>
     </div>
   );
