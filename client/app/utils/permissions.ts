@@ -41,8 +41,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   ],
 }
 
-function hasPermission(userRole: UserRole, permission: Permission): boolean {
-  return ROLE_PERMISSIONS[userRole].includes(permission)
+function hasPermission(userRole: UserRole | undefined, permission: Permission): boolean {
+  return ROLE_PERMISSIONS[userRole ?? "USER"].includes(permission)
 }
 
 function canDeleteUsers(userRole: UserRole): boolean {

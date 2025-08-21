@@ -7,7 +7,7 @@ type ProgressBarProps = {
 export default function ProgressBar({ isPending }: ProgressBarProps) {
   const [progress, setProgress] = useState(0);
   const triggerNavigationProgress = () => {
-    setProgress(0)
+    // setProgress(0)
 
     const interval = setInterval(() => {
       setProgress(prev => {
@@ -15,10 +15,10 @@ export default function ProgressBar({ isPending }: ProgressBarProps) {
           clearInterval(interval)
           setTimeout(() => {
             setProgress(0)
-          }, 300)
+          }, 100)
           return 100
         }
-        return isPending ? prev + Math.random() * 25 : 100
+        return isPending ? prev + Math.random() * 15 : 100
       })
     }, 200)
   }
