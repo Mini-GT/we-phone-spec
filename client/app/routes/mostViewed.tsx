@@ -16,8 +16,8 @@ export function meta({}: Route.MetaArgs) {
 
 
 export async function loader({request}: Route.LoaderArgs) {
-    const { topViewed } = await smartphoneService.getTopViewedSmartphones("?limitNumber=0&sort=desc") as ApiTopDeviceResponse
-    const topViewDevices = await smartphoneService.getTopDeviceViewStats()
+    const { topViewed } = await smartphoneService.getTopAllTimeViewedSmartphones("?limitNumber=0&sort=desc") as ApiTopDeviceResponse
+    const topViewDevices = await smartphoneService.getTopDevicesByViewStats()
     if (!topViewed || !topViewed.length || !topViewDevices) {
       throw new Error("Failed to fetch devices");
     }

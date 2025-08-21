@@ -14,19 +14,11 @@ export default {
 
     const data = await response.json()
 
-    if (!Array.isArray(data.phones)) {
-      console.error("Unexpected API response:", data);
-      return ["/", "/smartphones"];
-    } 
-
     const dynamicPaths = data.phones.map(
-    (smartphone: Smartphone) => `/smartphones/${smartphone._id}`)
+    (smartphone: Smartphone) => `/smartphones/${smartphone.name}-${smartphone._id}`)
 
     return [
-      "/",
-      "/about",
-      "/smartphones",
-      ...dynamicPaths
+      ...dynamicPaths,
     ]
   },
 } satisfies Config;

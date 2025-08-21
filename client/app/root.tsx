@@ -91,7 +91,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
       queryFn: () => smartphoneService.getNewAddedSmartphones("?limitNumber=5&sort=desc"),
       staleTime: 5 * 60 * 1000,
     })
-
     
   } catch (error) {
     console.error(error)
@@ -158,8 +157,8 @@ export default function App() {
       {/* {isNavigating && <Spinner spinSize="w-12 h-12" />} */}
       {popupButton.isLoginClicked && <LoginRegister />}
       {popupButton.popup && <CardModal />}
-      <Navbar />
-      <div className="lg:mx-15 md:mx-10 sm:mx-5">
+      <div className="mx-2 xl:mx-15 lg:mx-7 md:mx-5">
+        <Navbar />
         <Outlet />
         <Footer />
       </div>
