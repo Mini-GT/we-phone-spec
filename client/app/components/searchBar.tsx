@@ -13,7 +13,7 @@ export default function SearchBar() {
 
   useEffect(() => {
     const fecthQuery = async () => {
-      const res = await smartphoneService.searchSmartphone(debounceQuery)
+      const res = await smartphoneService.searchSmartphone(debounceQuery.trim())
       // console.log(res.results)
       setData(res.data)
     } 
@@ -22,56 +22,78 @@ export default function SearchBar() {
   }, [debounceQuery]);
 
   return (
-    <div className="relative max-w-md mx-auto">
-      <div className="flex items-center border border-gray-400 rounded-lg focus-within:border-gray-900">
-          <input
-            type="text"
-            className="border-none outline-none px-3 py-2 flex-1 rounded-l-lg"
-            placeholder="Search smartphone..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setTimeout(() => setIsFocused(false), 200)}
-          />
-          <button type="submit" className="p-2">
-            <img src="/search.svg" alt="search" className="w-5 h-5" />
-          </button>
-        </div>
+    <div className="w-full mx-auto z-11">
+      {/* mobile search bar */}
+      <div className="flex items-center mb-1 sm:hidden border lg:border lg:border-gray-400 focus-within:border-gray-900">
+        <input
+          type="text"
+          className="border-none outline-none px-3 py-2 rounded-l-lg"
+          placeholder="Search smartphone..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setTimeout(() => setIsFocused(false), 200)}
+        />
+        <button 
+          type="submit" 
+          className="p-2"
+        >
+          <img src="/search.svg" alt="search" className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* non mobile searchbar */}
+      <div className="flex items-center w-full hidden sm:block sm:border sm:border-gray-400 rounded-lg focus-within:border-gray-900">
+        <input
+          type="text"
+          className="border-none outline-none px-3 py-2 rounded-l-lg"
+          placeholder="Search smartphone..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setTimeout(() => setIsFocused(false), 200)}
+        />
+        <button type="submit" className="p-2">
+          <img src="/search.svg" alt="search" className="w-5 h-5" />
+        </button>
+      </div>
 
       {isFocused && query && (
-        <div className="absolute w-full mt-1 bg-white border border-gray-300 rounded-md shadow-md z-10 overflow-y-auto">
-          {Array.isArray(data) && data.length === 0 ? (
-            <div className="p-4 text-gray-500">No results found</div>
-          ) : (
-            Array.isArray(data) && data?.map((smartphone) => (
-              <Link
-                to={`/smartphones/${smartphone.name}-${smartphone._id}`} 
-                // onClick={() => handleClick(notif.globalNotificationId)}
+      <div className="relative sm:absolute bg-white border rounded-md w-full mt-1 z-50">
+        {Array.isArray(data) && data.length === 0 ? (
+          <div className="p-4 text-gray-500">No results found</div>
+        ) : (
+          Array.isArray(data) && data?.map((smartphone) => (
+            <Link
+              to={`/smartphones/${smartphone.name}-${smartphone._id}`} 
+              key={smartphone._id}
+              // onClick={() => handleClick(notif.globalNotificationId)}
+            >
+              <div
+                className={`flex items-stretch cursor-pointer gap-2 rounded-md hover:bg-[#1991ff] transition p-2 z-10`}
               >
-                <div
-                  className={`flex items-stretch cursor-pointer gap-4 rounded-md hover:bg-[#1991ff] transition p-3 z-10`}
-                >
-                  <div className="flex items-center justify-center rounded-sm px-2 bg-white w-1/5">
-                    <img 
-                      src={`/imgs/phones/${smartphone.image || "phone_placeholder.svg"}`} 
-                      alt="thumb" 
-                      className="object-cover h-12 w-auto" 
-                    />
-                  </div>
-                  
-                  <div className="flex flex-col justify-between rounded-md flex-1 ">
-                    <p className={`text-sm text-black mb-2`}>
-                      {smartphone.name}
-                    </p>
-                  </div>
+                <div className="flex items-center justify-center rounded-sm bg-white">
+                  <img 
+                    src={`/imgs/phones/${smartphone.image || "phone_placeholder.svg"}`} 
+                    alt={smartphone.name} 
+                    className="object-fit w-12" 
+                    loading="lazy"
+                  />
                 </div>
-              </Link>
-            ))
-          )}
-          {/* <div className="text-center text-pink-600 font-semibold p-2 border-t cursor-pointer hover:bg-pink-100">
-            View all results
-          </div> */}
-        </div>
+                
+                <div className="flex flex-col justify-center items-start rounded-md flex-1 ">
+                  <p className={`text-sm text-black`}>
+                    {smartphone.name}
+                  </p>
+                </div>
+              </div>
+            </Link>
+          ))
+        )}
+        {/* <div className="text-center text-pink-600 font-semibold p-2 border-t cursor-pointer hover:bg-pink-100">
+          View all results
+        </div> */}
+      </div>
       )}
     </div>
   )

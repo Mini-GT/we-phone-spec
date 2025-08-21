@@ -1,7 +1,5 @@
-import { useState, useEffect, useRef, use } from "react";
-import authService from "~/services/auth.service";
-import { NavLink, redirect, useNavigate } from "react-router";
-import { useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect, useRef } from "react";
+import { NavLink } from "react-router";
 import { ProtectedRoute } from "./protectedRoute";
 import { PERMISSIONS } from "~/utils/permissions";
 import { useAuth } from "~/context/authContext";
@@ -49,7 +47,7 @@ export default function UserMenu({
   };
 
   return (
-    <div className="flex gap-4 relative text-left" ref={menuRef}>
+    <div className="flex gap-2 ml-auto relative text-left" ref={menuRef}>
       <NotificationBell open={open} setOpen={setOpen} />
       {/* Avatar Button */}
       <div className="relative inline-block">

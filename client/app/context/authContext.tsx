@@ -1,8 +1,6 @@
-import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createContext, useContext, useEffect, useState, type Dispatch, type SetStateAction } from "react";
-import type { ContextProviderProps, loginFormType, UserType } from "~/types/globals.type";
+import { createContext, useContext, useState, type Dispatch, type SetStateAction } from "react";
+import type { ContextProviderProps, UserType } from "~/types/globals.type";
 import AuthService from '~/services/auth.service';
-import userService from "~/services/user.service";
 
 type AuthContextType = {
   user:  UserType | null

@@ -15,14 +15,14 @@ export default function Footer() {
 
   return (
     <div className="mt-15 text-white">
-      <header className="flex flex-col lg:flex-row items-center gap-8 border-b border-gray-300 pb-4 mb-4">
-        <NavLink to="/" className="flex items-center mb-5 md:mb-0">
+      <header className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2 sm:gap-8 border-b border-gray-300 pb-4 mb-4">
+        <NavLink to="/" className="flex items-center">
           <span className="text-4xl font-black text-gray-900 select-none">
-              We<span className="text-indigo-600">PhoneSpec</span>
+            We<span className="text-indigo-600">PhoneSpec</span>
           </span>
         </NavLink>
 
-        <div className="flex flex-col border-l border-gray-300 pl-8">
+        <div className="flex flex-col sm:border-l border-gray-300 sm:pl-8">
           <div className="mx-auto">
             <h1 className="text-black text-xl">Join Now</h1>
           </div>
@@ -52,7 +52,7 @@ export default function Footer() {
             <NavLink
               to={`/brand-list/${brand.toLowerCase()}`}
               key={brand}
-              className={`px-4 py-2 rounded font-semibold transition cursor-pointer ${
+              className={`px-4 py-2 rounded font-semibold text-sm xl:text-lg transition cursor-pointer ${
                 selectedBrand === brand
                   ? "bg-blue-600 text-white"
                   : "bg-gray-700 text-white hover:bg-blue-700"

@@ -15,13 +15,13 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export async function loader({request}: Route.LoaderArgs) {
-  const { topToday } = await smartphoneService.getTopDevicesByViewStats() as ApiTopDeviceResponse
-  const { topViewed } = await smartphoneService.getTopAllTimeViewedSmartphones("?limitNumber=5&sort=desc") as ApiTopDeviceResponse
-  const { topLiked } = await smartphoneService.getTopLikedSmartphones("?limitNumber=5&sort=desc") as ApiTopDeviceResponse
-  const { newAddedSmartphones } = await smartphoneService.getNewAddedSmartphones("?limitNumber=5&sort=desc") as ApiTopDeviceResponse
-  return { topToday, topViewed, topLiked, newAddedSmartphones }
-}
+// export async function loader({request}: Route.LoaderArgs) {
+//   const { topToday } = await smartphoneService.getTopDevicesByViewStats() as ApiTopDeviceResponse
+//   const { topViewed } = await smartphoneService.getTopAllTimeViewedSmartphones("?limitNumber=5&sort=desc") as ApiTopDeviceResponse
+//   const { topLiked } = await smartphoneService.getTopLikedSmartphones("?limitNumber=5&sort=desc") as ApiTopDeviceResponse
+//   const { newAddedSmartphones } = await smartphoneService.getNewAddedSmartphones("?limitNumber=5&sort=desc") as ApiTopDeviceResponse
+//   return { topToday, topViewed, topLiked, newAddedSmartphones }
+// }
 
 export default function Home() {
   const { 
@@ -96,7 +96,7 @@ export default function Home() {
   const newAdded = (newAddedSmartphones?.newAddedSmartphones ?? []) as ApiTopDeviceResponse["newAddedSmartphones"]
   
   return (
-    <div className="mx-15 lg:mx-0 overflow-x-hidden">
+    <div className="flex flex-col gap-5 h-full mt-2 space-y-10 overflow-x-hidden">
       <PhoneCardSlider smartphones={topToday} />
       <Trending smartphones={topToday} />
       <SmartphonesFeatured topViewed={allTimeViewed} topLiked={allTimeLiked} newAdded={newAdded} />

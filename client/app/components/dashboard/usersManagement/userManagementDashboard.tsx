@@ -1,13 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import { Search, ChevronDown, Plus, Edit2, Trash2, ChevronLeft, ChevronRight, Upload } from 'lucide-react';
+import { useState, useMemo } from 'react';
 import type { TableSortConfig, UserRole, UserStatus, UserType } from '~/types/globals.type';
 import _ from 'lodash';
-import StatusFilter from './statusFilter';
-import RoleFilter from './roleFilter';
-import DateFilter from './dateFilter';
-import UsersTable from './userTableLayout';
-import Pagination from '../../pagination';
-import UsersTableLayout from './userTableLayout';
 import UserTableContent from './userTableContent';
 
 

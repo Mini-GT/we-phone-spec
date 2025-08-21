@@ -24,16 +24,6 @@ export async function loader({request}: Route.LoaderArgs) {
     queryFn: () => smartphoneService.getSmartphones(),
     staleTime: 5 * 60 * 1000,
   })
-
-    // const data = await smartphoneService.getSmartphones()
-    // const topViewDevices  = await smartphoneService.getTopDeviceViewStats()
-
-    // if (!data) {
-    //   throw new Error("Failed to fetch smartphones");
-    // }
-
-    // const devices = data.phones
-    // return {devices, topViewDevices};
 }
 
 export default function Smartphones() {
@@ -82,9 +72,9 @@ export default function Smartphones() {
       />
 
       {/* TOP 10 */}
-      <div className='flex flex-col gap-2 w-1/4'>
+      <div className='flex flex-col gap-2 h-full sm:w-full lg:w-1/2 xl:w-1/3'>
         <TopTenSection selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
-        <div className="mt-4">
+        <div className="border rounded-md">
           {selectedTab === 'Today' && <TopTenLayout smartphones={topToday} /> }
           {selectedTab === 'Week' && <TopTenLayout smartphones={topWeek} /> }
           {selectedTab === 'Month' && <TopTenLayout smartphones={topMonth} /> }

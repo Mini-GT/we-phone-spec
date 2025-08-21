@@ -29,7 +29,7 @@ export default function DeviceTableLayout({
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead className="bg-gray-50 border-b border-gray-200">
-          <tr>
+          <tr className="">
             {/* <th className="text-left p-4">
               <input type="checkbox" className="rounded border-gray-300" />
             </th> */}
@@ -94,6 +94,7 @@ export default function DeviceTableLayout({
                     src={`/imgs/phones/${device.image || "phone_placeholder.svg"}`} 
                     alt={device.name}
                     className="w-8 h-8 object-cover"
+                    loading="lazy"
                   />
                   <span className="font-medium text-gray-900 truncate">{device.name}</span>
                 </div>

@@ -1,6 +1,5 @@
-import { useMatches } from "react-router";
-import { useAuth } from "~/context/authContext";
-import type { ProtectedRouteProps, UserType } from "~/types/globals.type";
+import { useUser } from "~/context/userContext";
+import type { ProtectedRouteProps } from "~/types/globals.type";
 import { hasPermission } from "~/utils/permissions";
 
 export function ProtectedRoute({
@@ -9,20 +8,19 @@ export function ProtectedRoute({
   requiredRoles, 
   fallback = null
 }: ProtectedRouteProps) {
-  const matches = useMatches()
-  const user = matches[0].data as UserType
+  const { user } = useUser()
 
   if (!user) {
     return fallback
   }
 
   // check role-based access
-  if (requiredRoles && !requiredRoles.includes(user.role)) {
+  if (requiredRoles && !requiredRoles.includes(user?.role)) {
     return fallback
   }
 
   // check permission-based access
-  if (requiredPermission && !hasPermission(user.role, requiredPermission)) {
+  if (requiredPermission && !hasPermission(user?.role, requiredPermission)) {
     return fallback
   }
 

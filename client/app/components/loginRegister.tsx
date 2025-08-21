@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card } from "./ui/card";
 import { X } from "lucide-react";
 import { usePopupButton } from "~/context/popupButtonContext";
-import RegisterForm from "./registerForm";
+import RegisterForm from "./form/registerForm";
 import VerifyForm from "./verifyForm";
 import LoginForm from "./form/loginForm";
 
@@ -33,7 +33,7 @@ export default function LoginRegister() {
   }
 
   return (
-    <div className={`flex z-1 fixed inset-0 absolute items-center justify-center backdrop-blur-xs bg-black/50`}>
+    <div className={`flex z-50 fixed inset-0 absolute items-center justify-center backdrop-blur-xs bg-black/50`}>
       <Card className={`relative w-full max-w-sm p-6 bg-white rounded-2xl shadow-lg ${popupButton.isLoginClicked ? "animate-popup-enter" : ""}`}>
         <button 
           onClick={closeModalCard} 

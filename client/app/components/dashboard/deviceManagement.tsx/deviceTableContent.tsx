@@ -54,7 +54,6 @@ export default function DeviceTableContent({
   endIndex,
   items
 }: DeviceTableContentProps) {
-  const { setPopupButton } = usePopupButton()
   const { setSmartphoneFormData } = useSmartphone()
   function handleAddDevice() {
     setSmartphoneFormData({
@@ -135,8 +134,8 @@ export default function DeviceTableContent({
   return (
     <div className="bg-white w-full min-h-screen border rounded-md overflow-hidden shadow-lg">
       {/* Header with filters */}
-      <div className="bg-white border-b border-gray-200 p-6">
-        <div className="flex flex-wrap items-center gap-4 h-10">
+      <div className="relative bg-white border-b border-gray-200 p-6">
+        <div className="relative flex items-center gap-4 h-10">
           {/* Search */}
           <div className="relative flex-1 min-w-64">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />

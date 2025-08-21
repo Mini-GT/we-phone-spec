@@ -3,8 +3,7 @@ import type { LoginRegisterFormProps } from "~/types/globals.type";
 import authService from "~/services/auth.service";
 import { usePopupButton } from "~/context/popupButtonContext";
 import { AxiosError } from 'axios';
-import { Form, NavLink, redirect, useNavigate, useNavigation, useRevalidator, useSubmit } from "react-router";
-import { useAuth } from "~/context/authContext";
+import { Form, useNavigate, useNavigation } from "react-router";
 import { CardContent } from "../ui/card";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
@@ -17,22 +16,15 @@ export default function LoginForm({ handleAuthMode }: LoginRegisterFormProps) {
   });
   const [error, setError] = useState<string | null>(null);
   const { setPopupButton } = usePopupButton()
-  const { user, setUser } = useAuth()
   const navigate = useNavigate()
   const navigation = useNavigation()
-  const revalidate = useRevalidator()
-  const submit = useSubmit()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
     try {
-      // handleLogin(loginFormData);
-      const response = await authService.login({ ...loginFormData });
-      const { user } = response.data;
-      localStorage.setItem("user", JSON.stringify(user));
-      setUser(user)
+      await authService.login({ ...loginFormData });
       setPopupButton(prevState => ({
         ...prevState,
         isLoginClicked: false,
@@ -126,13 +118,13 @@ export default function LoginForm({ handleAuthMode }: LoginRegisterFormProps) {
         >
           Register
         </button> 
-        <span> or </span>  
+        {/* <span> or </span>  
         <button 
           className="text-blue-600 hover:underline cursor-pointer"
           onClick={() => handleAuthMode("verify")}
         >
           Verify
-        </button>
+        </button> */}
       </div>
     </CardContent>
   );

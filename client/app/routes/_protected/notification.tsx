@@ -1,14 +1,12 @@
-import { useMatches, useNavigate, type LoaderFunctionArgs, type MetaFunction } from "react-router";
+import { Link, useLoaderData, useMatches, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import UserMenuNav from "~/components/userMenuNav";
-import { useAuth } from "~/context/authContext";
 import type { Route } from "../_protected/+types/notification";
 import { Bell } from "lucide-react";
 import { Spinner } from "~/components/spinner";
 import authService from "~/services/auth.service";
-import type { Smartphone, UserType } from "~/types/globals.type";
-import { useEffect, useState } from "react";
+import type { NotificationType, UserType } from "~/types/globals.type";
 import { convertToTimeAgo } from "~/utils/formatDate";
-import { io } from "socket.io-client";
+import notificationService from "~/services/notification.service";
 
 export function meta({}: MetaFunction) {
   return [
@@ -17,33 +15,28 @@ export function meta({}: MetaFunction) {
   ];
 }
 
-
-export async function loader({request}: LoaderFunctionArgs) {
-  const userId = authService.privateRoute(request);
+export async function action({request}: ActionFunctionArgs) {
+  const token = authService.privateRoute(request) || ""
+  let formData = await request.formData()
+  // action coming from "KebabMenu.tsx" component
+  const notifId = formData.get("smartphoneId") as string
+  
+  if(notifId) {
+    const deleteResult = await notificationService.deleteNotification(token, notifId)
+    return deleteResult
+  }
 }
 
-export default function Notification() {
+export async function loader({request}: LoaderFunctionArgs) {
+  const token = authService.privateRoute(request) || ""
+  const notification = await notificationService.getNotifications(token) 
+  return (notification.message as NotificationType).notifications
+}
+
+export default function Notification({actionData}: Route.ComponentProps) {
+  const notifications = useLoaderData<typeof loader>()
   const matches = useMatches()
   const user = matches[0].data as UserType
-  const [ notification, setNotification ] = useState<Smartphone[] | null>([])
-
-  useEffect(() => {
-    const socket = io('http://localhost:3000/notification', {
-      withCredentials: true, 
-    });
-
-    socket.on("newDeviceNotification", (message: Smartphone) => {
-      console.log(message)
-      setNotification(message)
-    })
-    // console.log("notification")
-
-    return () => {
-      socket.disconnect();
-    }
-
-  }, [])
-
   if (!user) {
     return (
       <Spinner spinSize="w-12 h-12" />
@@ -67,32 +60,39 @@ export default function Notification() {
           </div>
           
           <div className="space-y-4 overflow-y-auto">
-            {Array.isArray(notification) && notification?.length > 0 ? notification.map(notif => (
-              <div
-                key={notif.id}
-                className="flex items-stretch cursor-pointer gap-4 rounded-md hover:bg-[#2c2c3e] transition p-3"
-              >
-                <div className="flex-shrink-0 flex items-center justify-center rounded-md p-2 bg-white">
-                  <img 
-                    src={`/${notif.image}`} 
-                    alt="thumb" 
-                    className="object-cover rounded-md h-32 w-auto" 
-                  />
-                </div>
-                
-                <div className="flex flex-col justify-between rounded-md flex-1 min-h-[140px]">
-                  <p className="text-xl font-semibold text-pink-400 mb-2">
-                    {notif.title}
-                  </p>
-                  
-                  <div className="text-pink-400 text-sm flex-1 mb-2 overflow-hidden line-clamp-4">
-                    {notif.description || "No description available."}
+            {Array.isArray(notifications) && notifications?.length > 0 ? notifications.map((notif) => (
+              <div className="relative" key={notif.globalNotificationId}>
+                <Link
+                  to={`/smartphones/${notif.name}-${notif.globalNotificationId}`} 
+                >
+                  <div
+                    className={`relative flex items-stretch cursor-pointer gap-4 rounded-md hover:bg-[#2c2c3e] ${notif.isRead ? "" : ""} transition p-3 z-10`}
+                  >
+                    <div className="flex items-center justify-center rounded-sm p-2 bg-white">
+                      <img 
+                        src={`/${notif.image}`} 
+                        alt="thumb" 
+                        className="object-cover h-32 w-auto" 
+                        loading="lazy"
+                      />
+                    </div>
+
+                    <div className="flex flex-col justify-between rounded-md flex-1 ">
+                      <p className={`text-xl ${notif.isRead ? "text-[#CBD5E1] font-normal" : "font-semibold text-[#FFFFFF]"} mb-2`}>
+                        {notif.title}
+                      </p>
+                      <div 
+                        className={`${notif.isRead ? "text-[#CBD5E1] font-normal" : "font-semibold text-[#FFFFFF]"} line-clamp-4`}
+                      >
+                        {notif.description || "No Description"}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-auto">
+                        {convertToTimeAgo(notif.createdAt) || ""}
+                      </p>
+                    </div>
                   </div>
-                  
-                  <p className="text-xs text-gray-500 mt-auto">
-                    {convertToTimeAgo(notif.date)}
-                  </p>
-                </div>
+                </Link>
+                {/* <KebabMenu action="/user/notification" deviceId={notif.globalNotificationId} /> */}
               </div>
             )) : null}
           </div>

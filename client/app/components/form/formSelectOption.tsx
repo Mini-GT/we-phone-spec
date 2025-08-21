@@ -1,5 +1,5 @@
 import { ChevronDown } from "lucide-react";
-import type { UserRole, UserStatus, UserType } from "~/types/globals.type";
+import type { UserType } from "~/types/globals.type";
 
 type FormSelectOptionProps = {
   label: string

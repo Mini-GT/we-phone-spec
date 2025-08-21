@@ -9,8 +9,8 @@ type SmartphonesFeaturedProps = {
 
 export default function SmartphonesFeatured({ topViewed, topLiked, newAdded }: SmartphonesFeaturedProps) {
   return (
-    <div className="border rounded-sm min-h-screen text-white py-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="min-h-screen text-white">
+      <div className="grid grid-cols-1 space-y-5 sm:space-y-0 md:grid-cols-3 sm:gap-2">
         {/* <SmartphonesFeaturedSection title="Top Airing" smartphones={sampleData} /> */}
         <SmartphonesFeaturedSection title="Most Viewed" smartphones={topViewed} viewMore="/most-viewed" />
         <SmartphonesFeaturedSection title="Most Liked" smartphones={topLiked} viewMore="/most-liked" />

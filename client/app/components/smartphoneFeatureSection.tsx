@@ -12,24 +12,25 @@ export default function SmartphonesFeaturedSection({ title, smartphones, viewMor
   const addView = useAddViewToSmartphone()
   
   return (
-    <div>
-      <h2 className="text-pink-300 font-bold text-3xl mb-3 px-4">{title}</h2>
+    <div className="shadow-md border rounded-md">
+      <h2 className="flex items-center text-pink-300 font-bold text-2xl lg:text-3xl sm:text-wrap h-10 sm:h-20 text-nowrap px-4">{title}</h2>
       <ul className="">
         {smartphones.map((smartphone) => (
-          <li key={smartphone._id} className="flex border-b-1 cursor-pointer hover:bg-blue-50">
+          <li key={smartphone._id} className="flex px-2 border-b-1 cursor-pointer hover:bg-blue-50">
             <NavLink
               to={`/smartphones/${smartphone.name}-${smartphone._id}`} 
-              className="flex items-stretch gap-4 px-3 py-5 rounded-md hover:bg-blue-50 transition z-10"
+              className="flex items-stretch gap-4 py-2 rounded-md hover:bg-blue-50 transition z-10"
               onClick={() => addView(smartphone.name, smartphone._id)}
             >
               <div
                 className={`flex items-stretch cursor-pointer gap-4 rounded-md transition z-10`}
               >
-                  <div className="flex flex-shrink-0 px-2 items-center justify-center rounded-sm bg-white">
+                  <div className="flex flex-shrink-0 lg:px-2 items-center justify-center rounded-sm bg-white">
                     <img 
                       src={`/imgs/phones/${smartphone.image || "phone_placeholder.svg"}`} 
                       alt="thumb" 
-                      className="object-cover h-25 w-auto" 
+                      className="object-cover h-15 w-auto" 
+                      loading="lazy"
                     />
                   </div>
                   
@@ -42,7 +43,7 @@ export default function SmartphonesFeaturedSection({ title, smartphones, viewMor
                     </p>
                   </div> */}
               </div>
-              <div className="flex flex-col flex-shrink-3 items-stretch text-sm space-y-1 py-2 h-full w-full">
+              <div className="flex flex-col flex-shrink-3 items-stretch text-xs space-y-1 py-2 h-full w-full">
                 <p className="text-black h-full cursor-pointer">
                   {smartphone.name}
                 </p>
@@ -62,7 +63,7 @@ export default function SmartphonesFeaturedSection({ title, smartphones, viewMor
       </ul>
       <NavLink 
         to={viewMore}
-        className="mt-3 text-xl text-black px-2 hover:underline cursor-pointer"
+        className="text-xl text-black px-4 hover:underline cursor-pointer"
       >
         View more →
       </NavLink>

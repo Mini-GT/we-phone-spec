@@ -10,9 +10,9 @@ export default function TopTenLayout({ smartphones }: TopTenSectionProps) {
   const addView = useAddViewToSmartphone()
 
   return (
-    <div className="space-y-2 max-h-96 overflow-y-auto">
-      {Array.isArray(smartphones) &&smartphones?.length > 0 ?smartphones.map((smartphone, i) => (
-        <div className="relative border rounded-md" key={smartphone._id}>
+    <div className="max-h-full overflow-y-auto">
+      {Array.isArray(smartphones) && smartphones?.length > 0 ?smartphones.map((smartphone, i) => (
+        <div className="relative rounded-md" key={smartphone._id}>
           <NavLink
             to={`/smartphones/${smartphone.name}-${smartphone._id}`} 
             onClick={() => addView(smartphone.name, smartphone._id)}
@@ -25,6 +25,7 @@ export default function TopTenLayout({ smartphones }: TopTenSectionProps) {
                   src={`/imgs/phones/${smartphone.image || "phone_placeholder.svg"}`} 
                   alt="thumb" 
                   className="object-cover h-22 w-auto" 
+                  loading="lazy"
                 />
               </div>
               

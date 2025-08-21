@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react'
-import { BellIcon, Bluetooth, CheckIcon } from 'lucide-react'
-import type { ApiResponse, DropDownProps, NewDeviceNotificationType, NotificationType, Smartphone } from '~/types/globals.type'
+import { useEffect, useState, type Dispatch, type SetStateAction } from 'react'
+import { BellIcon } from 'lucide-react'
+import type { DropDownProps, NewDeviceNotificationType, NotificationType } from '~/types/globals.type'
 import { convertToTimeAgo } from '~/utils/formatDate'
 import { io } from "socket.io-client";
 import notificationService from '~/services/notification.service'
@@ -58,7 +58,7 @@ export default function NotificationBell({
     }
 
   }, [])
-  console.log(notifications)
+
   const handleClick = async (notifId: string) => {
     toggleDropdown()
 
@@ -96,7 +96,7 @@ export default function NotificationBell({
         </button>
       {/* </div> */}
 
-      <div className={`absolute right-0 w-90 rounded-lg bg-gray-800 shadow-xl text-white p-3 mt-1 z-50 transition-all duration-200 ${open.isNotificationDropdown ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"}`}>
+      <div className={`absolute -right-10 w-70 sm:right-0 sm:w-90 rounded-lg bg-gray-800 shadow-xl text-white p-3 mt-1 z-20 transition-all duration-200 ${open.isNotificationDropdown ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"}`}>
         {/* <div className="flex items-center gap-2 py-2 pl-2 text-sm text-muted-foreground">
           <CheckIcon className="w-4 h-4" />
           <button onClick={() => setAllRead(true)} className="hover:underline">
@@ -104,39 +104,45 @@ export default function NotificationBell({
           </button>
         </div> */}
 
-        <div className="space-y-2 max-h-96 overflow-y-auto">
+        <div className="space-y-2 max-h-full overflow-y-none">
           {Array.isArray(notifications) && notifications?.length > 0 ? notifications.map((notif, i) => (
             <div className="relative" key={notif.globalNotificationId}>
-              <Link 
-                to={`/smartphones/${notif.name}-${notif.globalNotificationId}`} 
-                onClick={() => handleClick(notif.globalNotificationId)}
-              >
+              
                 <div
-                  className={`flex items-stretch cursor-pointer gap-4 rounded-md hover:bg-[#2c2c3e] ${notif.isRead ? "" : ""} transition p-3 z-10`}
+                  // className={`relative flex`}
+                  className={`relative flex items-stretch cursor-pointer gap-2 rounded-md hover:bg-[#2c2c3e] ${notif.isRead ? "" : ""} transition sm:p-3 z-10`}
                 >
-                  <div className="flex items-center justify-center rounded-sm px-2 bg-white w-1/5">
-                    <img 
-                      src={`/imgs/phones/${notif.image || "phone_placeholder.svg"}`} 
-                      alt="thumb" 
-                      className="object-cover h-12 w-auto" 
+                  <Link 
+                    to={`/smartphones/${notif.name}-${notif.globalNotificationId}`} 
+                    onClick={() => handleClick(notif.globalNotificationId)}
+                    className={`relative flex gap-2`}
+                  >
+                    <div className="flex items-center justify-center rounded-sm px-2 bg-white sm:w-1/5">
+                      <img 
+                        src={`/imgs/phones/${notif.image || "phone_placeholder.svg"}`} 
+                        alt="thumb" 
+                        className="object-fit h-12 w-10" 
+                        loading="lazy"
+                      />
+                    </div>
+                    
+                    <div className="flex flex-col justify-between rounded-md flex-1 ">
+                      <p className={`text-sm ${notif.isRead ? "text-[#CBD5E1] font-normal" : "font-semibold text-[#FFFFFF]"} mb-2`}>
+                        {notif.title}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-auto">
+                        {convertToTimeAgo(notif.createdAt) || ""}
+                      </p>
+                    </div>
+                  </Link>
+                  <div className="absolute right-3 sm:right-4">
+                    <KebabMenu 
+                      action="user/notification" 
+                      deviceId={notif.globalNotificationId} 
+                      setNotifications={setNotifications}
                     />
                   </div>
-                  
-                  <div className="flex flex-col justify-between rounded-md flex-1 ">
-                    <p className={`text-sm ${notif.isRead ? "text-[#CBD5E1] font-normal" : "font-semibold text-[#FFFFFF]"} mb-2`}>
-                      {notif.title}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-auto">
-                      {convertToTimeAgo(notif.createdAt) || ""}
-                    </p>
-                  </div>
                 </div>
-              </Link>
-              <KebabMenu 
-                action="user/notification" 
-                deviceId={notif.globalNotificationId} 
-                setNotifications={setNotifications}
-              />
             </div>
             )) : null}
           {/* <div className="text-center py-4">No Notifications</div> */}

@@ -1,4 +1,3 @@
-import { AlertTriangle } from "lucide-react";
 import ErrorContent from "~/components/errorContent";
 import type { NotFoundProps } from "~/types/globals.type";
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Form, useFetcher, useNavigation } from "react-router";
+import { useFetcher, useNavigation } from "react-router";
 import type { KebabMenuProps } from "~/types/globals.type";
 
 export default function KebabMenu({ deviceId, action, setNotifications }: KebabMenuProps) {
@@ -39,10 +39,10 @@ export default function KebabMenu({ deviceId, action, setNotifications }: KebabM
   }
 
   return (
-    <div className="absolute top-1 right-1 z-10" ref={menuRef}> 
+    <div className="absolute" ref={menuRef}> 
       <button
         onClick={() => setOpen(!open)}
-        className="w-8 h-8 flex items-center justify-center bg-gray-800 rounded-full text-white hover:bg-gray-700 cursor-pointer"
+        className="w-4 h-7 flex items-center justify-center rounded-full font-bold bg-black text-white hover:bg-gray-700 cursor-pointer"
       >
         <svg
           className="w-5 h-5"

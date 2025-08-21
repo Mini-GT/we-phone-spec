@@ -1,9 +1,6 @@
-import AddDeviceForm from "~/components/dashboard/deviceManagement.tsx/addDeviceForm";
 import { ProtectedRoute } from "~/components/protectedRoute";
 import Unauthorized from "../unauthorized";
-import { useSmartphone } from "~/context/smartphoneContext";
-import { Form, useLoaderData, useNavigation, type ActionFunctionArgs } from "react-router";
-import smartphoneService from "~/services/smartphone.service";
+import { Form, useNavigation, type ActionFunctionArgs } from "react-router";
 import { Spinner } from "~/components/spinner";
 import authService from "~/services/auth.service";
 import AddUserForm from "~/components/dashboard/usersManagement/addUserForm";

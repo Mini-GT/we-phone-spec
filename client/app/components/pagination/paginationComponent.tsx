@@ -2,7 +2,6 @@ import NextButton from "~/components/pagination/nextButton";
 import PageNumbers from "~/components/pagination/pageNumbers";
 import PreviousButton from "~/components/pagination/previousButton";
 import RowsPerPage from "~/components/pagination/rowsPerPage";
-import type { Smartphone } from "~/types/globals.type";
 
 type PaginationComponentProps<T> = {
   setCurrentPage: (page: number) => void;

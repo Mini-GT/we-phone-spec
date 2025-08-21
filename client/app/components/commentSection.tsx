@@ -79,7 +79,7 @@ export default function CommentsSection({ smartphoneId }: CommentsSectionProps) 
       },
       { method: "post" }
     )
-  }, [sortOrder])
+  }, [sortOrder]) // refetch new data if sort is changed
 
   useEffect(() => {
     if (!initialComments) return
@@ -215,19 +215,8 @@ export default function CommentsSection({ smartphoneId }: CommentsSectionProps) 
     }
   } 
   
-  // const sortedComments = [...comments].sort((a, b) => {
-  //   switch (sortOrder) {
-  //     case "oldest":
-  //       return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-  //     case "newest":
-  //       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  //     default:
-  //       return b.likes - a.likes;
-  //   }
-  // })
-  
   return (
-    <div className="p-4 border-1 shadow-lg rounded-md max-w-full mt-10 mx-auto relative">
+    <div className="p-3 border-1 shadow-lg rounded-md max-w-full mt-10 mx-auto relative">
       {/* Header */}
       <div className="flex justify-between items-center border-b border-gray-700 pb-4 mb-4">
         <h2 className="text-xl font-bold">Comments</h2>
@@ -244,19 +233,7 @@ export default function CommentsSection({ smartphoneId }: CommentsSectionProps) 
               <button
                 className="flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
                 onClick={() => {
-                  setSortOrder("newest");
-                  setComments([]);
-                  setSkip(5);
-                  setDropdownOpen(false);
-                }}
-              >
-                Newest {sortOrder === "newest" && <Check size={14} />}
-              </button>
-              <button
-                className="flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
-                onClick={() => {
                   setSortOrder("mostLiked");
-                  setComments([]);
                   setSkip(5);
                   setDropdownOpen(false);
                 }}
@@ -266,8 +243,17 @@ export default function CommentsSection({ smartphoneId }: CommentsSectionProps) 
               <button
                 className="flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
                 onClick={() => {
+                  setSortOrder("newest");
+                  setSkip(5);
+                  setDropdownOpen(false);
+                }}
+              >
+                Newest {sortOrder === "newest" && <Check size={14} />}
+              </button>
+              <button
+                className="flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
+                onClick={() => {
                   setSortOrder("oldest");
-                  setComments([]);
                   setSkip(5);
                   setDropdownOpen(false);
                 }}
@@ -333,42 +319,38 @@ export default function CommentsSection({ smartphoneId }: CommentsSectionProps) 
                     <ThumbsDown size={14} /> {c.dislikes}
                   </button>
                 </div>
-                  
-                
-                  {/* <ProtectedRoute requiredRoles={["ADMIN", "MODERATOR", "USER"]} requiredPermission="delete_comments"> */}
-                    {
-                      // show comment settings if there is a user and userId is equal to commenter userId and user has role that can delete or admin permission 
-                      (
-                        hasPermission(user?.role, "delete_own_comments") && user?.id === c.userId || 
-                        hasPermission(user?.role, "delete_all_comments")
-                      )
-                      &&  
-                        <div className={`relative hover:text-black ${commentId === c.id && "text-black"} cursor-pointer`}>
-                          <button 
-                            onClick={() => handleCommentSettings(c.id)}
-                          >
-                            <MoreHorizontal className="cursor-pointer" size={14} />
-                          </button>
+                {
+                  // show comment settings if there is a user and userId is equal to commenter userId and user has role that can delete or admin permission 
+                  (
+                    hasPermission(user?.role, "delete_own_comments") && user?.id === c.userId || 
+                    hasPermission(user?.role, "delete_all_comments")
+                  )
+                  &&  
+                    <div className={`relative hover:text-black ${commentId === c.id && "text-black"} cursor-pointer`}>
+                      <button 
+                        onClick={() => handleCommentSettings(c.id)}
+                      >
+                        <MoreHorizontal className="cursor-pointer" size={14} />
+                      </button>
 
-                          {commentId === c.id && (
-                            <div className="absolute left-0 w-40 bg-white z-20 border border-gray-700 rounded-md shadow-lg overflow-hidden">
-                              {/* <button
-                                className="flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
-                                onClick={handleEdit}  
-                              >
-                                Edit  
-                              </button> */}
-                              <button
-                                className="flex items-center justify-between text-black w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
-                                onClick={handleDelete}  
-                              >
-                                Delete 
-                              </button>
-                            </div>
-                          )}
+                      {commentId === c.id && (
+                        <div className="absolute left-0 w-40 bg-white z-20 border border-gray-700 rounded-md shadow-lg overflow-hidden">
+                          {/* <button
+                            className="flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
+                            onClick={handleEdit}  
+                          >
+                            Edit  
+                          </button> */}
+                          <button
+                            className="flex items-center justify-between text-black w-full px-3 py-2 text-sm hover:bg-gray-300 cursor-pointer"
+                            onClick={handleDelete}  
+                          >
+                            Delete 
+                          </button>
                         </div>
-                    }
-                  {/* </ProtectedRoute> */}
+                      )}
+                    </div>
+                }
               </div>
             </div>
           </div>

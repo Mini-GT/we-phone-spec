@@ -75,39 +75,6 @@ export async function action({request}: ActionFunctionArgs) {
   }
 }
 
-  // const skip = parseInt(url.searchParams.get("skip") || "0")
-  // const sortOrder = url.searchParams.get("sortOrder") || "likes"
-  // const take = parseInt(url.searchParams.get("take") || "5")
-    
-  // let orderBy: string
-  // let sortType: string
-  // switch(sortOrder) {
-  //   case "newest":
-  //     orderBy = "createdAt"
-  //     sortType = "desc"
-  //     break
-  //   case "oldest":
-  //     orderBy = "createdAt"
-  //     sortType = "asc"
-  //     break
-  //   default:
-  //     orderBy = "likes"
-  //     sortType = "desc"
-  // }
-
-  // await Promise.all(
-  //   phones.map(phone =>
-  //     queryClient.prefetchQuery({
-  //       queryKey: queryKeysType.smartphone(phone._id),
-  //       queryFn: () => smartphoneService.getSmartphoneById(phone._id),
-  //       staleTime: 5 * 60 * 1000,
-  //     })
-  //   )
-  // );
-
-  // const smartphone = await smartphoneService.getSmartphoneById(id)
-
-
 export async function loader({params, request}: Route.LoaderArgs) {
   const queryClient = new QueryClient();
   const token = authService.privateRoute(request) || "" 
@@ -277,20 +244,20 @@ export default function Smartphone() {
   // if(isError) return <div>Error loading data</div>;
   return (
     <>
-      <div className="max-w-5xl mx-auto p-6 text-gray-800">
+      <div className="max-w-5xl mx-auto p-1 text-gray-800">
         <div className="bg-[#061f70] text-white rounded-t-2xl p-4">
           <h1 className="text-2xl font-bold">{smartphone.name}</h1>
         </div>
 
-        <div className="flex bg-white rounded-b-2xl shadow-md">
-          <div className="p-4 flex flex-col gap-6">
+        <div className="flex flex-col lg:flex-row bg-white rounded-b-2xl shadow-md">
+          <div className="p-3 flex flex-col gap-6">
             <img
               src={`/imgs/phones/${smartphone.image || "phone_placeholder.svg"}`}
               alt={smartphone.name}
-              className="w-1/5 h-1/4 max-w-xs mx-auto rounded-lg"
+              className="w-2/5 sm:w-1/5 lg:w-1/3 mx-auto rounded-md"
             />
 
-            <div className="flex justify-between flex-col gap-3 flex-1">
+            <div className="flex flex-col justify-end gap-3 md:gap-20 flex-1">
               <div className="space-y-3">
                 {/* <div>
                   <Button className="self-start bg-[#1991ff] text-white hover:bg-[#1071cc] rounded-lg">COMPARE ▼</Button>
@@ -299,7 +266,7 @@ export default function Smartphone() {
                   <h2 className="text-lg font-semibold mb-1">DESCRIPTION</h2>
                 </div>
                 <div>
-                  <p className="text-lg">
+                  <p className="text-md lg:text-lg">
                     {smartphone.description}
                   </p>
                 </div>
@@ -335,21 +302,21 @@ export default function Smartphone() {
               </div>
             </div>
           </div>
-          <div className="p-4 flex flex-col gap-3 min-w-[300px]">
-              {specItems.map((item, index) => (
-                <Card key={index} className="border hover:border-[#1991ff] hover:bg-blue-50 cursor-pointer py-0 border-gray-200">
-                  <CardContent className="flex items-center gap-3 py-3 px-4">
-                    <div className="w-5">
-                      {item.icon}
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-500 font-semibold">{item.label}</div>
-                      <div className="text-sm whitespace-pre-line">{item.value}</div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+          <div className="p-3 flex flex-col justify-end gap-3 min-w-[300px]">
+            {specItems.map((item, index) => (
+              <Card key={index} className="border hover:border-[#1991ff] hover:bg-blue-50 cursor-pointer py-0 border-gray-200">
+                <CardContent className="flex items-center gap-3 py-3 px-4">
+                  <div className="w-5">
+                    {item.icon}
+                  </div>
+                  <div className="grid w-full">
+                    <div className="text-sm text-gray-500 font-semibold">{item.label}</div>
+                    <div className="text-sm whitespace-pre-line">{item.value}</div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
 
         {sections.map((section, index) => {
@@ -362,7 +329,7 @@ export default function Smartphone() {
           )
         })}
       </div>
-    <CommentsSection smartphoneId={smartphone._id} />
+      <CommentsSection smartphoneId={smartphone._id} />
     </>
   );
 }
