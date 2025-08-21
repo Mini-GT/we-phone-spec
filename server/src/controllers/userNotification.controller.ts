@@ -50,6 +50,7 @@ const getUserNotifications = async (req: Request, res: Response) => {
 
   // only fetch those notifs that are not deleted
   const notifications = await prisma.userNotification.findMany({
+    take: 4,
     where: {
       userId: user.id,
       isDeleted: false
@@ -139,8 +140,6 @@ const deleteNotification = async (req: Request, res: Response) => {
       isDeleted: true
     }
   })
-
-  console.log(resu.isDeleted)
 }
 
 export {

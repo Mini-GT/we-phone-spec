@@ -1,4 +1,4 @@
-import type { Types } from "mongoose"
+import type { SmartphoneComments } from "@prisma/client"
 
 type UserRole = 'ADMIN' | 'MODERATOR' | 'USER' | 'DEMO'
 
@@ -16,15 +16,34 @@ type SocketData = {
 
 type ServerToClientEvents = {
   newDeviceNotification: (newDeviceNotification: NewDeviceNotificationType) => void
+  "add-comment": (comment: SmartphoneCommentType, smartphoneId: string) => void
+  joinSmartphoneRoom: (smartphoneId: string) => void
+  "new-comment": (newComment: Omit<SmartphoneComments, "deviceId" | "updatedAt">) => void
 }
 
 type NewDeviceNotificationType = {
-  id: Types.ObjectId,
+  globalNotificationId: string,
   title: string,
   image: string,
-  date: NativeDate,
-  description: string,
-  isRead: boolean,
+  createdAt: NativeDate,
+  name: string | null
+  description: string
+}
+
+type SmartphoneCommentType = {
+  id: string
+  name: string
+  userId: string
+  message: string
+  createdAt: Date
+  updatedAt?: Date
+  likes: number
+  dislikes: number
+  isDeleted: boolean,
+  user: {
+    name: string 
+    role: UserRole
+  }
 }
 
 export type { 
@@ -33,4 +52,6 @@ export type {
   LikedSmartphoneIds,
   SocketData,
   ServerToClientEvents, 
+  NewDeviceNotificationType,
+  SmartphoneCommentType,
 }

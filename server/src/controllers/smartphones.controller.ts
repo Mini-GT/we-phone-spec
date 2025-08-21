@@ -7,26 +7,26 @@ import { changeDeviceStats } from "@/utils/smartphoneView";
 
 const getAllSmartphones = async (req: Request, res: Response)=> {
   const smartphones = await deviceModel.find().lean()
-  res.json({ phones: smartphones })
+  res.status(200).json({ phones: smartphones })
 }
 
 const getTopDeviceViewStats = async (req: Request, res: Response) => {
   const topToday = await deviceModel.find()
-  .sort({ "stats.today": 1 })
+  .sort({ "stats.today": -1 })
   .limit(10)
   .lean()
 
   const topWeek = await deviceModel.find()
-  .sort({ "stats.week": 1 })
+  .sort({ "stats.week": -1 })
   .limit(10)
   .lean()
 
   const topMonth = await deviceModel.find()
-  .sort({ "stats.month": 1 })
+  .sort({ "stats.month": -1 })
   .limit(10)
   .lean()
 
-  res.status(200).json({ result: "success", topToday, topWeek, topMonth})
+  res.status(200).json({topToday, topWeek, topMonth})
 } 
 
 const createSmartphone = async (req: Request, res: Response) => {
@@ -178,6 +178,7 @@ const deleteSmartphone = async (req: Request, res: Response) => {
 
 const incrementViewSmartphone = async (req: Request, res: Response) => {
   const { deviceId } = req.params
+  console.log(deviceId)
   if(!deviceId) return res.status(404).json({ error: "Device not found" })
   await changeDeviceStats(deviceId)
   res.sendStatus(200)

@@ -179,7 +179,7 @@ comments.on("connection", (socket: Socket<ServerToClientEvents>)  => {
   socket.on("add-comment", async (comment, smartphoneId) => {
     if(!socket.data.user.name) return // block unregistered users so they cant send comment, but they can still receive comments
     const user = socket.data.user as User
-    const newComment = await prisma.smartphoneComments.create({
+    await prisma.smartphoneComments.create({
       data: {
         id: comment.id,
         name: user.name!,
@@ -188,7 +188,7 @@ comments.on("connection", (socket: Socket<ServerToClientEvents>)  => {
         message: comment.message
       }
     })
-    socket.to(smartphoneId).emit("new-comment", newComment)
+    socket.to(smartphoneId).emit("new-comment", comment)
   })
 
   socket.on('disconnect', () => {

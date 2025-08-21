@@ -6,7 +6,6 @@ const getSmartphoneComments = async (req: Request, res: Response)=> {
   
   const skipNum = Number(skip) || 0
   const takeNum = Number(take) || 5
-  console.log(orderType)
   
   let orderBy: any
 
@@ -21,7 +20,7 @@ const getSmartphoneComments = async (req: Request, res: Response)=> {
     orderBy = { [orderType as string]: sortDirection }
     
   }
-  console.log(orderBy)
+
   const comments = await prisma.smartphoneComments.findMany({
     skip: skipNum,
     take: takeNum,

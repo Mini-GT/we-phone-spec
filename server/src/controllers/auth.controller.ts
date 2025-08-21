@@ -15,7 +15,7 @@ type PassportInfo = {
 }
 
 const register = async (req: Request, res: Response) => {
-  const result = registerSchema.safeParse(req.body);
+  const result = await registerSchema.safeParseAsync(req.body);
 
   if (!result.success) {
     return res.status(400).json({
@@ -61,7 +61,7 @@ const register = async (req: Request, res: Response) => {
 }
 
 const login = async (req: Request, res: Response) => {
-  const result = loginSchema.safeParse(req.body)
+  const result = await loginSchema.safeParseAsync(req.body)
 
   if (!result.success) {
     console.error(result.error.format())

@@ -43,7 +43,6 @@ const addNewUser = async (req: Request, res: Response) => {
 
 const getMe = async (req: Request, res: Response) => {
   const user = req.user as User
-
   res.status(200).json({
     id: user.id,
     createdAt: user.createdAt,

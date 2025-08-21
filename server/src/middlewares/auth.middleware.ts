@@ -16,7 +16,6 @@ export interface DecodedToken {
 
 export const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
   const cookie = req.headers.cookie || ""
-
   const token = cookie.split("=")[1]
   
   if (!token) {

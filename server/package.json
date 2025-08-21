@@ -9,7 +9,7 @@
     "preset": "bunx prisma migrate reset"
   },
   "dependencies": {
-    "@prisma/client": "^6.8.1",
+    "@prisma/client": "^6.14.0",
     "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -23,7 +23,7 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
     "pg": "^8.15.6",
-    "prisma": "^6.8.1",
+    "prisma": "^6.14.0",
     "socket.io": "^4.8.1",
     "uuid": "^11.1.0",
     "zod": "^4.0.5"

@@ -7,8 +7,8 @@ export const phones = [{
   description: "The Google Pixel 8 Pro is Google’s flagship smartphone with a 6.7-inch LTPO OLED display (up to 120Hz), powered by the custom Tensor G3 chip. It features a triple rear camera setup (including a 50MP main sensor), advanced AI photo/video tools, and runs the latest Android with 7 years of software updates. Built for premium performance, AI smarts, and top-tier camera quality.",
   image: "imgs/phones/pixel_8_pro.png",
   launch: {
-    announced: "2023, October",
-    released: "2023, October"
+    announced: "2023, October 4",
+    released: "2023, October 12"
   },
   specs: {
     body: {
@@ -48,7 +48,10 @@ export const phones = [{
     },
     sound: {
       loudspeaker: "Yes, with stereo speakers",
-      jack: [],
+      jack: {
+        hasJackSlot: true,
+        jackFeatures: ""
+      }
     },
     connection: {
       wlan: "Wi-Fi 802.11 a/b/g/n/ac/6e/7",
@@ -120,7 +123,7 @@ export const phones = [{
     },
     sound: {
       loudspeaker: "Yes, with stereo speakers",
-      jack: []
+      jack: "",
     },
     connection: {
       wlan: "Wi-Fi 802.11 a/b/g/n/ac/6e/7",
@@ -128,17 +131,17 @@ export const phones = [{
       nfc: true,
       infraredPort: false,
       radio: false,
-      USB: ["USB Type-C 3.2", "DisplayPort"]
+      USB: "USB Type-C 3.2, DisplayPort"
     },
     features: {
-      sensors: ["Fingerprint (under display)", "accelerometer", "gyro", "proximity", "barometer", "compass"]
+      sensors: "Fingerprint (under display), accelerometer, gyro, proximity, barometer, compass"
     },
     battery: {
       type: "Li-Ion 5000 mAh, non-removable",
-      charging: ["45W wired", "15W wireless", "4.5W reverse wireless"]
+      charging: "45W wired, 15W wireless, 4.5W reverse wireless"
     },
     misc: {
-      colors: ["Titanium Black", "Titanium Gray", "Titanium Violet"],
+      colors: "Titanium Black, Titanium Gray, Titanium Violet",
       models: "SM-S928B, SM-S928U, SM-S928W"
     }
   }
@@ -192,7 +195,7 @@ export const phones = [{
     },
     sound: {
       loudspeaker: "Yes, with stereo speakers",
-      jack: []
+      jack: ""
     },
     connection: {
       wlan: "Wi-Fi 802.11 a/b/g/n/ac/6e",
@@ -200,17 +203,17 @@ export const phones = [{
       nfc: true,
       infraredPort: false,
       radio: false,
-      USB: ["USB Type-C 3.0"]
+      USB: "USB Type-C 3.0"
     },
     features: {
-      sensors: ["Face ID", "accelerometer", "gyro", "proximity", "barometer"]
+      sensors: "Face ID, accelerometer, gyro, proximity, barometer"
     },
     battery: {
       type: "Li-Ion 4441 mAh, non-removable",
-      charging: ["20W wired", "15W MagSafe wireless"]
+      charging: "20W wired, 15W MagSafe wireless"
     },
     misc: {
-      colors: ["Black Titanium", "White Titanium", "Blue Titanium"],
+      colors: "Black Titanium, White Titanium, Blue Titanium",
       models: "A2849, A3105, A3106"
     }
   }
@@ -264,7 +267,7 @@ export const phones = [{
     },
     sound: {
       loudspeaker: "Yes, with stereo speakers",
-      jack: []
+      jack: ""
     },
     connection: {
       wlan: "Wi-Fi 802.11 a/b/g/n/ac/6e",
@@ -272,17 +275,17 @@ export const phones = [{
       nfc: true,
       infraredPort: false,
       radio: false,
-      USB: ["USB Type-C 3.0"]
+      USB: "USB Type-C 3.0"
     },
     features: {
-      sensors: ["Face ID", "accelerometer", "gyro", "proximity", "barometer"]
+      sensors: "Face ID, accelerometer, gyro, proximity, barometer"
     },
     battery: {
       type: "Li-Ion 4441 mAh, non-removable",
-      charging: ["20W wired", "15W MagSafe wireless"]
+      charging: "20W wired, 15W MagSafe wireless"
     },
     misc: {
-      colors: ["Black Titanium", "White Titanium", "Blue Titanium"],
+      colors: "Black Titanium, White Titanium, Blue Titanium",
       models: "A2849, A3105, A3106"
     }
   }
@@ -408,7 +411,7 @@ export const phones = [{
     },
     sound: {
       loudspeaker: "Yes, with stereo speakers",
-      jack: [],
+      jack: "",
     },
     connection: {
       wlan: "Wi-Fi 802.11 a/b/g/n/ac/6e/7",
@@ -416,17 +419,17 @@ export const phones = [{
       nfc: true,
       infraredPort: false,
       radio: false,
-      USB: ["USB Type-C 3.2"],
+      USB: "USB Type-C 3.2",
     },
     features: {
-      sensors: ["Fingerprint", "Accelerometer", "Gyro", "Proximity", "Compass"],
+      sensors: "Fingerprint, Accelerometer, Gyro, Proximity, Compass",
     },
     battery: {
       type: "Li-Ion 5050 mAh",
-      charging: ["Fast charging 30W", "Wireless charging 23W"],
+      charging: "Fast charging 30W, Wireless charging 23W",
     },
     misc: {
-      colors: ["Obsidian", "Porcelain", "Bay"],
+      colors: "Obsidian, Porcelain, Bay",
       models: "GC3VE, G1MNW",
     }
   }
