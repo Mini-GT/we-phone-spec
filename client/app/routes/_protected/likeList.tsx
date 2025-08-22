@@ -1,9 +1,9 @@
-import { Link, useLoaderData, useMatches, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
+import { Link, useLoaderData, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import { Heart } from 'lucide-react';
 import UserMenuNav from "~/components/userMenuNav";
 import { Spinner } from "~/components/spinner";
 import authService from "~/services/auth.service";
-import type { ApiResponse, Smartphone, UserType } from "~/types/globals.type";
+import type { ApiResponse, Smartphone } from "~/types/globals.type";
 import userService from "~/services/user.service";
 import KebabMenu from "~/components/ui/kebabMenu";
 import { useUser } from "~/context/userContext";

@@ -1,5 +1,5 @@
 import { Smartphone } from "lucide-react";
-import { useLoaderData, useMatches, type ActionFunctionArgs, type MetaFunction } from "react-router";
+import { type ActionFunctionArgs, type MetaFunction } from "react-router";
 import { ProtectedRoute } from "~/components/protectedRoute";
 import { useSmartphone } from "~/context/smartphoneContext";
 import UserMenuNav from "~/components/userMenuNav";
@@ -10,7 +10,7 @@ import { useEffect } from "react";
 import { Spinner } from "~/components/spinner";
 import smartphoneService from "~/services/smartphone.service";
 import authService from "~/services/auth.service";
-import { queryKeysType, type UserType } from "~/types/globals.type";
+import { queryKeysType } from "~/types/globals.type";
 import { useUser } from "~/context/userContext";
 import { useQuery } from "@tanstack/react-query";
 

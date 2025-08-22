@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Lock, AlertTriangle, Edit2, UserCheck, UserRound } from 'lucide-react';
 import { toReadableDate } from '~/utils/formatDate';
-import { Form, useMatches, useNavigation, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from 'react-router';
+import { Form, useNavigation, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from 'react-router';
 import UserMenuNav from '~/components/userMenuNav';
 import { AnimatePresence, motion } from "motion/react"
 import EmailService from '../../services/email.service';
@@ -9,7 +9,6 @@ import authService from '~/services/auth.service';
 import { Spinner } from '~/components/spinner';
 import userService from '~/services/user.service';
 import type { Route } from './+types/profile';
-import type { UserType } from '~/types/globals.type';
 import { FormField } from '~/components/form/formField';
 import { changeName, changePassword } from '~/schema/profile.schema';
 import { z } from "zod";
