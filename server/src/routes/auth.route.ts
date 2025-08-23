@@ -1,6 +1,5 @@
-import { getCurrentUser, login, logout, register } from "@/controllers/auth.controller"
+import { login, logout, refresh, register } from "@/controllers/auth.controller"
 import { asyncWrapper } from "@/middlewares/asyncWrapper.middleware"
-import { requireAuth } from "@/middlewares/auth.middleware"
 import express from "express"
 
 const router = express.Router()
@@ -10,6 +9,9 @@ router.route("/login")
 
 router.route("/register")
 .post(asyncWrapper(register))
+
+router.route("/refreshToken")
+.get(asyncWrapper(refresh))
 
 router.route("/logout")
 .get(asyncWrapper(logout))

@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
-import type { LoginRegisterFormProps } from "~/types/globals.type";
+import { queryKeysType, type LoginRegisterFormProps } from "~/types/globals.type";
 import authService from "~/services/auth.service";
 import { usePopupButton } from "~/context/popupButtonContext";
 import { AxiosError } from 'axios';
-import { Form, useNavigate, useNavigation } from "react-router";
+import { Form, useFetcher, useNavigate, useNavigation } from "react-router";
 import { CardContent } from "../ui/card";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { useUser } from "~/context/userContext";
 
 export default function LoginForm({ handleAuthMode }: LoginRegisterFormProps) {
   const [loginFormData, setLoginFormData] = useState({
@@ -18,17 +19,25 @@ export default function LoginForm({ handleAuthMode }: LoginRegisterFormProps) {
   const { setPopupButton } = usePopupButton()
   const navigate = useNavigate()
   const navigation = useNavigation()
-
+  const { setUser } = useUser()
+  const fetcher = useFetcher()
+  
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
     try {
-      await authService.login({ ...loginFormData });
+      const { accessToken, refreshToken, userData } = await authService.login({ ...loginFormData });
+      fetcher.submit(
+        { tokenData: JSON.stringify({accessToken, refreshToken})},
+        { action: "/", method: "post" }
+      )
+      setUser(userData)
       setPopupButton(prevState => ({
         ...prevState,
         isLoginClicked: false,
       }))
+
       setLoginFormData({ email: "", password: "" });
       navigate("/");
     } catch (error) {

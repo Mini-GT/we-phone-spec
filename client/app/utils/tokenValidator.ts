@@ -1,8 +1,10 @@
 
 import { jwtDecode } from "jwt-decode";
 
-export const isTokenValid = (cookie: string | null): boolean => {
-  const token = cookie?.split("=")[1] || ""
+export const isTokenValid = (token?: string): boolean => {
+  // const token = cookie?.split("=")[1] || ""
+  if (!token) return false
+
   try {
     const { exp } = jwtDecode(token)
 

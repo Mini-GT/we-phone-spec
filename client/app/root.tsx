@@ -3,9 +3,11 @@ import {
   Links,
   Meta,
   Outlet,
+  redirect,
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  type ActionFunctionArgs,
   type LoaderFunctionArgs,
 } from "react-router";
 
@@ -26,7 +28,10 @@ import { UserProvider, useUser } from "./context/userContext";
 import { useEffect, useState } from "react";
 import { SelectedUserProvider } from "./context/selectedUserContext";
 import smartphoneService from "./services/smartphone.service";
-import { queryKeysType, type Smartphone } from "./types/globals.type";
+import { queryKeysType } from "./types/globals.type";
+import { AccessTokenProvider } from "./context/accessTokenContext";
+import { commitSession, destroySession, getSession } from "./session/sessions.server";
+import { isTokenValid } from "./utils/tokenValidator";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -41,33 +46,34 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
-// export async function action({
-//   request,
-// }: ActionFunctionArgs) {
-//   let formData = await request.formData()
-//   const selectedUserData = formData.get("selectedUser") as string
-//   return selectedUserData 
-// }
-
 export async function loader({ request }: LoaderFunctionArgs) {
   const queryClient = new QueryClient();
-  const token = authService.privateRoute(request);
-  let user = null;
+  const session = await getSession(request.headers.get("Cookie"))
+  const url = new URL(request.url)
+  // console.log(url.pathname)
 
+  let accessToken = session.get("accessToken")
+  const refreshToken = session.get("refreshToken")
+
+  if (!isTokenValid(accessToken) && isTokenValid(refreshToken)) {
+    const { newAccessToken } = await authService.refresh(refreshToken!)
+    session.set("accessToken", newAccessToken)
+    return redirect(`${url.pathname}`, {
+      headers: {
+      "Set-Cookie": await commitSession(session)
+      }
+    })
+  }
+
+
+  if (isTokenValid(accessToken)) {
+    await queryClient.fetchQuery({
+      queryKey: queryKeysType.me,
+      queryFn: () => userService.getMe(accessToken!),
+    })
+  } 
+    
   try {
-    if (token) {
-      user = await queryClient.fetchQuery({
-        queryKey: queryKeysType.me,
-        queryFn: () => userService.getMe(token),
-      })
-    }
-
-    // queryClient.fetchQuery({
-    //   queryKey: queryKeysType.smartphones,
-    //   queryFn: () => smartphoneService.getSmartphones(),
-    //   staleTime: 5 * 60 * 1000,
-    // })
-
     queryClient.prefetchQuery({
       queryKey: queryKeysType.topDevicesByViewStats,
       queryFn: () => smartphoneService.getTopDevicesByViewStats(),
@@ -96,11 +102,41 @@ export async function loader({ request }: LoaderFunctionArgs) {
     console.error(error)
   }
 
-  return { user, dehydratedState: dehydrate(queryClient) }
+  return { accessToken, dehydratedState: dehydrate(queryClient) }
+}
+
+export async function action({
+  request,
+}: ActionFunctionArgs) {
+  const session = await getSession(request.headers.get("Cookie"))
+  const url = new URL(request.url)
+  let formData = await request.formData()
+  const logout = formData.get("logout") as string
+  const tokens = formData.get("tokenData") as string
+  const parsedTokens = JSON.parse(tokens)
+
+  if(parsedTokens !== null) {
+    const { accessToken, refreshToken } = parsedTokens 
+    session.set("accessToken", accessToken)
+    session.set("refreshToken", refreshToken)
+
+    return redirect(`${url.pathname}`, {
+      headers: {
+        "Set-Cookie": await commitSession(session)
+      },
+    })
+  }
+
+  if(logout) {
+    return redirect("/", {
+      headers: {
+        "Set-Cookie": await destroySession(session),
+      }
+    })
+  }
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { dehydratedState } = useLoaderData<typeof loader>()
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -111,7 +147,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         },
       }),
   )
-
+  const { dehydratedState } = useLoaderData<typeof loader>()
+  
   return (
     <html lang="en">
       <head>
@@ -128,7 +165,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <SmartphoneProvider>
                   <UserProvider>
                     <SelectedUserProvider>
-                      {children}
+                      <AccessTokenProvider>
+                        {children}
+                      </AccessTokenProvider>
                     </SelectedUserProvider>
                   </UserProvider>
                 </SmartphoneProvider>
@@ -145,9 +184,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   const {popupButton} = usePopupButton()
-  const { user } = useLoaderData<typeof loader>()
+  const { accessToken } = useLoaderData<typeof loader>()
   const { setUser } = useUser()
-  
+  const { data: user } = useQuery({
+    queryKey: queryKeysType.me,
+    queryFn: async () => await userService.getMe(accessToken!),
+  })
+
   useEffect(() => {
     setUser(user)
   }, [user])

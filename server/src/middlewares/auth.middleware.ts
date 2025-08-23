@@ -6,8 +6,10 @@ import prisma from "@/prismaClient";
 import { jwtDecode } from "jwt-decode";
 import type { User } from "@prisma/client";
 
-const jwtSecretKey = process.env.JWT_SECRET
-if(!jwtSecretKey) throw new Error("JWT secret key is empty")
+const refreshJWTSecretKey = process.env.REFRESH_JWT_SECRET
+const accessJWTSecretKey = process.env.ACCESS_JWT_SECRET
+if(!refreshJWTSecretKey || !accessJWTSecretKey) throw new Error("JWT secret key is empty")
+
 
 export interface DecodedToken {
   id: string;
@@ -15,15 +17,14 @@ export interface DecodedToken {
 }
 
 export const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
-  const cookie = req.headers.cookie || ""
-  const token = cookie.split("=")[1]
-  
-  if (!token) {
+  // const cookie = req.headers.cookie || ""
+  const accessToken = req.headers.cookie || ""
+  if (!accessToken) {
     return res.status(401).json({ message: "No access token" });
   }
 
   // get token expiration time
-  const { exp } = jwtDecode<DecodedToken>(token)
+  const { exp } = jwtDecode<DecodedToken>(accessToken)
 
   // check if token is expired
   if(exp * 1000 <= Date.now()) {
@@ -32,7 +33,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
   }
 
   // verify token
-  const decoded = verifyJwt(token) as DecodedToken
+  const decoded = verifyJwt(accessToken, accessJWTSecretKey) as DecodedToken
 
   const user = await prisma.user.findUnique({ where: { id: decoded.id } })
   

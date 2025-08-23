@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { NavLink } from "react-router";
+import { NavLink, useFetcher } from "react-router";
 import { ProtectedRoute } from "./protectedRoute";
 import { PERMISSIONS } from "~/utils/permissions";
 import { useAuth } from "~/context/authContext";
 import type { DropDownProps, UserType } from "~/types/globals.type";
 import NotificationBell from "./ui/notificationBell";
+import { useUser } from "~/context/userContext";
 
 export default function UserMenu({
   name,
@@ -16,7 +17,17 @@ export default function UserMenu({
     isNotificationDropdown: false
   });
   const menuRef = useRef<HTMLDivElement>(null);
-  const { handleLogout} = useAuth();
+  const fetcher = useFetcher()
+  // const { handleLogout } = useAuth();
+  const { setUser } = useUser()
+
+  const handleLogout = () => {
+    setUser(null)
+    fetcher.submit(
+      { logout: true }, 
+      { action: "/", method: "post"}
+    )
+  }
   
   // Handle clicks outside of the dropdown
   useEffect(() => {
