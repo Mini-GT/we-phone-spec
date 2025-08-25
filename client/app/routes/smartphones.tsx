@@ -1,12 +1,12 @@
 import TopTenSection from '~/components/topTenSection';
 import type { Route } from './+types/smartphones';
 import Pagination from '~/components/pagination';
-import smartphoneService from '~/services/smartphone.service';
 import { useState } from 'react';
 import { queryKeysType, type SelectedTabType, type TopViewStatsType } from '~/types/globals.type';
 import TopTenLayout from '~/components/topTenLayout';
 import { QueryClient, useQuery } from '@tanstack/react-query';
 import { Spinner } from '~/components/spinner';
+import SmartphoneService from '~/services/smartphone.service';
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -15,9 +15,9 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-
 export async function loader({request}: Route.LoaderArgs) {
   const queryClient = new QueryClient();
+  const smartphoneService = new SmartphoneService()
   
   queryClient.fetchQuery({
     queryKey: queryKeysType.smartphones,
@@ -26,9 +26,9 @@ export async function loader({request}: Route.LoaderArgs) {
   })
 }
 
+  const smartphoneService = new SmartphoneService()
 export default function Smartphones() {
   const [selectedTab, setSelectedTab] = useState<SelectedTabType>('Today')
-
   const { 
     data: smartphones, 
     isLoading: smartphonesIsLoading, 

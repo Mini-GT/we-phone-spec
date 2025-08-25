@@ -9,10 +9,11 @@ import type { Route } from "./+types/devices";
 import { useEffect } from "react";
 import { Spinner } from "~/components/spinner";
 import smartphoneService from "~/services/smartphone.service";
-import authService from "~/services/auth.service";
 import { queryKeysType } from "~/types/globals.type";
 import { useUser } from "~/context/userContext";
 import { useQuery } from "@tanstack/react-query";
+import { getSession } from "~/session/sessions.server";
+import SmartphoneService from "~/services/smartphone.service";
 
 export function meta({}: MetaFunction) {
   return [
@@ -24,7 +25,10 @@ export function meta({}: MetaFunction) {
 export async function action({
   request,
 }: ActionFunctionArgs) {
-  const token = authService.privateRoute(request) || ""
+  const session = await getSession(request.headers.get("Cookie"))
+  const accessToken = session.get("accessToken")
+  const smartphoneService = new SmartphoneService(accessToken)
+  
   let formData = await request.formData();
   const deviceId = formData.get("deviceId") as string
   const deleteDeviceById= formData.get("deleteDeviceById") as string
@@ -34,7 +38,7 @@ export async function action({
   }
 
   if(deleteDeviceById) {
-    await smartphoneService.deleteSmartphone(deleteDeviceById, token)
+    await smartphoneService.deleteSmartphone(deleteDeviceById)
   }
 
   const raw = formData.get("deviceObj") as string
@@ -48,7 +52,7 @@ export async function action({
       ...body
     } = deviceObj
 
-    await smartphoneService.updateSmartphone(_id, body, token)
+    await smartphoneService.updateSmartphone(_id, body)
   }
 }
 
@@ -88,6 +92,7 @@ export default function Devices({
 }: Route.ComponentProps) {
   const { setSmartphoneFormData } = useSmartphone()
   const { user } = useUser()
+  const smartphoneService = new SmartphoneService()
 
   const { 
     data: smartphones, 

@@ -13,6 +13,8 @@ import { FormField } from '~/components/form/formField';
 import { changeName, changePassword } from '~/schema/profile.schema';
 import { z } from "zod";
 import { useUser } from '~/context/userContext';
+import { getSession } from '~/session/sessions.server';
+import UserService from '~/services/user.service';
 
 export function meta({}: MetaFunction) {
   return [
@@ -35,7 +37,10 @@ const defaultFieldErrors = {
 }
 
 export async function action({request}: ActionFunctionArgs) { 
-  const token = authService.privateRoute(request) || ""
+  const session = await getSession(request.headers.get("Cookie"))
+  const accessToken = session.get("accessToken")
+  const userService = new UserService(accessToken)
+
   let formData = await request.formData()
   const rawFormData = formData.get("profileFormData") as string
   if(rawFormData) {
@@ -54,7 +59,7 @@ export async function action({request}: ActionFunctionArgs) {
     if(name && !passwordFieldValid) {
       // dont update name if there is no change
       if(name === oldName) return null
-      const result = await userService.changeName(token, name, id)
+      const result = await userService.changeName(name, id)
       console.log(result)
     }
 
@@ -71,7 +76,7 @@ export async function action({request}: ActionFunctionArgs) {
         return { currentPasswordError, newPasswordError, confirmPasswordError }
       }
 
-      const result = await userService.changePassword(token, { currentPassword, newPassword, confirmPassword }, id) 
+      const result = await userService.changePassword({ currentPassword, newPassword, confirmPassword }, id) 
       console.log(result)
       // return result
     }
@@ -80,8 +85,10 @@ export async function action({request}: ActionFunctionArgs) {
 
 
 export async function loader({request}: LoaderFunctionArgs) {
-  const token = authService.privateRoute(request) || "";
-  const user = await userService.getMe(token)
+  const session = await getSession(request.headers.get("Cookie"))
+  const accessToken = session.get("accessToken")
+  const userService = new UserService(accessToken)
+  const user = await userService.getMe()
   return user
 }
 

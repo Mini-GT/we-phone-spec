@@ -1,6 +1,5 @@
 import { useLoaderData } from "react-router";
 import type { Route } from "./+types/brandList";
-import smartphoneService from "~/services/smartphone.service";
 import Pagination from "~/components/pagination";
 import TopTenSection from "~/components/topTenSection";
 import { queryKeysType, type ApiTopDeviceResponse, type SelectedTabType, type TopViewStatsType } from "~/types/globals.type";
@@ -8,6 +7,9 @@ import { useState } from "react";
 import TopTenLayout from "~/components/topTenLayout";
 import { QueryClient, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Spinner } from "~/components/spinner";
+import SmartphoneService from "~/services/smartphone.service";
+
+const smartphoneService = new SmartphoneService()
 
 export async function loader({params}: Route.LoaderArgs) {
   const brand = params.brandName

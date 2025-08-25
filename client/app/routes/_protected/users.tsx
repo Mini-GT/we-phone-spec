@@ -13,6 +13,9 @@ import authService from "~/services/auth.service";
 import type { UserType } from "~/types/globals.type";
 import { useEffect } from "react";
 import { useUser } from "~/context/userContext";
+import UserService from "~/services/user.service";
+import UsersService from "~/services/users.service";
+import { getSession } from "~/session/sessions.server";
 
 export function meta({}: MetaFunction) {
   return [
@@ -24,12 +27,15 @@ export function meta({}: MetaFunction) {
 export async function action({
   request,
 }: ActionFunctionArgs) {
-  const token = authService.privateRoute(request) || ""
+  const session = await getSession(request.headers.get("Cookie"))
+  let accessToken = session.get("accessToken")
+  console.log("users:", accessToken)
+  const userService = new UserService(accessToken)
   let formData = await request.formData();
   const deleteId = formData.get("deleteUser") as string
   const rawData = formData.get("userFormData") as string
   if(deleteId) {
-    const deleteResult = await userService.deleteUser(token, deleteId)
+    const deleteResult = await userService.deleteUser(deleteId)
   }
 
   if(rawData) {
@@ -42,16 +48,17 @@ export async function action({
       ...body
     } = userFormData
 
-    const updateResult = await userService.updatetUser(token, body, id)
+    const updateResult = await userService.updatetUser(body, id)
     return updateResult.updatedUser
   }
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  // console.log("loader", request) 
-  const token = authService.privateRoute(request) || ""
+  const session = await getSession(request.headers.get("Cookie"))
+  let accessToken = session.get("accessToken")
+  const usersService = new UsersService(accessToken)
 try {
-    const response = await usersService.getUsers(token)
+    const response = await usersService.getUsers()
 
     const users = response?.data
     return  users
@@ -59,26 +66,6 @@ try {
     console.error(error)
   } 
 }
-
-// export async function clientLoader({request, serverLoader}: Route.ClientLoaderArgs) {
-//   const serverData = await serverLoader();
-//   console.log("clientloader", serverData) 
-//   const token = await requireAuthCookie(request);
-//   try {
-//     const response = await usersService.getUsers()
-
-//     const users = response?.data
-//     return  users
-//   } catch (error) {
-//     console.error(error)
-//   }
-// }
-
-// clientLoader.hydrate = true;
-
-// export function HydrateFallback() {
-//   return <div className="h-screen">Loading.ssssssssssssssssssssssasdasda..</div>
-// }
 
 export default function Users() {
   const { user } = useUser()

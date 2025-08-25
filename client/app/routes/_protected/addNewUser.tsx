@@ -2,19 +2,20 @@ import { ProtectedRoute } from "~/components/protectedRoute";
 import Unauthorized from "../unauthorized";
 import { Form, useNavigation, type ActionFunctionArgs } from "react-router";
 import { Spinner } from "~/components/spinner";
-import authService from "~/services/auth.service";
 import AddUserForm from "~/components/dashboard/usersManagement/addUserForm";
 import { useUser } from "~/context/userContext";
 import { FormField } from "~/components/form/formField";
 import type { UserFormPath } from "~/types/globals.type";
 import { useState } from "react";
-import userService from "~/services/user.service";
-import type { Route } from "./+types/addNewUser";
+import { getSession } from "~/session/sessions.server";
+import UserService from "~/services/user.service";
 
 export async function action({
   request,
 }: ActionFunctionArgs) {
-  const token = authService.privateRoute(request) || ""
+  const session = await getSession(request.headers.get("Cookie"))
+  let accessToken = session.get("accessToken")
+  const userService = new UserService(accessToken)
   let formData = await request.formData();
   const stringifiedForm = formData.get("addNewUser") as string
   const { name, email, password, ...body } = JSON.parse(stringifiedForm)
@@ -25,13 +26,11 @@ export async function action({
     password,
     ...body
   }
-  const result = await userService.addNewUser(userData, token)
+  const result = await userService.addNewUser(userData)
   console.log(result.details)
 }
 
-export default function AddNewUser({
-  actionData
-}: Route.ComponentProps) {
+export default function AddNewUser() {
   const [ password, setPassword ] = useState("")
   const { user, setUser } = useUser()
   const handleInputChange = (path: UserFormPath, value: string | number | boolean) => {

@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import useDebounce from "~/hooks/useDebounce";
-import smartphoneService from "~/services/smartphone.service";
+import SmartphoneService from "~/services/smartphone.service";
+// import smartphoneService from "~/services/smartphone.service";
 import type { Smartphone } from "~/types/globals.type";
+
+  const smartphoneService = new SmartphoneService()
 
 export default function SearchBar() {
   const [query, setQuery] = useState("")

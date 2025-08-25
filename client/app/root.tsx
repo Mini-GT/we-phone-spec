@@ -7,7 +7,6 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
-  type ActionFunctionArgs,
   type LoaderFunctionArgs,
 } from "react-router";
 
@@ -22,16 +21,16 @@ import Footer from "./components/footer";
 import NotFound from "./routes/notFound";
 import { SmartphoneProvider } from "./context/smartphoneContext";
 import CardModal from "./components/cardModal";
-import userService from "./services/user.service";
 import authService from "./services/auth.service";
 import { UserProvider, useUser } from "./context/userContext";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SelectedUserProvider } from "./context/selectedUserContext";
-import smartphoneService from "./services/smartphone.service";
 import { queryKeysType } from "./types/globals.type";
 import { AccessTokenProvider } from "./context/accessTokenContext";
 import { commitSession, destroySession, getSession } from "./session/sessions.server";
 import { isTokenValid } from "./utils/tokenValidator";
+import UserService from "./services/user.service";
+import SmartphoneService from "./services/smartphone.service";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -49,27 +48,35 @@ export const links: Route.LinksFunction = () => [
 export async function loader({ request }: LoaderFunctionArgs) {
   const queryClient = new QueryClient();
   const session = await getSession(request.headers.get("Cookie"))
-  const url = new URL(request.url)
-  // console.log(url.pathname)
-
+  const currentUrl = new URL(request.url).pathname
   let accessToken = session.get("accessToken")
   const refreshToken = session.get("refreshToken")
+
+  if(refreshToken && !isTokenValid(refreshToken)) {
+    return redirect("/", {
+      headers: {
+        "Set-Cookie": await destroySession(session),
+      }
+    })
+  }
 
   if (!isTokenValid(accessToken) && isTokenValid(refreshToken)) {
     const { newAccessToken } = await authService.refresh(refreshToken!)
     session.set("accessToken", newAccessToken)
-    return redirect(`${url.pathname}`, {
+    return redirect(`${currentUrl}`, {
       headers: {
       "Set-Cookie": await commitSession(session)
       }
     })
   }
-
+  // console.log("root:", accessToken)
+  const userService = new UserService(accessToken)
+  const smartphoneService = new SmartphoneService()
 
   if (isTokenValid(accessToken)) {
     await queryClient.fetchQuery({
       queryKey: queryKeysType.me,
-      queryFn: () => userService.getMe(accessToken!),
+      queryFn: () => userService.getMe(),
     })
   } 
     
@@ -102,14 +109,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
     console.error(error)
   }
 
-  return { accessToken, dehydratedState: dehydrate(queryClient) }
+  return { accessToken, refreshToken, dehydratedState: dehydrate(queryClient) }
 }
 
 export async function action({
   request,
-}: ActionFunctionArgs) {
+}: Route.ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"))
-  const url = new URL(request.url)
+  const currentUrl = new URL(request.url).pathname
   let formData = await request.formData()
   const logout = formData.get("logout") as string
   const tokens = formData.get("tokenData") as string
@@ -119,8 +126,7 @@ export async function action({
     const { accessToken, refreshToken } = parsedTokens 
     session.set("accessToken", accessToken)
     session.set("refreshToken", refreshToken)
-
-    return redirect(`${url.pathname}`, {
+    return redirect(`${currentUrl}`, {
       headers: {
         "Set-Cookie": await commitSession(session)
       },
@@ -137,6 +143,7 @@ export async function action({
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { dehydratedState } = useLoaderData<typeof loader>()
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -147,7 +154,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
         },
       }),
   )
-  const { dehydratedState } = useLoaderData<typeof loader>()
   
   return (
     <html lang="en">
@@ -185,15 +191,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   const {popupButton} = usePopupButton()
   const { accessToken } = useLoaderData<typeof loader>()
+  const userService = new UserService(accessToken)
   const { setUser } = useUser()
   const { data: user } = useQuery({
     queryKey: queryKeysType.me,
-    queryFn: async () => await userService.getMe(accessToken!),
+    queryFn: async () => await userService.getMe(),
+    enabled: !!accessToken && isTokenValid(accessToken)
   })
+  const userRef = useRef(user)
 
   useEffect(() => {
-    setUser(user)
-  }, [user])
+    setUser(userRef.current)
+  }, [])
 
   return (
     <div>

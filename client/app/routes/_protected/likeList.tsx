@@ -7,6 +7,8 @@ import type { ApiResponse, Smartphone } from "~/types/globals.type";
 import userService from "~/services/user.service";
 import KebabMenu from "~/components/ui/kebabMenu";
 import { useUser } from "~/context/userContext";
+import { getSession } from "~/session/sessions.server";
+import UserService from "~/services/user.service";
 
 export function meta({}: MetaFunction) {
   return [
@@ -24,25 +26,29 @@ type SmartphoneData = ApiResponse["message"] & {
 
 
 export async function action({request}: ActionFunctionArgs) {
-  const token = authService.privateRoute(request) || ""
+  const session = await getSession(request.headers.get("Cookie"))
+  const accessToken = session.get("accessToken")
+  const userService = new UserService(accessToken)
   let formData = await request.formData()
   // action coming from "KebabMenu.tsx" component
   const smartphoneId = formData.get("smartphoneId") as string
   if(smartphoneId) {
-    const response = userService.deleteLikedDevice(token, smartphoneId)
+    const response = userService.deleteLikedDevice(smartphoneId)
     // console.log(response)
   }
 }
 
 export async function loader({request}: LoaderFunctionArgs) {
-  const token = authService.privateRoute(request) || ""
+  const session = await getSession(request.headers.get("Cookie"))
+  const accessToken = session.get("accessToken")
+  const userService = new UserService(accessToken)
   // get user liked smartphones Id/s 
-  const data = await userService.getUserLikes(token)
+  const data = await userService.getUserLikes()
   const { result, likedSmartphoneId } = data.message as UserLikeResponse
   // if success and there is a liked smartphone id/s
   if(result === "success") {
     // fetch the smartphone data base on Id/s
-    const data = await userService.getUserLikeListSmartphoneData(token, likedSmartphoneId)
+    const data = await userService.getUserLikeListSmartphoneData(likedSmartphoneId)
     const { smartphones } = data.message as SmartphoneData
     return smartphones
   }

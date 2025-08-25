@@ -1,12 +1,12 @@
 import TopTenSection from '~/components/topTenSection';
 import type { Route } from './+types/smartphones';
 import Pagination from '~/components/pagination';
-import smartphoneService from '~/services/smartphone.service';
 import { useState } from 'react';
 import { queryKeysType, type ApiTopDeviceResponse, type SelectedTabType, type TopViewStatsType } from '~/types/globals.type';
 import TopTenLayout from '~/components/topTenLayout';
 import { useQuery } from '@tanstack/react-query';
 import { Spinner } from '~/components/spinner';
+import SmartphoneService from '~/services/smartphone.service';
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -24,6 +24,8 @@ export function meta({}: Route.MetaArgs) {
 //     }
 //     return {topViewed, topViewDevices};
 // }
+
+const smartphoneService = new SmartphoneService()
 
 export default function MostViewed() {
   // const { topViewed, topViewDevices } = useLoaderData<typeof loader>()

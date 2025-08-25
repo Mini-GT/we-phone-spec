@@ -2,11 +2,11 @@ import { useLoaderData } from "react-router";
 import type { Route } from "./+types/home";
 import PhoneCardSlider from "~/components/phoneCardSlider";
 import Trending from "~/components/trending";
-import smartphoneService from "~/services/smartphone.service";
 import { queryKeysType, type ApiTopDeviceResponse, type TopViewStatsType } from "~/types/globals.type";
 import SmartphonesFeatured from "~/components/smartphonesFeatured";
 import { useQuery } from "@tanstack/react-query";
 import { Spinner } from "~/components/spinner";
+import SmartphoneService from "~/services/smartphone.service";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -22,6 +22,7 @@ export function meta({}: Route.MetaArgs) {
 //   const { newAddedSmartphones } = await smartphoneService.getNewAddedSmartphones("?limitNumber=5&sort=desc") as ApiTopDeviceResponse
 //   return { topToday, topViewed, topLiked, newAddedSmartphones }
 // }
+const smartphoneService = new SmartphoneService()
 
 export default function Home() {
   const { 

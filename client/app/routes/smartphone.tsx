@@ -5,15 +5,16 @@ import { Calendar, Smartphone as SmartphoneCard, Camera, Battery, HardDrive, Cpu
 import DeviceSpec from "~/components/deviceSpecs";
 import { queryKeysType, type ApiResponse, type Smartphone, type SmartphoneCommentsDataType, type Smartphone as SmartphoneType } from "~/types/globals.type";
 import { useFetcher, useLoaderData, type ActionFunctionArgs } from "react-router";
-import authService from "~/services/auth.service";
 import { useEffect, useState } from "react";
-import userService from "~/services/user.service";
 import { usePopupButton } from "~/context/popupButtonContext";
 import incrementViewToSmartphone from "~/utils/viewSmartphone";
 import CommentsSection from "~/components/commentSection";
 import commentService from "~/services/comment.service";
 import { QueryClient } from "@tanstack/react-query";
 import { useUser } from "~/context/userContext";
+import { getSession } from "~/session/sessions.server";
+import UserService from "~/services/user.service";
+import SmartphoneService from "~/services/smartphone.service";
 
 type SmartphoneIdType = {
   smartphoneId: string
@@ -31,8 +32,46 @@ export function meta({ data }: any) {
   ];
 }
 
+export async function loader({params, request}: Route.LoaderArgs) {
+  const queryClient = new QueryClient();
+
+  const session = await getSession(request.headers.get("Cookie"))
+  const accessToken = session.get("accessToken")
+  const userService = new UserService(accessToken)
+  const smartphoneService = new SmartphoneService(accessToken)
+
+  // const url = new URL(request.url)
+  const data = params.smartphoneData
+  const id = data?.split("-").pop()
+  if(!id) throw new Error("No Id Found")
+
+  const smartphone = await queryClient.fetchQuery({
+    queryKey: queryKeysType.smartphone(id),
+    queryFn: () => smartphoneService.getSmartphoneById(id),
+    staleTime: 5 * 60 * 1000,
+  })
+  
+  const skip = 0
+  const take = 5
+  // const { comments } = await commentService.getSmartphoneComments(id, skip , take) 
+
+  if(accessToken) {
+    const result = await userService.getUserLikes()
+    const { likedSmartphoneId } = result.message as UserLikeResponse
+    const likedIds = new Set(likedSmartphoneId.map(item => item.smartphoneId))
+    // check if this smartphone is liked 
+    const isLiked = likedIds.has(id) 
+    return { smartphone, isLiked }
+  }
+  const isLiked = false
+  return { smartphone, isLiked }
+}
+
 export async function action({request}: ActionFunctionArgs) { 
-  const token = authService.privateRoute(request) || ""
+  const session = await getSession(request.headers.get("Cookie"))
+  const accessToken = session.get("accessToken")
+  const userService = new UserService(accessToken)
+
   let formData = await request.formData()
   const smartphoneLikesId = formData.get("smartphoneLikes") as SmartphoneType["_id"]
   const smartphoneViewId = formData.get("smartphoneViewId") as SmartphoneType["_id"]
@@ -69,40 +108,10 @@ export async function action({request}: ActionFunctionArgs) {
   }
 
   if(smartphoneLikesId) {
-    if(!token) return { actionError: true, message: "Must be signed in" }
-    const result = await userService.addToLikes(token, smartphoneLikesId)
+    // if(!token) return { actionError: true, message: "Must be signed in" }
+    const result = await userService.addToLikes(smartphoneLikesId)
     return result.message
   }
-}
-
-export async function loader({params, request}: Route.LoaderArgs) {
-  const queryClient = new QueryClient();
-  const token = authService.privateRoute(request) || "" 
-  // const url = new URL(request.url)
-  const data = params.smartphoneData
-  const id = data?.split("-").pop()
-  if(!id) throw new Error("No Id Found")
-
-  const smartphone = await queryClient.fetchQuery({
-    queryKey: queryKeysType.smartphone(id),
-    queryFn: () => smartphoneService.getSmartphoneById(id),
-    staleTime: 5 * 60 * 1000,
-  })
-  
-  const skip = 0
-  const take = 5
-  // const { comments } = await commentService.getSmartphoneComments(id, skip , take) 
-
-  if(token !== "") {
-    const result = await userService.getUserLikes(token)
-    const { likedSmartphoneId } = result.message as UserLikeResponse
-    const likedIds = new Set(likedSmartphoneId.map(item => item.smartphoneId))
-    // check if this smartphone is liked 
-    const isLiked = likedIds.has(id) 
-    return { smartphone, isLiked }
-  }
-  const isLiked = false
-  return { smartphone, isLiked }
 }
 
 export default function Smartphone() {

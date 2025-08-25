@@ -12,9 +12,9 @@ export function meta({}: MetaFunction) {
   ];
 }
 
-export async function loader({request}: LoaderFunctionArgs) {
-  const userId = authService.privateRoute(request);
-}
+// export async function loader({request}: LoaderFunctionArgs) {
+//   const userId = authService.privateRoute(request);
+// }
 
 export default function Settings() {
   const { user } = useUser()

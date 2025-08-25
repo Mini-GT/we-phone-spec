@@ -1,12 +1,14 @@
 import { Link, useLoaderData, useMatches, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import UserMenuNav from "~/components/userMenuNav";
-import type { Route } from "../_protected/+types/notification";
 import { Bell } from "lucide-react";
 import { Spinner } from "~/components/spinner";
 import authService from "~/services/auth.service";
 import type { NotificationType, UserType } from "~/types/globals.type";
 import { convertToTimeAgo } from "~/utils/formatDate";
 import notificationService from "~/services/notification.service";
+import { getSession } from "~/session/sessions.server";
+import NotificationService from "~/services/notification.service";
+import type { Route } from "./+types/notification";
 
 export function meta({}: MetaFunction) {
   return [
@@ -16,20 +18,24 @@ export function meta({}: MetaFunction) {
 }
 
 export async function action({request}: ActionFunctionArgs) {
-  const token = authService.privateRoute(request) || ""
+  const session = await getSession(request.headers.get("Cookie"))
+  let accessToken = session.get("accessToken")
+  const notificationService = new NotificationService(accessToken)
   let formData = await request.formData()
   // action coming from "KebabMenu.tsx" component
   const notifId = formData.get("smartphoneId") as string
   
   if(notifId) {
-    const deleteResult = await notificationService.deleteNotification(token, notifId)
+    const deleteResult = await notificationService.deleteNotification(notifId)
     return deleteResult
   }
 }
 
 export async function loader({request}: LoaderFunctionArgs) {
-  const token = authService.privateRoute(request) || ""
-  const notification = await notificationService.getNotifications(token) 
+  const session = await getSession(request.headers.get("Cookie"))
+  let accessToken = session.get("accessToken")
+  const notificationService = new NotificationService(accessToken)
+  const notification = await notificationService.getNotifications() 
   return (notification.message as NotificationType).notifications
 }
 
