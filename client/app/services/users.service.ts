@@ -1,18 +1,26 @@
 import axios, { type AxiosInstance } from 'axios';
 
 class UsersService {
-  private api: AxiosInstance = axios.create({
-    baseURL: `${import.meta.env.VITE_SMARTPHONE_API_URL}`,
-  });
+  private api: AxiosInstance;
+
+  constructor(accessToken?: string) {
+    this.api = axios.create({
+      baseURL: `${import.meta.env.VITE_SMARTPHONE_API_URL}`,
+      withCredentials: true,
+    });
+
+    this.api.interceptors.request.use((config) => {
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
+      return config;
+    });
+  }
 
   // get all users
-  async getUsers(token: string) {
+  async getUsers() {
     try {
-      const response = await this.api.get("/users", {
-      headers: {
-        Cookie: token 
-      }
-    });
+      const response = await this.api.get("/users");
 
       if (!response) {
         throw new Error("Failed to fetch users");
@@ -26,4 +34,4 @@ class UsersService {
 
 }
 
-export default new UsersService();
+export default UsersService;

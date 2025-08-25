@@ -1,12 +1,24 @@
 import type { AxiosInstance } from "axios";
 import axios from "axios";
-import type { ApiResponse, ChangePasswordType, NewDeviceNotificationType, Smartphone, UserType } from "~/types/globals.type";
+import type { ApiResponse, NewDeviceNotificationType } from "~/types/globals.type";
 
 class NotificationService {
-  private api: AxiosInstance = axios.create({
-    baseURL: `${import.meta.env.VITE_SMARTPHONE_API_URL}/user`,
-    withCredentials: true
-  });
+  private api: AxiosInstance;
+
+  constructor(accessToken?: string) {
+    this.api = axios.create({
+      baseURL: `${import.meta.env.VITE_SMARTPHONE_API_URL}/user`,
+      withCredentials: true,
+    });
+
+    this.api.interceptors.request.use((config) => {
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
+      return config;
+    });
+  }
+
 
   private handleError(error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -44,14 +56,9 @@ class NotificationService {
     }
   }
 
-  async getNotifications(token?: string): Promise<ApiResponse> {
+  async getNotifications(): Promise<ApiResponse> {
     try {
-      const response = await this.api.get(
-        "/notification", {
-        headers: {
-          Cookie: token
-        }
-      });
+      const response = await this.api.get("/notification");
 
       const result = {
         statusCode: response.status,
@@ -64,7 +71,6 @@ class NotificationService {
   }
   
   async markNotificationAsRead(notifId: string): Promise<ApiResponse> {
-    console.log(notifId)
     try {
       const response = await this.api.post(
         "/notification/mark-read", { notifId }
@@ -80,14 +86,9 @@ class NotificationService {
     }
   }
 
-  async deleteNotification(token: string, notifId: string): Promise<ApiResponse> {
+  async deleteNotification(notifId: string): Promise<ApiResponse> {
     try {
-      const response = await this.api.delete(
-        `/notification/${notifId}`, {
-        headers: {
-          Cookie: token
-        }
-      })
+      const response = await this.api.delete(`/notification/${notifId}`)
 
       const result = {
         statusCode: response.status,
@@ -100,4 +101,4 @@ class NotificationService {
   }
 }
 
-export default new NotificationService();
+export default NotificationService;

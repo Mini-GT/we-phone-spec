@@ -1,10 +1,22 @@
-import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
-import type { ApiResponse, ApiTopDeviceResponse, Smartphone } from '~/types/globals.type';
+import axios, { type AxiosInstance } from 'axios';
+import type { ApiTopDeviceResponse, Smartphone } from '~/types/globals.type';
 
 class SmartphoneService {
-  private api: AxiosInstance = axios.create({
-    baseURL: import.meta.env.VITE_SMARTPHONE_API_URL,
-  });
+  private api: AxiosInstance;
+
+  constructor(accessToken?: string) {
+    this.api = axios.create({
+      baseURL: `${import.meta.env.VITE_SMARTPHONE_API_URL}`,
+      withCredentials: true,
+    });
+
+    this.api.interceptors.request.use((config) => {
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
+      return config;
+    });
+  }
 
   // error handler
   private handleError(error: unknown) {
@@ -48,13 +60,9 @@ class SmartphoneService {
   }
 
   // create a new smartphone
-  async createSmartphone(smartphoneData: Omit<Smartphone, 'id'>, token: string) {
+  async createSmartphone(smartphoneData: Omit<Smartphone, 'id'>) {
     try {
-      const response = await this.api.post('/smartphones', smartphoneData, {
-        headers: {
-          Cookie: token 
-        }
-      });
+      const response = await this.api.post('/smartphones', smartphoneData);
       return response.data;
     } catch (error) {
       this.handleError(error);
@@ -62,15 +70,9 @@ class SmartphoneService {
   }
 
   // update an existing smartphone
-async updateSmartphone(id: string, updatedForm: Partial<Smartphone>, token: string) {
+async updateSmartphone(id: string, updatedForm: Partial<Smartphone>) {
     try {
-      const response = await this.api.patch(
-        `/smartphones/${id}`,
-        updatedForm, {
-        headers: {
-          Cookie: token 
-        }
-      })
+      const response = await this.api.patch(`/smartphones/${id}`, updatedForm)
       return response.data
     } catch (error) {
       this.handleError(error);
@@ -78,13 +80,9 @@ async updateSmartphone(id: string, updatedForm: Partial<Smartphone>, token: stri
   }
 
   // delete a smartphone
-  async deleteSmartphone(id: string, token: string): Promise<void> {
+  async deleteSmartphone(id: string): Promise<void> {
     try {
-      await this.api.delete(`/smartphones/${id}`, {
-        headers: {
-          Cookie: token 
-        }
-      });
+      await this.api.delete(`/smartphones/${id}`);
     } catch (error) {
       this.handleError(error);
     }
@@ -165,4 +163,4 @@ async updateSmartphone(id: string, updatedForm: Partial<Smartphone>, token: stri
   // }
 }
 
-export default new SmartphoneService();
+export default SmartphoneService;

@@ -3,9 +3,21 @@ import axios from "axios";
 import type { ApiResponse, ChangePasswordType, Smartphone, UserType } from "~/types/globals.type";
 
 class UserService {
-  private api: AxiosInstance = axios.create({
-    baseURL: `${import.meta.env.VITE_SMARTPHONE_API_URL}/user`,
-  })
+  private api: AxiosInstance;
+
+  constructor(accessToken?: string) {
+    this.api = axios.create({
+      baseURL: `${import.meta.env.VITE_SMARTPHONE_API_URL}/user`,
+      withCredentials: true,
+    });
+
+    this.api.interceptors.request.use((config) => {
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
+      return config;
+    });
+  }
 
   private handleError(error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -27,82 +39,54 @@ class UserService {
     };
   }
 
-  async addNewUser(userFormData: UserType, token: string) {
+  async addNewUser(userFormData: UserType) {
     try {
-      const response = await this.api.post(
-        "/new", 
-        userFormData, {
-        headers: {
-          Cookie: token
-        }
-      })
+      const response = await this.api.post("/new", userFormData)
       return response.data;
     } catch (error) {
       this.handleError(error)
     }
   }
   
-  async getMe(token: string) {
+  async getMe() {
     try {
-      const response = await this.api.get("/me", {
-        headers: {
-          Cookie: token
-        }
-      })
+      const response = await this.api.get("/me")
       return response.data;
     } catch (error) {
       this.handleError(error)
     }
   }
 
-  async getUserById(token: string, userId: string) {
+  async getUserById(userId: string) {
     try {
-      const response = await this.api.get(`/${userId}`, {
-        headers: {
-          Cookie: token
-        }
-      })
+      const response = await this.api.get(`/${userId}`)
       return response.data;
     } catch (error) {
       this.handleError(error)
     }
   }
 
-  async updatetUser(token: string, updatedForm: Partial<UserType>, userId: string) {
+  async updatetUser(updatedForm: Partial<UserType>, userId: string) {
     try {
-      const response = await this.api.patch(
-        `/${userId}`,
-        updatedForm, {
-          headers: {
-            Cookie: token
-          }
-        })
+      const response = await this.api.patch(`/${userId}`, updatedForm)
       return response.data;
     } catch (error) {
       this.handleError(error)
     }
   } 
 
-  async deleteUser(token: string, userId: string) {
+  async deleteUser(userId: string) {
     try {
-      const response = await this.api.delete(`/${userId}`, {
-      headers: {
-        Cookie: token
-      }
-    })
+      const response = await this.api.delete(`/${userId}`)
       return response.data;
     } catch (error) {
       this.handleError(error)
     }
   }
 
-  async changePassword(token: string, passwordFormData: ChangePasswordType, userId: string) {
+  async changePassword(passwordFormData: ChangePasswordType, userId: string) {
     try {
-      const response = await this.api.patch(`/change-password/${userId}`, passwordFormData, {
-        headers: {
-          Cookie: token
-        }
-      })
+      const response = await this.api.patch(`/change-password/${userId}`, passwordFormData)
       const result = {
         status: response.status,
         message: response.data
@@ -113,28 +97,18 @@ class UserService {
     }
   }
 
-  async changeName(token: string, name: string, userId: string) {
+  async changeName(name: string, userId: string) {
     try {
-      const response = await this.api.patch(`/change-name/${userId}`, { name }, {
-        headers: {
-          Cookie: token
-        }
-      })
+      const response = await this.api.patch(`/change-name/${userId}`, { name })
       return response.data;
     } catch (error) {
       return this.handleError(error)
     }
   }
 
-  async addToLikes(token: string, deviceId: Smartphone["_id"]): Promise<ApiResponse> {
+  async addToLikes(deviceId: Smartphone["_id"]): Promise<ApiResponse> {
     try {
-      const response = await this.api.post(
-        "/add-to-likes", { deviceId }, {
-          headers: {
-            Cookie: token
-          }
-        }
-      );
+      const response = await this.api.post("/add-to-likes", { deviceId });
 
       const result = {
         statusCode: response.status,
@@ -146,15 +120,9 @@ class UserService {
     }
   }
 
-  async getUserLikes(token: string): Promise<ApiResponse> {
+  async getUserLikes(): Promise<ApiResponse> {
     try {
-      const response = await this.api.get(
-        "/likes", {
-          headers: {
-            Cookie: token
-          }
-        }
-      );
+      const response = await this.api.get("/likes");
 
       const result = {
         statusCode: response.status,
@@ -166,15 +134,9 @@ class UserService {
     }
   }
   
-  async getUserLikeListSmartphoneData(token: string, smartphoneIds: string[]): Promise<ApiResponse> {
+  async getUserLikeListSmartphoneData(smartphoneIds: string[]): Promise<ApiResponse> {
     try {
-      const response = await this.api.post(
-        "/like-list", { smartphoneIds }, {
-          headers: {
-            Cookie: token
-          }
-        }
-      );
+      const response = await this.api.post("/like-list", { smartphoneIds });
 
       const result = {
         statusCode: response.status,
@@ -186,15 +148,9 @@ class UserService {
     }
   }
 
-  async deleteLikedDevice(token: string, smartphoneId: string): Promise<ApiResponse> {
+  async deleteLikedDevice(smartphoneId: string): Promise<ApiResponse> {
     try {
-      const response = await this.api.delete(
-        `/${smartphoneId}`, {
-          headers: {
-            Cookie: token
-          }
-        }
-      );
+      const response = await this.api.delete(`/${smartphoneId}`);
 
       const result = {
         statusCode: response.status,
@@ -207,4 +163,4 @@ class UserService {
   }
 }
 
-export default new UserService();
+export default UserService;
