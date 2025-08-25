@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { NavLink, useFetcher } from "react-router";
+import { NavLink, useFetcher, useNavigate } from "react-router";
 import { ProtectedRoute } from "./protectedRoute";
 import { PERMISSIONS } from "~/utils/permissions";
-import { useAuth } from "~/context/authContext";
 import type { DropDownProps, UserType } from "~/types/globals.type";
 import NotificationBell from "./ui/notificationBell";
 import { useUser } from "~/context/userContext";
@@ -18,10 +17,12 @@ export default function UserMenu({
   });
   const menuRef = useRef<HTMLDivElement>(null);
   const fetcher = useFetcher()
+  const navigate = useNavigate()
   // const { handleLogout } = useAuth();
   const { setUser } = useUser()
 
   const handleLogout = () => {
+    navigate("/")
     setUser(null)
     fetcher.submit(
       { logout: true }, 

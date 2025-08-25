@@ -33,13 +33,17 @@ export default function LoginForm({ handleAuthMode }: LoginRegisterFormProps) {
         { action: "/", method: "post" }
       )
       setUser(userData)
+      // fetcher.submit(
+      //   { tokenData: JSON.stringify(loginFormData) },
+      //   { action: "/", method: "post" }
+      // )
       setPopupButton(prevState => ({
         ...prevState,
         isLoginClicked: false,
       }))
 
       setLoginFormData({ email: "", password: "" });
-      navigate("/");
+      // navigate("/");
     } catch (error) {
       if(error instanceof AxiosError) {
         setError(error.response?.data.message)

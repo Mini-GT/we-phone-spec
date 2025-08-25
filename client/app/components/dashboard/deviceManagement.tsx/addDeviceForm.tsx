@@ -1,7 +1,5 @@
 import { useSmartphone } from '~/context/smartphoneContext';
-import { Form, useFetcher, useNavigation } from 'react-router';
-import { Spinner } from '~/components/spinner';
-import type { FormPath, Smartphone } from '~/types/globals.type';
+import type { FormPath } from '~/types/globals.type';
 import { FormField } from '~/components/form/formField';
 import { FormSection } from '~/components/form/formSection';
 import type { ReactNode } from 'react';

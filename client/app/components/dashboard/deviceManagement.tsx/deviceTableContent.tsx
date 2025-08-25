@@ -1,12 +1,10 @@
-import React, { useState, useMemo } from 'react';
-import { Search, ChevronDown, Plus, Edit2, Trash2, ChevronLeft, ChevronRight, Upload, User } from 'lucide-react';
+import React from 'react';
+import { Search, Plus } from 'lucide-react';
 import type { Smartphone, TableSortConfig } from '~/types/globals.type';
 import _ from 'lodash';
-import UsersTable from '../usersManagement/userTableLayout';
 import BrandFilter from './brandFilter';
 import OperatingSystemFilter, { type OperatingSystemType } from './operatingSystemFilter';
 import DeviceTableLayout from './deviceTableLayout';
-import { usePopupButton } from '~/context/popupButtonContext';
 import PaginationComponent from '~/components/pagination/paginationComponent';
 import { useSmartphone } from '~/context/smartphoneContext';
 import { NavLink } from 'react-router';

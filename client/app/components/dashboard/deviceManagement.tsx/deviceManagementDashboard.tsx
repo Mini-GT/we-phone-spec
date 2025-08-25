@@ -1,7 +1,4 @@
-import { phones } from 'mockData';
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router';
-import TopTenSection from '~/components/topTenSection';
 import type { Smartphone, TableSortConfig } from '~/types/globals.type';
 import { getFirstWord } from '~/utils/getFirstWord';
 import DeviceTableContent from './deviceTableContent';

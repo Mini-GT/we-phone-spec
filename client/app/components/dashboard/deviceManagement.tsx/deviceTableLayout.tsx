@@ -1,10 +1,10 @@
-import { Edit2, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import type { Smartphone, TableSortConfig } from "~/types/globals.type";
 import { toReadableDate } from "~/utils/formatDate";
 import _ from "lodash";
 import { getFirstWord } from "~/utils/getFirstWord";
 import { usePopupButton } from "~/context/popupButtonContext";
-import { Form, useFetcher } from "react-router";
+import { Form } from "react-router";
 
 type DeviceTableLayoutProps = {
   getSortIcon: (iconTpe: TableSortConfig["key"]) => React.ReactNode;
