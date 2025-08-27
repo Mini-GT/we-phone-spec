@@ -1,4 +1,4 @@
-import { addLikeToComment, deleteComment, dislikeToComment, editComment, getSmartphoneComments, sortComment } from "@/controllers/comments.controller"
+import { addLikeToComment, addNewComment, deleteComment, dislikeToComment, editComment, getSmartphoneComments, sortComment } from "@/controllers/comments.controller"
 import { asyncWrapper } from "@/middlewares/asyncWrapper.middleware"
 import { requireAuth } from "@/middlewares/auth.middleware"
 import express from "express"
@@ -7,6 +7,9 @@ const router = express.Router()
 
 router.route("/")
 .get(asyncWrapper(getSmartphoneComments))
+
+router.route("/new")
+.post(asyncWrapper(requireAuth), asyncWrapper(addNewComment))
 
 // router.route("/view-more")
 // .get(asyncWrapper(getViewMoreSmartphoneComments))

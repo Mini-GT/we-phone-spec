@@ -9,7 +9,7 @@ import { connectMongoDB } from './db/connect'
 import cookieParser from 'cookie-parser' 
 import passport from './services/passport'
 import emailRouter from "./routes/email.route"
-import { signJwt, verifyJwt } from './utils/jwt'
+import { isTokenValid, signJwt, verifyJwt } from './utils/jwt'
 import type { User } from '@prisma/client'
 import { type DecodedToken } from './middlewares/auth.middleware'
 import notFound from './middlewares/notFound.middleware'
@@ -18,11 +18,15 @@ import http from 'http'
 import { Server, Socket } from 'socket.io'
 import prisma from './prismaClient'
 import type { ServerToClientEvents, SocketData } from './types/types'
+import { jwtDecode } from 'jwt-decode'
 
 export const app = express()
 const server = http.createServer(app)
 const PORT = process.env.PORT || 3000
 const clientUrl = process.env.CLIENT_URL || "http://localhost:5173"
+const refreshSecretKey = process.env.REFRESH_JWT_SECRET
+const accessSecretKey = process.env.ACCESS_JWT_SECRET
+if(!refreshSecretKey || !accessSecretKey) throw new Error("server secret key is empty")
 
 app.use(cors({
   origin: ["http://localhost:5173", clientUrl],
@@ -67,7 +71,7 @@ app.get("/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "http://localhost:5173", session: false }),
   (req, res) => {
     const user = req.user as User
-    const token = signJwt({ id: user.id }, { expiresIn: "7d" })
+    const token = signJwt({ id: user.id }, refreshSecretKey, { expiresIn: "7d" })
     
     res.cookie("token", token, {
       httpOnly: true,
@@ -106,10 +110,11 @@ export const comments = io.of("/comments")
 
 // MIDDLEWARE
 notification.use(async (socket, next) => {
-  const token = socket.handshake.headers.cookie?.split("=")[1] || ''
-  
+  const token = socket.handshake.headers.authorization?.split(" ")[1] || ""
+  if(!isTokenValid(token)) return
+
   try {
-    const decoded = verifyJwt(token) as DecodedToken
+    const decoded = verifyJwt(token, refreshSecretKey) as DecodedToken
 
     const user = await prisma.user.findUnique({ 
       where: { 
@@ -131,7 +136,7 @@ notification.use(async (socket, next) => {
 })
 
 comments.use(async (socket, next) => {
-  const token = socket.handshake.headers.cookie?.split("=")[1] || ''
+  const token = socket.handshake.headers.authorization?.split(" ")[1] || ""
 
   // if empty token, pass socket id so unregistered users can still receive live comments 
   if(!token) {
@@ -141,7 +146,7 @@ comments.use(async (socket, next) => {
   } 
 
   try {
-    const decoded = verifyJwt(token) as DecodedToken
+    const decoded = verifyJwt(token, refreshSecretKey) as DecodedToken
     const user = await prisma.user.findUnique({ 
       where: { 
         id: decoded.id 
@@ -176,19 +181,20 @@ comments.on("connection", (socket: Socket<ServerToClientEvents>)  => {
     console.log(`${socket.data.user.name ?? `unregistered-${socket.id}`} joined smartphone room ${smartphoneId}`);
   })
 
-  socket.on("add-comment", async (comment, smartphoneId) => {
+  socket.on("add-comment", async (comment) => {
     if(!socket.data.user.name) return // block unregistered users so they cant send comment, but they can still receive comments
-    const user = socket.data.user as User
-    await prisma.smartphoneComments.create({
-      data: {
-        id: comment.id,
-        name: user.name!,
-        userId: user.id,
-        deviceId: smartphoneId,
-        message: comment.message
-      }
-    })
-    socket.to(smartphoneId).emit("new-comment", comment)
+    // const user = socket.data.user as User
+    // console.log(comment.id)
+    // await prisma.smartphoneComments.create({
+    //   data: {
+    //     id: comment.id,
+    //     name: user.name!,
+    //     userId: user.id,
+    //     deviceId: smartphoneId,
+    //     message: comment.message
+    //   }
+    // })
+    socket.to(comment.deviceId).emit("new-comment", comment)
   })
 
   socket.on('disconnect', () => {

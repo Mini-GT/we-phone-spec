@@ -1,5 +1,6 @@
 import type { Request, Response } from "express"
 import prisma from "@/prismaClient"
+import type { User } from "@prisma/client"
 
 const getSmartphoneComments = async (req: Request, res: Response)=> {
   const { smartphoneId, skip, take, orderBy: orderType, sortDirection } = req.query
@@ -133,7 +134,6 @@ const editComment = async (req: Request, res: Response)=> {
 
 const sortComment = async (req: Request, res: Response)=> {
   const sortOrder = req.params.sortOrder as "asc" | "desc"
-  console.log(sortOrder)
   // const sortedComments = await prisma.smartphoneComments.findMany({
   //   orderBy: {
   //     createdAt: sortOrder
@@ -143,6 +143,21 @@ const sortComment = async (req: Request, res: Response)=> {
   // return res.status(200).json({ result: "success", sortedComments })
 }
 
+
+const addNewComment = async (req: Request, res: Response)=> {
+  const newComment = req.body
+  const user = req.user as User
+  await prisma.smartphoneComments.create({
+    data: {
+      id: newComment.id,
+      name: user.name!,
+      userId: user.id,
+      deviceId: newComment.deviceId,
+      message: newComment.message
+    }
+  })
+  res.status(200).json({ message: "Message saved to data successfully" })
+}
 
 const deleteComment = async (req: Request, res: Response)=> {
   const { commentId } = req.params
@@ -165,5 +180,6 @@ export {
   editComment,
   deleteComment,
   sortComment,
+  addNewComment,
   // getViewMoreSmartphoneComments,
 }

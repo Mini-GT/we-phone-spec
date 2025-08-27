@@ -70,8 +70,17 @@ const getUserNotifications = async (req: Request, res: Response) => {
       isDeleted: true,
     }
   })
+
+  // count all messages that are unread
+  const unreadCount = await prisma.userNotification.count({
+    where: {
+      userId: user.id,
+      isDeleted: false,
+      isRead: false,
+    }
+  })
   
-  return res.status(200).json({ result: "success", notifications })
+  return res.status(200).json({ result: "success", notifications, unreadCount })
 }
 
 const addNotificationToUser = async (req: Request, res: Response) => {
