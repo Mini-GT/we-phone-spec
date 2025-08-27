@@ -13,13 +13,15 @@ import { useUser } from "~/context/userContext";
 import { nanoid } from "nanoid"
 import { usePopupButton } from "~/context/popupButtonContext";
 import { convertToTimeAgo } from "~/utils/formatDate";
-import { useFetcher, useNavigate } from "react-router";
+import { useFetcher, useMatches } from "react-router";
 import { Spinner } from "./spinner";
-import commentService from "~/services/comment.service";
 import { getRoleColor } from "~/utils/statusStyle";
 import { getRole } from "~/utils/role";
 import { hasPermission } from "~/utils/permissions";
 import { getSortQuery } from "~/utils/getSortQuery";
+import type { MatchesNotificationType } from "./ui/notificationBell";
+import CommentsService from "~/services/comment.service";
+import { isTokenValid } from "~/utils/tokenValidator";
 
 type CommentsSectionProps = {
   smartphoneId: Smartphone["_id"]
@@ -30,6 +32,7 @@ type CommentsType = Omit<SmartphoneCommentType, "deviceId" | "updatedAt">
 const take = 5
 
 export default function CommentsSection({ smartphoneId }: CommentsSectionProps) {
+  const { accessToken } = useMatches()[0].data as MatchesNotificationType
   const fetcher = useFetcher()
   const { user } = useUser()
   const [sortOrder, setSortOrder] = useState<SortOrderType>("mostLiked");
@@ -41,11 +44,16 @@ export default function CommentsSection({ smartphoneId }: CommentsSectionProps) 
   const [ comments, setComments ] = useState<CommentsType[]>([])
   const [ commentId, setCommentId ] = useState<string | null>(null)
   const [ skip, setSkip ] = useState(5)
-
+  const commentService = new CommentsService(accessToken)
   useEffect(() => {
+    if (!accessToken || !isTokenValid(accessToken)) return
+    
     const socket = io(import.meta.env.VITE_COMMENTS_SOCKET_NAMESPACE, {
-      withCredentials: true, 
+      extraHeaders: {
+        "Authorization": `Bearer ${accessToken}`
+      }
     })
+
     setNewSocket(socket)
   
     socket.on("connect_error", (err) => {
@@ -105,7 +113,8 @@ export default function CommentsSection({ smartphoneId }: CommentsSectionProps) 
       e.preventDefault()
       if (!commentText.trim() || !user?.id) return
       const newComment: SmartphoneCommentType = {
-        id: nanoid(),
+        id: nanoid(), 
+        deviceId: smartphoneId,
         name: user.name,
         userId: user.id,
         message: commentText,
@@ -119,7 +128,13 @@ export default function CommentsSection({ smartphoneId }: CommentsSectionProps) 
         }
       }
       setComments((prev) => [newComment, ...prev])
-      newSocket?.emit("add-comment", newComment, smartphoneId)
+
+      fetcher.submit(
+        { newComment: JSON.stringify(newComment) },
+        { method: "post" }
+      )
+
+      newSocket?.emit("add-comment", newComment,)
       setCommentText("")
     }
   }
@@ -210,9 +225,13 @@ export default function CommentsSection({ smartphoneId }: CommentsSectionProps) 
     setComments(prev => prev.filter(comment => !(comment.id === commentId && comment.isDeleted)))
 
     // update deleted comment in server
-    if(commentId) {
-      await commentService.deleteComment(commentId)
-    }
+    // if(commentId) {
+    //   await commentService.deleteComment(commentId)
+    // }
+    fetcher.submit(
+      { deleteCommentId: commentId },
+      { method: "post" }
+    )
   } 
   
   return (
@@ -362,7 +381,7 @@ export default function CommentsSection({ smartphoneId }: CommentsSectionProps) 
         onClick={handleViewMore}
       >
         <ChevronDown size={20} /> View More 
-        {fetcher.state === "loading" && <Spinner parentClassName="ml-2" spinSize="h-4" />}
+        {fetcher.state === "submitting" && <Spinner parentClassName="ml-2" spinSize="h-4" />}
       </button>
     </div>
   )
