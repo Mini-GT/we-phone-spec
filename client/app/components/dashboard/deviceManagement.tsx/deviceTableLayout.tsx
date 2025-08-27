@@ -1,10 +1,11 @@
 import { Trash2 } from "lucide-react";
-import type { Smartphone, TableSortConfig } from "~/types/globals.type";
+import { queryKeysType, type Smartphone, type TableSortConfig } from "~/types/globals.type";
 import { toReadableDate } from "~/utils/formatDate";
 import _ from "lodash";
 import { getFirstWord } from "~/utils/getFirstWord";
 import { usePopupButton } from "~/context/popupButtonContext";
 import { Form } from "react-router";
+import { useQueryClient } from "@tanstack/react-query";
 
 type DeviceTableLayoutProps = {
   getSortIcon: (iconTpe: TableSortConfig["key"]) => React.ReactNode;
@@ -17,6 +18,7 @@ export default function DeviceTableLayout({
   handleSort,
   currentDevices,
 }: DeviceTableLayoutProps) {
+  const queryClient = useQueryClient()
   const { setPopupButton } = usePopupButton()
   function handlePopupForm() {
     setPopupButton(prevState => ({
@@ -126,6 +128,7 @@ export default function DeviceTableLayout({
                       className="p-1 text-gray-500 hover:text-red-600 transition-colors cursor-pointer"
                       value={device._id}
                       name="deleteDeviceById"
+                      onClick={() => queryClient.invalidateQueries({queryKey: queryKeysType.smartphones})}
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
