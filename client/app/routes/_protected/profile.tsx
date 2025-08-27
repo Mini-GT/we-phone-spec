@@ -1,20 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Lock, AlertTriangle, Edit2, UserCheck, UserRound } from 'lucide-react';
 import { toReadableDate } from '~/utils/formatDate';
-import { Form, useNavigation, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from 'react-router';
+import { Form, redirect, useLoaderData, useMatches, useNavigation, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from 'react-router';
 import UserMenuNav from '~/components/userMenuNav';
 import { AnimatePresence, motion } from "motion/react"
 import EmailService from '../../services/email.service';
 import authService from '~/services/auth.service';
 import { Spinner } from '~/components/spinner';
-import userService from '~/services/user.service';
 import type { Route } from './+types/profile';
 import { FormField } from '~/components/form/formField';
 import { changeName, changePassword } from '~/schema/profile.schema';
 import { z } from "zod";
 import { useUser } from '~/context/userContext';
-import { getSession } from '~/session/sessions.server';
+import { commitSession, destroySession, getSession } from '~/session/sessions.server';
 import UserService from '~/services/user.service';
+import { isTokenValid } from '~/utils/tokenValidator';
+import { QueryClient, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
+import { queryKeysType } from '~/types/globals.type';
 
 export function meta({}: MetaFunction) {
   return [
@@ -38,11 +40,28 @@ const defaultFieldErrors = {
 
 export async function action({request}: ActionFunctionArgs) { 
   const session = await getSession(request.headers.get("Cookie"))
-  const accessToken = session.get("accessToken")
-  const userService = new UserService(accessToken)
-
+  const currentUrl = new URL(request.url).pathname
+  let accessToken = session.get("accessToken")
+  let refreshToken = session.get("refreshToken")
   let formData = await request.formData()
   const rawFormData = formData.get("profileFormData") as string
+  
+  if(refreshToken && !isTokenValid(refreshToken)) {
+    return redirect("/", {
+      headers: {
+        "Set-Cookie": await destroySession(session),
+      }
+    })
+  }
+
+  if (!isTokenValid(accessToken) && isTokenValid(refreshToken)) {
+    const { newAccessToken } = await authService.refresh(refreshToken!)
+    session.set("accessToken", newAccessToken)
+    accessToken = newAccessToken
+  }
+
+  const userService = new UserService(accessToken)
+
   if(rawFormData) {
     const parsedData = JSON.parse(rawFormData)
     const { id, name, oldName, currentPassword, newPassword, confirmPassword } = parsedData
@@ -60,7 +79,7 @@ export async function action({request}: ActionFunctionArgs) {
       // dont update name if there is no change
       if(name === oldName) return null
       const result = await userService.changeName(name, id)
-      console.log(result)
+      // console.log(result)
     }
 
     // update name and password if name is valid and at least 1 password field is valid
@@ -78,26 +97,40 @@ export async function action({request}: ActionFunctionArgs) {
 
       const result = await userService.changePassword({ currentPassword, newPassword, confirmPassword }, id) 
       console.log(result)
-      // return result
     }
   }
+
+  return redirect(`${currentUrl}`, {
+    headers: {
+    "Set-Cookie": await commitSession(session)
+    }
+  })
 }
 
 
 export async function loader({request}: LoaderFunctionArgs) {
   const session = await getSession(request.headers.get("Cookie"))
   const accessToken = session.get("accessToken")
-  const userService = new UserService(accessToken)
-  const user = await userService.getMe()
-  return user
+  if(accessToken && !isTokenValid(accessToken)) return
+  return accessToken
 }
+
+export type MatchesProfileType = {
+  accessToken: string
+} 
 
 export default function Profile({
   actionData
 }: Route.ComponentProps) {
-  const { user } = useUser()
+  const { setUser } = useUser()
+  const accessToken = useLoaderData<typeof loader>()
   const navigation = useNavigation()
   const [showPasswordFields, setShowPasswordFields] = useState(false);
+  const userService = new UserService(accessToken)
+  const { data: user } = useSuspenseQuery({
+    queryKey: queryKeysType.me,
+    queryFn: async () => await userService.getMe()
+  })
   const [ formData, setFormData ] = useState({
     id: user?.id,
     name: user?.name,
@@ -106,7 +139,9 @@ export default function Profile({
     newPassword: "",
     confirmPassword: "",
   })
+
   const [ fieldError, setFieldError ] = useState<Partial <FieldErrorTypes>>(defaultFieldErrors)
+
   useEffect(() => {
     if (actionData) {
       const mappedErrors: Partial <FieldErrorTypes>= {
@@ -126,7 +161,11 @@ export default function Profile({
     }
   }, [actionData])
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    setUser(user)
+  }, [user])
+
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,

@@ -1,20 +1,22 @@
 import type { Route } from "./+types/smartphone";
-import smartphoneService from "~/services/smartphone.service";
 import { Card, CardContent } from "../components/ui/card";
 import { Calendar, Smartphone as SmartphoneCard, Camera, Battery, HardDrive, Cpu, Settings } from "lucide-react"; 
 import DeviceSpec from "~/components/deviceSpecs";
-import { queryKeysType, type ApiResponse, type Smartphone, type SmartphoneCommentsDataType, type Smartphone as SmartphoneType } from "~/types/globals.type";
-import { useFetcher, useLoaderData, type ActionFunctionArgs } from "react-router";
+import { queryKeysType, type ApiResponse, type Smartphone, type SmartphoneCommentsDataType, type SmartphoneCommentType, type Smartphone as SmartphoneType } from "~/types/globals.type";
+import { redirect, ScrollRestoration, useFetcher, useLoaderData, type ActionFunctionArgs } from "react-router";
 import { useEffect, useState } from "react";
 import { usePopupButton } from "~/context/popupButtonContext";
 import incrementViewToSmartphone from "~/utils/viewSmartphone";
 import CommentsSection from "~/components/commentSection";
-import commentService from "~/services/comment.service";
 import { QueryClient } from "@tanstack/react-query";
 import { useUser } from "~/context/userContext";
-import { getSession } from "~/session/sessions.server";
+import { destroySession, getSession } from "~/session/sessions.server";
 import UserService from "~/services/user.service";
 import SmartphoneService from "~/services/smartphone.service";
+import CommentsService from "~/services/comment.service";
+import { isTokenValid } from "~/utils/tokenValidator";
+import authService from "~/services/auth.service";
+import NotFound from "./notFound";
 
 type SmartphoneIdType = {
   smartphoneId: string
@@ -26,17 +28,22 @@ type UserLikeResponse = ApiResponse["message"] & {
 
 export function meta({ data }: any) {
   const smartphone = data.smartphone
+  let titleData = smartphone.name
+  if(smartphone === "No Device found") titleData = "Not Found"
   return [
-    { title: `${smartphone.name} – PhoneSpec` },
+    { title: `${titleData} – PhoneSpec` },
     { name: "description", content: smartphone.description }
   ];
 }
 
 export async function loader({params, request}: Route.LoaderArgs) {
   const queryClient = new QueryClient();
-
   const session = await getSession(request.headers.get("Cookie"))
   const accessToken = session.get("accessToken")
+  let smartphone = null
+  let isLiked = null
+
+  if(accessToken && !isTokenValid(accessToken)) return { smartphone, isLiked }
   const userService = new UserService(accessToken)
   const smartphoneService = new SmartphoneService(accessToken)
 
@@ -45,40 +52,64 @@ export async function loader({params, request}: Route.LoaderArgs) {
   const id = data?.split("-").pop()
   if(!id) throw new Error("No Id Found")
 
-  const smartphone = await queryClient.fetchQuery({
+  smartphone = await queryClient.fetchQuery({
     queryKey: queryKeysType.smartphone(id),
-    queryFn: () => smartphoneService.getSmartphoneById(id),
+    queryFn: async () => await smartphoneService.getSmartphoneById(id),
     staleTime: 5 * 60 * 1000,
   })
   
-  const skip = 0
-  const take = 5
-  // const { comments } = await commentService.getSmartphoneComments(id, skip , take) 
-
   if(accessToken) {
     const result = await userService.getUserLikes()
     const { likedSmartphoneId } = result.message as UserLikeResponse
-    const likedIds = new Set(likedSmartphoneId.map(item => item.smartphoneId))
+    const likedIds = new Set(likedSmartphoneId?.map(item => item.smartphoneId))
     // check if this smartphone is liked 
     const isLiked = likedIds.has(id) 
     return { smartphone, isLiked }
   }
-  const isLiked = false
+  isLiked = false
   return { smartphone, isLiked }
 }
 
 export async function action({request}: ActionFunctionArgs) { 
+  const currentUrl = new URL(request.url).pathname
   const session = await getSession(request.headers.get("Cookie"))
-  const accessToken = session.get("accessToken")
-  const userService = new UserService(accessToken)
+  let accessToken = session.get("accessToken")
+  let refreshToken = session.get("refreshToken")
 
+  if(refreshToken && !isTokenValid(refreshToken)) {
+    return redirect("/", {
+      headers: {
+        "Set-Cookie": await destroySession(session),
+      }
+    })
+  }
+
+  if (!isTokenValid(accessToken) && isTokenValid(refreshToken)) {
+    const { newAccessToken } = await authService.refresh(refreshToken!)
+    session.set("accessToken", newAccessToken)
+    accessToken = newAccessToken
+  }
+
+  const userService = new UserService(accessToken)
+  const commentService = new CommentsService(accessToken)
   let formData = await request.formData()
   const smartphoneLikesId = formData.get("smartphoneLikes") as SmartphoneType["_id"]
   const smartphoneViewId = formData.get("smartphoneViewId") as SmartphoneType["_id"]
+  const deleteCommentId = formData.get("deleteCommentId") as string
+  const newComment = formData.get("newComment") as string
+  const parsedNewComment = JSON.parse(newComment) as SmartphoneCommentType
   const initialCommentsData = formData.get("initialCommentsData") as string
   const viewMoreCommentsData = formData.get("viewMoreCommentsData") as string
   const parsedInitialCommentsData = JSON.parse(initialCommentsData) as SmartphoneCommentsDataType
   const parsedViewMoreCommentsData = JSON.parse(viewMoreCommentsData) as SmartphoneCommentsDataType
+  if(parsedNewComment?.userId) {
+    const result = await commentService.addNewCommet(parsedNewComment)
+    return 
+  }
+  
+  if(deleteCommentId) {
+    await commentService.deleteComment(deleteCommentId)
+  }
   
   if(parsedInitialCommentsData?.smartphoneId) {
     const { comments } = await commentService.getSmartphoneComments(
@@ -117,14 +148,16 @@ export async function action({request}: ActionFunctionArgs) {
 export default function Smartphone() {
   const { smartphone, isLiked } = useLoaderData<typeof loader>()
   const { user } = useUser()
-  const [ userLiked, setUserLiked ] = useState<boolean>(isLiked)
+  const [ userLiked, setUserLiked ] = useState<boolean | null>(isLiked)
   const [ userLikesCount, setUserLikesCount ] = useState<number>(smartphone.likes)
   const { setPopupButton } = usePopupButton()
   const fetcher = useFetcher()
+
   useEffect(() => {
     if(!user) return
     setUserLiked(isLiked)
   }, [isLiked, user])
+
   const handleLikeBtn = () => {
     if(!user) {
       setPopupButton(prevState => ({
@@ -145,7 +178,9 @@ export default function Smartphone() {
       }
     )
   }
-  
+
+  if(smartphone === "No Device found") return <NotFound details="" message="" />;
+    
   const specItems = [
     { icon: <Calendar className="w-5 h-5 text-blue-500" />, label: "Released", value: smartphone?.launch.released },
     { icon: <SmartphoneCard className="w-5 h-5 text-blue-500" />, label: "Display", value: `${smartphone?.specs.display.size}\n${smartphone?.specs.display.resolution}` },
@@ -249,7 +284,6 @@ export default function Smartphone() {
   ];
 
   // if(isLoading) return <div>Fetching data...</div>;
-  if(!smartphone) return <div>no smartphone</div>;
   // if(isError) return <div>Error loading data</div>;
   return (
     <>

@@ -1,19 +1,19 @@
 import { Smartphone } from "lucide-react";
-import { type ActionFunctionArgs, type MetaFunction } from "react-router";
+import { redirect, useLoaderData, type ActionFunctionArgs, type MetaFunction } from "react-router";
 import { ProtectedRoute } from "~/components/protectedRoute";
 import { useSmartphone } from "~/context/smartphoneContext";
 import UserMenuNav from "~/components/userMenuNav";
-import Unauthorized from "../unauthorized";
 import DeviceManagementDashboard from "~/components/dashboard/deviceManagement.tsx/deviceManagementDashboard";
 import type { Route } from "./+types/devices";
 import { useEffect } from "react";
 import { Spinner } from "~/components/spinner";
-import smartphoneService from "~/services/smartphone.service";
 import { queryKeysType } from "~/types/globals.type";
 import { useUser } from "~/context/userContext";
-import { useQuery } from "@tanstack/react-query";
-import { getSession } from "~/session/sessions.server";
+import { QueryClient } from "@tanstack/react-query";
+import { commitSession, destroySession, getSession } from "~/session/sessions.server";
 import SmartphoneService from "~/services/smartphone.service";
+import { isTokenValid } from "~/utils/tokenValidator";
+import authService from "~/services/auth.service";
 
 export function meta({}: MetaFunction) {
   return [
@@ -25,13 +25,32 @@ export function meta({}: MetaFunction) {
 export async function action({
   request,
 }: ActionFunctionArgs) {
+  const queryClient = new QueryClient();
+  const currentUrl = new URL(request.url).pathname
   const session = await getSession(request.headers.get("Cookie"))
-  const accessToken = session.get("accessToken")
-  const smartphoneService = new SmartphoneService(accessToken)
-  
+  let refreshToken = session.get("refreshToken")
+  let accessToken = session.get("accessToken")
   let formData = await request.formData();
   const deviceId = formData.get("deviceId") as string
   const deleteDeviceById= formData.get("deleteDeviceById") as string
+  const raw = formData.get("deviceObj") as string
+
+  if(refreshToken && !isTokenValid(refreshToken)) {
+    return redirect("/", {
+      headers: {
+        "Set-Cookie": await destroySession(session),
+      }
+    })
+  }
+
+  if (!isTokenValid(accessToken) && isTokenValid(refreshToken)) {
+    const { newAccessToken } = await authService.refresh(refreshToken!)
+    session.set("accessToken", newAccessToken)
+    accessToken = newAccessToken
+  }
+  
+  const smartphoneService = new SmartphoneService(accessToken)
+
   if(deviceId) {
     let device = await smartphoneService.getSmartphoneById(deviceId)
     return device;
@@ -41,7 +60,6 @@ export async function action({
     await smartphoneService.deleteSmartphone(deleteDeviceById)
   }
 
-  const raw = formData.get("deviceObj") as string
   if(raw) {
     const deviceObj = JSON.parse(raw)
     const {
@@ -54,74 +72,45 @@ export async function action({
 
     await smartphoneService.updateSmartphone(_id, body)
   }
+  queryClient.invalidateQueries({ queryKey: queryKeysType.smartphones})
+  return redirect(`${currentUrl}`, {
+    headers: {
+    "Set-Cookie": await commitSession(session)
+    }
+  })
 }
 
-// export async function loader({ request }: Route.LoaderArgs) {
-//   try {
-//     const response = await smartphoneService.getSmartphones()
-//     if (!response || !response.data) {
-//       throw new Error("Failed to fetch devices");
-//     }
+export async function loader({ request }: Route.LoaderArgs) {
+  const queryClient = new QueryClient();
+  const session = await getSession(request.headers.get("Cookie"))
+  let accessToken = session.get("accessToken")
+  if(accessToken && !isTokenValid(accessToken)) return
 
-//     const devices = response.data.phones
-//     return devices;
-//   } catch (error) {
-//     console.error(error)
-//   }
-// }
-
-// export async function clientLoader({
-//   serverLoader,
-// }: Route.ClientLoaderArgs) {
-//   const res = await smartphoneService.getSmartphones()
-//   const serverData = await serverLoader();
-//   // console.log(serverData)
-//   return serverData;
-// }
-
-// export function HydrateFallback() {
-//   return <Spinner childClassName="w-12 h-12" />
-// }
-// export async function clientLoader({request}: ClientLoaderFunctionArgs) {
-//   // const token = await requireAuthCookie(request);
+  const smartphoneService = new SmartphoneService()
   
-// }
+  const smartphones = await queryClient.fetchQuery({
+    queryKey: queryKeysType.smartphones,
+    queryFn: async () => await smartphoneService.getSmartphones(),
+    staleTime: 5 * 60 * 1000,
+  })
+
+  return smartphones
+}
 
 export default function Devices({
   actionData
 }: Route.ComponentProps) {
   const { setSmartphoneFormData } = useSmartphone()
   const { user } = useUser()
-  const smartphoneService = new SmartphoneService()
-
-  const { 
-    data: smartphones, 
-    isLoading: smartphonesIsLoading, 
-    isError: smartphonesIsError, 
-    error: smartphonesError 
-  } = useQuery({
-    queryKey: queryKeysType.smartphones,
-    queryFn: () => smartphoneService.getSmartphones(),
-  })
-
+  const { phones } = useLoaderData<typeof loader>()
   useEffect(() => {
     if (actionData) {
       setSmartphoneFormData(actionData);
     }
   }, [actionData, setSmartphoneFormData]);
 
-  if (smartphonesIsLoading) {
-    return <Spinner spinSize="w-12" />
-  }
-
-  if (smartphonesIsError) {
-    return <div>Error: {String(smartphonesError)}</div>
-  }
-
-  const devices = smartphones?.phones 
-  
   return (
-    <ProtectedRoute requiredRoles={["ADMIN", "MODERATOR"]} fallback={<Unauthorized />}>
+    <ProtectedRoute requiredRoles={["ADMIN", "MODERATOR"]} fallback={<Spinner spinSize="w-12 h-12" />}>
       <div className="min-h-screen bg-gray-800 bg-opacity-90 flex flex-col items-center py-12 sm:px-15">
         <UserMenuNav
           tab={"devices"}
@@ -137,7 +126,8 @@ export default function Devices({
                 <Smartphone fill="#d5dbdb" strokeWidth={2} className="mr-3 w-6 h-6 text-gray-400" />
                 Devices
               </div>
-              {devices ? <DeviceManagementDashboard items={devices} /> : null}
+              {/* {devices ? <DeviceManagementDashboard items={devices} /> : null} */}
+              {phones.length > 0 ? <DeviceManagementDashboard items={phones} /> : null}
             </div>
           </div>
         </div>

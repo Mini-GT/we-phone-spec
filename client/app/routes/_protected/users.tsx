@@ -1,21 +1,18 @@
 import { UsersRound } from "lucide-react";
-import { useLoaderData, useMatches, type ActionFunctionArgs, type MetaFunction } from "react-router";
+import { redirect, useLoaderData, type ActionFunctionArgs, type MetaFunction } from "react-router";
 import UserMenuNav from "~/components/userMenuNav";
 import Unauthorized from "../unauthorized";
 import { ProtectedRoute } from "~/components/protectedRoute";
-import userService from "~/services/user.service";
-import usersService from "~/services/users.service";
 import type { Route } from "./+types/users";
 import { usePopupButton } from "~/context/popupButtonContext";
 import UserManagementDashoard from "~/components/dashboard/usersManagement/userManagementDashboard";
 import { Spinner } from "~/components/spinner";
-import authService from "~/services/auth.service";
-import type { UserType } from "~/types/globals.type";
-import { useEffect } from "react";
 import { useUser } from "~/context/userContext";
 import UserService from "~/services/user.service";
 import UsersService from "~/services/users.service";
-import { getSession } from "~/session/sessions.server";
+import { commitSession, destroySession, getSession } from "~/session/sessions.server";
+import { isTokenValid } from "~/utils/tokenValidator";
+import authService from "~/services/auth.service";
 
 export function meta({}: MetaFunction) {
   return [
@@ -27,13 +24,30 @@ export function meta({}: MetaFunction) {
 export async function action({
   request,
 }: ActionFunctionArgs) {
+  const currentUrl = new URL(request.url).pathname
   const session = await getSession(request.headers.get("Cookie"))
   let accessToken = session.get("accessToken")
-  console.log("users:", accessToken)
-  const userService = new UserService(accessToken)
+  let refreshToken = session.get("refreshToken")
   let formData = await request.formData();
   const deleteId = formData.get("deleteUser") as string
   const rawData = formData.get("userFormData") as string
+
+  if(refreshToken && !isTokenValid(refreshToken)) {
+    return redirect("/", {
+      headers: {
+        "Set-Cookie": await destroySession(session),
+      }
+    })
+  }
+
+  if (!isTokenValid(accessToken) && isTokenValid(refreshToken)) {
+    const { newAccessToken } = await authService.refresh(refreshToken!)
+    session.set("accessToken", newAccessToken)
+    accessToken = newAccessToken
+  }
+
+  const userService = new UserService(accessToken)
+  
   if(deleteId) {
     const deleteResult = await userService.deleteUser(deleteId)
   }
@@ -49,15 +63,21 @@ export async function action({
     } = userFormData
 
     const updateResult = await userService.updatetUser(body, id)
-    return updateResult.updatedUser
   }
+
+  return redirect(`${currentUrl}`, {
+    headers: {
+    "Set-Cookie": await commitSession(session)
+    }
+  })
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"))
   let accessToken = session.get("accessToken")
+  if(accessToken && !isTokenValid(accessToken)) return
   const usersService = new UsersService(accessToken)
-try {
+  try {
     const response = await usersService.getUsers()
 
     const users = response?.data
@@ -85,6 +105,7 @@ export default function Users() {
       <Spinner spinSize="w-12 h-12" />
     )
   }
+
   return (
     <ProtectedRoute requiredRoles={["ADMIN", "MODERATOR"]} fallback={<Unauthorized />}>
       <div className="min-h-screen bg-gray-800 bg-opacity-90 flex flex-col items-center py-12 sm:px-15">

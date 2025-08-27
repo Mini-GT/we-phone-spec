@@ -1,4 +1,4 @@
-import { Link, useLoaderData, useMatches, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
+import { Link, redirect, useLoaderData, useMatches, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import UserMenuNav from "~/components/userMenuNav";
 import { Bell } from "lucide-react";
 import { Spinner } from "~/components/spinner";
@@ -6,9 +6,10 @@ import authService from "~/services/auth.service";
 import type { NotificationType, UserType } from "~/types/globals.type";
 import { convertToTimeAgo } from "~/utils/formatDate";
 import notificationService from "~/services/notification.service";
-import { getSession } from "~/session/sessions.server";
+import { destroySession, getSession } from "~/session/sessions.server";
 import NotificationService from "~/services/notification.service";
 import type { Route } from "./+types/notification";
+import { isTokenValid } from "~/utils/tokenValidator";
 
 export function meta({}: MetaFunction) {
   return [
@@ -20,11 +21,27 @@ export function meta({}: MetaFunction) {
 export async function action({request}: ActionFunctionArgs) {
   const session = await getSession(request.headers.get("Cookie"))
   let accessToken = session.get("accessToken")
-  const notificationService = new NotificationService(accessToken)
+  let refreshToken = session.get("refreshToken")
   let formData = await request.formData()
   // action coming from "KebabMenu.tsx" component
   const notifId = formData.get("smartphoneId") as string
   
+  if(refreshToken && !isTokenValid(refreshToken)) {
+    return redirect("/", {
+      headers: {
+        "Set-Cookie": await destroySession(session),
+      }
+    })
+  }
+
+  if (!isTokenValid(accessToken) && isTokenValid(refreshToken)) {
+    const { newAccessToken } = await authService.refresh(refreshToken!)
+    session.set("accessToken", newAccessToken)
+    accessToken = newAccessToken
+  }
+
+  const notificationService = new NotificationService(accessToken)
+
   if(notifId) {
     const deleteResult = await notificationService.deleteNotification(notifId)
     return deleteResult
