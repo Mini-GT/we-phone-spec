@@ -1,23 +1,40 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react'
 import { BellIcon } from 'lucide-react'
-import type { DropDownProps, NewDeviceNotificationType, NotificationType } from '~/types/globals.type'
-import { convertToTimeAgo } from '~/utils/formatDate'
+import { type ApiResponse, type DropDownProps, type NewDeviceNotificationType, type NotificationType } from '~/types/globals.type'
 import { io } from "socket.io-client";
-import notificationService from '~/services/notification.service'
-import { Link } from 'react-router'
+import { Link, NavLink, useMatches } from 'react-router'
 import KebabMenu from './kebabMenu';
+import { convertToTimeAgo } from '~/utils/formatDate';
 
 type NotificationBellProps = {
   open: DropDownProps
   setOpen: Dispatch<SetStateAction<DropDownProps>>
 }
 
+export type MatchesNotificationType = {
+  accessToken: string
+  refreshToken: string
+  notifData: ApiResponse & {
+    message: NotificationType
+  }
+} 
 export default function NotificationBell({
   open,
   setOpen
 }: NotificationBellProps) {
+  const { notifData, refreshToken } = useMatches()[0].data as MatchesNotificationType
   const [ notifications, setNotifications ] = useState<NewDeviceNotificationType[]>([])
-  const unreadCount = notifications.filter(n => !n.isRead).length
+  const [ unreadCount, setUnreadCount ] = useState<number | null>(null)
+  const notificationsData = notifData.message.notifications
+  // let accessToken = tokens.accessToken
+  // let refreshToken = data.refreshToken
+  // const [accessToken, setAccessToken] = useState(data.accessToken)
+  // let notificationService = new NotificationService(accessToken)
+  // const unreadCount = notifications?.filter(n => !n.isRead).length
+  useEffect(() => {
+    setNotifications(notificationsData) 
+    setUnreadCount(notifData.message.unreadCount)
+  }, [notificationsData])
 
   const toggleDropdown = () => {
     // close the other dropdown to avoid multiple opened dropdowns
@@ -27,30 +44,35 @@ export default function NotificationBell({
     }
     setOpen(prev => ({...prev, isNotificationDropdown: !open.isNotificationDropdown}));
   }
-
+  
   useEffect(() => {
     const socket = io(import.meta.env.VITE_NOTIFICATION_SOCKET_NAMESPACE, {
-      withCredentials: true, 
+      extraHeaders: {
+        "Authorization": `Bearer ${refreshToken}`
+      }
     })
 
     // initial load of notification data
-    const fetchNotifationData = async () => {
-      const notificationData = await notificationService.getNotifications()
-      if(notificationData.message.result === "success") {
-        const data = (notificationData.message as NotificationType).notifications
-        setNotifications(data)
-      }
-    }
+    // const fetchNotifationData = async () => {
+    //   const notificationData = await notificationService.getNotifications()
+    //   if(notificationData.message.result === "success") {
+    //     const data = (notificationData.message as NotificationType).notifications
+    //     const unreadCount = (notificationData.message as NotificationType).unreadCount
+    //     setUnreadCount(unreadCount)
+    //     setNotifications(data)
+    //   }
+    // }
 
-    fetchNotifationData()
+    // fetchNotifationData()
 
     socket.on("connect_error", (err) => {
       console.error("connection error", err.message)
     })
 
     socket.on("newDeviceNotification", async (message: NewDeviceNotificationType) => {
-      const res = await notificationService.addNotification(message)
-      setNotifications((prev) => [message, ...prev])
+      
+      // await notificationService.addNotification(message)
+      // setNotifications((prev) => [message, ...prev])
     })
 
     return () => {
@@ -61,27 +83,30 @@ export default function NotificationBell({
 
   const handleClick = async (notifId: string) => {
     toggleDropdown()
+    let decremented = false
 
     setNotifications((prevNotifs) =>
-      prevNotifs.map((notif) =>
-        notif.globalNotificationId === notifId
-          ? { ...notif, isRead: true }
-          : notif
-      )
+      prevNotifs.map((notif) => {
+        if (notif.globalNotificationId === notifId && !notif.isRead) {
+          decremented = true // only decrement once if it is unread
+          return { ...notif, isRead: true }
+        }
+        return notif
+      })
     )
+
+    if(decremented) {
+      setUnreadCount(prev => prev ? prev - 1 : prev)
+    }
     
-    // setNotifications((prevNotifs) =>
-    //   prevNotifs.map((notif) => {
-    //     if(notif.isDeleted) {
-    //       return
-    //     } else {
-    //       return notif.globalNotificationId === notifId ? { ...notif, isRead: true}  : notif 
-    //     }
-    //   })
-    // )
-    const res = await notificationService.markNotificationAsRead(notifId)
+    // if(!isTokenValid(accessToken)) {
+    //   const { newAccessToken } = await authService.refresh(refreshToken)
+    //   accessToken = newAccessToken
+    // }
+    // const newNotificationService = new NotificationService(accessToken)
+    // await notificationService.markNotificationAsRead(notifId)
   }
-  
+
   return (
     <div className="relative">
       {/* <div className="relative"> */}
@@ -97,6 +122,7 @@ export default function NotificationBell({
       {/* </div> */}
 
       <div className={`absolute -right-10 w-70 sm:right-0 sm:w-90 rounded-lg bg-gray-800 shadow-xl text-white p-3 mt-1 z-20 transition-all duration-200 ${open.isNotificationDropdown ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"}`}>
+
         {/* <div className="flex items-center gap-2 py-2 pl-2 text-sm text-muted-foreground">
           <CheckIcon className="w-4 h-4" />
           <button onClick={() => setAllRead(true)} className="hover:underline">
@@ -136,11 +162,11 @@ export default function NotificationBell({
                     </div>
                   </Link>
                   <div className="absolute right-3 sm:right-4">
-                    <KebabMenu 
-                      action="user/notification" 
+                    {/* <KebabMenu 
+                      action="/" 
                       deviceId={notif.globalNotificationId} 
                       setNotifications={setNotifications}
-                    />
+                    /> */}
                   </div>
                 </div>
             </div>
@@ -149,9 +175,12 @@ export default function NotificationBell({
         </div>
 
         <div className="flex items-center justify-center rounded-sm h-10 mt-3 bg-gray-700 cursor-pointer">
-          <button className="text-sm text-white cursor-pointer">
+          <NavLink 
+            onClick={() => toggleDropdown()}
+            to="/user/notification"
+            className="text-sm text-white cursor-pointer">
             View all
-          </button>
+          </NavLink>
         </div>
       </div>
     </div>

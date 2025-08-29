@@ -1,6 +1,6 @@
 import type { AxiosInstance } from "axios";
 import axios from "axios";
-import type { ApiResponse, NewDeviceNotificationType } from "~/types/globals.type";
+import type { ApiResponse, NewDeviceNotificationType, NotificationType } from "~/types/globals.type";
 
 class NotificationService {
   private api: AxiosInstance;
@@ -56,9 +56,11 @@ class NotificationService {
     }
   }
 
-  async getNotifications(): Promise<ApiResponse> {
+  async getNotifications(take?: number, skip?: number): Promise<ApiResponse> {
     try {
-      const response = await this.api.get("/notification");
+      const response = await this.api.get("/notification", {
+        params: {skip, take, }
+      });
 
       const result = {
         statusCode: response.status,

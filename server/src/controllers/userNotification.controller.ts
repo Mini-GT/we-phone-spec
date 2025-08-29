@@ -4,8 +4,11 @@ import type { User } from "@prisma/client"
 import type { Request, Response } from "express"
 
 const getUserNotifications = async (req: Request, res: Response) => {
+  const { skip, take } = req.query
+  const skipNum = Number(skip) || 0
+  const takeNum = Number(take) || 5
   const user = req.user as User
-
+  
   const userNotifications = await prisma.userNotification.findMany({
     where: {
       userId: user.id
@@ -50,7 +53,8 @@ const getUserNotifications = async (req: Request, res: Response) => {
 
   // only fetch those notifs that are not deleted
   const notifications = await prisma.userNotification.findMany({
-    take: 4,
+    skip: skipNum,
+    take: takeNum,
     where: {
       userId: user.id,
       isDeleted: false
@@ -71,7 +75,7 @@ const getUserNotifications = async (req: Request, res: Response) => {
     }
   })
 
-  // count all messages that are unread
+  // count all notifications that are unread
   const unreadCount = await prisma.userNotification.count({
     where: {
       userId: user.id,
@@ -79,8 +83,15 @@ const getUserNotifications = async (req: Request, res: Response) => {
       isRead: false,
     }
   })
+
+  const totalNotifications = await prisma.userNotification.count({
+    where: {
+      userId: user.id,
+      isDeleted: false
+    }
+  })
   
-  return res.status(200).json({ result: "success", notifications, unreadCount })
+  return res.status(200).json({ result: "success", notifications, totalNotifications, unreadCount })
 }
 
 const addNotificationToUser = async (req: Request, res: Response) => {
@@ -149,6 +160,8 @@ const deleteNotification = async (req: Request, res: Response) => {
       isDeleted: true
     }
   })
+
+  res.status(200).json({ message: "Deleted Successfully" })
 }
 
 export {
