@@ -2,9 +2,10 @@ import { useEffect, useState, type Dispatch, type SetStateAction } from 'react'
 import { BellIcon } from 'lucide-react'
 import { type ApiResponse, type DropDownProps, type NewDeviceNotificationType, type NotificationType } from '~/types/globals.type'
 import { io } from "socket.io-client";
-import { Link, NavLink, useMatches } from 'react-router'
+import { Link, NavLink, useFetcher, useMatches, useRevalidator } from 'react-router'
 import KebabMenu from './kebabMenu';
 import { convertToTimeAgo } from '~/utils/formatDate';
+import { Spinner } from '../spinner';
 
 type NotificationBellProps = {
   open: DropDownProps
@@ -14,7 +15,7 @@ type NotificationBellProps = {
 export type MatchesNotificationType = {
   accessToken: string
   refreshToken: string
-  notifData: ApiResponse & {
+  notifData?: ApiResponse & {
     message: NotificationType
   }
 } 
@@ -25,16 +26,26 @@ export default function NotificationBell({
   const { notifData, refreshToken } = useMatches()[0].data as MatchesNotificationType
   const [ notifications, setNotifications ] = useState<NewDeviceNotificationType[]>([])
   const [ unreadCount, setUnreadCount ] = useState<number | null>(null)
-  const notificationsData = notifData.message.notifications
+  const notificationsData = notifData?.message?.notifications
+  const revalidator = useRevalidator()
+  const fetcher = useFetcher() 
   // let accessToken = tokens.accessToken
   // let refreshToken = data.refreshToken
   // const [accessToken, setAccessToken] = useState(data.accessToken)
   // let notificationService = new NotificationService(accessToken)
   // const unreadCount = notifications?.filter(n => !n.isRead).length
+  
   useEffect(() => {
-    setNotifications(notificationsData) 
-    setUnreadCount(notifData.message.unreadCount)
-  }, [notificationsData])
+    // used for initial login so notification gets refreshed
+    revalidator.revalidate()
+  }, [])
+
+  useEffect(() => {
+    if(notifData && notificationsData) {
+      setNotifications(notificationsData) 
+      setUnreadCount(notifData.message.unreadCount)
+    }
+  }, [notifData, notificationsData])
 
   const toggleDropdown = () => {
     // close the other dropdown to avoid multiple opened dropdowns
@@ -85,19 +96,24 @@ export default function NotificationBell({
     toggleDropdown()
     let decremented = false
 
-    setNotifications((prevNotifs) =>
-      prevNotifs.map((notif) => {
-        if (notif.globalNotificationId === notifId && !notif.isRead) {
-          decremented = true // only decrement once if it is unread
-          return { ...notif, isRead: true }
-        }
-        return notif
-      })
+    // setNotifications((prevNotifs) =>
+    //   prevNotifs.map((notif) => {
+    //     if (notif.globalNotificationId === notifId && !notif.isRead) {
+    //       decremented = true // only decrement once if it is unread
+    //       return { ...notif, isRead: true }
+    //     }
+    //     return notif
+    //   })
+    // )
+
+    fetcher.submit(
+      { markRead: notifId },
+      { method: "post", action: "/" }
     )
 
-    if(decremented) {
-      setUnreadCount(prev => prev ? prev - 1 : prev)
-    }
+    // if(decremented) {
+    //   setUnreadCount(prev => prev ? prev - 1 : prev)
+    // }
     
     // if(!isTokenValid(accessToken)) {
     //   const { newAccessToken } = await authService.refresh(refreshToken)
@@ -131,7 +147,7 @@ export default function NotificationBell({
         </div> */}
 
         <div className="space-y-2 max-h-full overflow-y-none">
-          {Array.isArray(notifications) && notifications?.length > 0 ? notifications.map((notif, i) => (
+          {!notifications ? <Spinner spinSize='w-12' /> : Array.isArray(notifications) && notifications?.length > 0 ? notifications.map((notif, i) => (
             <div className="relative" key={notif.globalNotificationId}>
               
                 <div
@@ -178,7 +194,7 @@ export default function NotificationBell({
           <NavLink 
             onClick={() => toggleDropdown()}
             to="/user/notification"
-            className="text-sm text-white cursor-pointer">
+            className="flex items-center justify-center text-sm text-white w-full h-full   cursor-pointer">
             View all
           </NavLink>
         </div>

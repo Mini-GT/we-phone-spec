@@ -1,20 +1,19 @@
-import { data, Link, redirect, ScrollRestoration, useFetcher, useLoaderData, useLocation, useMatches, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
+import { data, Link, redirect, useFetcher, useMatches, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import UserMenuNav from "~/components/userMenuNav";
 import { Bell } from "lucide-react";
 import { Spinner } from "~/components/spinner";
 import authService from "~/services/auth.service";
-import { queryKeysType, type NewDeviceNotificationType, type NotificationType, type UserType } from "~/types/globals.type";
+import { queryKeysType, type NotificationType } from "~/types/globals.type";
 import { convertToTimeAgo } from "~/utils/formatDate";
 import { commitSession, destroySession, getSession } from "~/session/sessions.server";
 import NotificationService from "~/services/notification.service";
-import type { Route } from "./+types/notification";
 import { isTokenValid } from "~/utils/tokenValidator";
 import KebabMenu from "~/components/ui/kebabMenu";
-import PaginationComponent from "~/components/paginations";
 import { useEffect, useState } from "react";
 import { QueryClient } from "@tanstack/react-query";
 import { useUser } from "~/context/userContext";
 import type { MatchesNotificationType } from "~/components/ui/notificationBell";
+import Pagination from "~/components/pagination";
 
 export function meta({}: MetaFunction) {
   return [
@@ -92,7 +91,7 @@ export async function action({request}: ActionFunctionArgs) {
 
 export default function Notification() {
   const matches = useMatches()[0].data as MatchesNotificationType
-  const notif = matches.notifData.message.notifications 
+  const notif = matches?.notifData?.message.notifications 
   const [fetcherData, setFetcherData] = useState<NotificationType | null>(null)
   const notifications = fetcherData?.notifications ?? notif
   const fetcher = useFetcher()
@@ -167,7 +166,7 @@ export default function Notification() {
           )) : null}
         </div>
       </div>
-      <PaginationComponent 
+      <Pagination 
         totalItems={fetcherData?.totalNotifications} 
         fetcher={fetcher} 
         action="/user/notification"
