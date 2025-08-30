@@ -5,7 +5,6 @@ import {
   Outlet,
   redirect,
   Scripts,
-  ScrollRestoration,
   useLoaderData,
   type LoaderFunctionArgs,
 } from "react-router";
@@ -31,6 +30,8 @@ import { commitSession, destroySession, getSession } from "./session/sessions.se
 import { isTokenValid } from "./utils/tokenValidator";
 import UserService from "./services/user.service";
 import SmartphoneService from "./services/smartphone.service";
+import NotificationService from "./services/notification.service";
+import { ScrollToTop } from "./components/scrollToTop";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -51,7 +52,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const currentUrl = new URL(request.url).pathname
   let accessToken = session.get("accessToken")
   const refreshToken = session.get("refreshToken")
-
   if(refreshToken && !isTokenValid(refreshToken)) {
     return redirect("/", {
       headers: {
@@ -63,53 +63,67 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!isTokenValid(accessToken) && isTokenValid(refreshToken)) {
     const { newAccessToken } = await authService.refresh(refreshToken!)
     session.set("accessToken", newAccessToken)
-    return redirect(`${currentUrl}`, {
+    // accessToken = newAccessToken
+    return redirect(currentUrl, {
       headers: {
       "Set-Cookie": await commitSession(session)
       }
     })
   }
-  // console.log("root:", accessToken)
+
   const userService = new UserService(accessToken)
   const smartphoneService = new SmartphoneService()
-
-  if (isTokenValid(accessToken)) {
-    await queryClient.fetchQuery({
-      queryKey: queryKeysType.me,
-      queryFn: () => userService.getMe(),
-    })
-  } 
+  const notificationService = new NotificationService(accessToken)
+  let notifData = null
+  // console.log("root:", accessToken)
     
   try {
-    queryClient.prefetchQuery({
+    if(isTokenValid(accessToken)) {
+      await queryClient.fetchQuery({
+        queryKey: queryKeysType.me,
+        queryFn: async () => await userService.getMe(),
+      })
+
+      notifData = await queryClient.fetchQuery({
+        queryKey: queryKeysType.notifications,
+        queryFn: async () => await notificationService.getNotifications(),
+      })
+    }
+
+    await queryClient.prefetchQuery({
       queryKey: queryKeysType.topDevicesByViewStats,
-      queryFn: () => smartphoneService.getTopDevicesByViewStats(),
+      queryFn: async () => await smartphoneService.getTopDevicesByViewStats(),
       staleTime: 5 * 60 * 1000,
     })
 
-    queryClient.prefetchQuery({
+    await queryClient.prefetchQuery({
       queryKey: queryKeysType.topAllTimeViewed,
-      queryFn: () => smartphoneService.getTopAllTimeViewedSmartphones("?limitNumber=5&sort=desc"),
+      queryFn: async () => await smartphoneService.getTopAllTimeViewedSmartphones(),
       staleTime: 5 * 60 * 1000,
     })
 
-    queryClient.prefetchQuery({
+    await queryClient.prefetchQuery({
       queryKey: queryKeysType.topAllTimeLiked,
-      queryFn: () => smartphoneService.getTopLikedSmartphones("?limitNumber=5&sort=desc"),
+      queryFn: async () => await smartphoneService.getTopLikedSmartphones(),
       staleTime: 5 * 60 * 1000,
     })
 
-    queryClient.prefetchQuery({
+    await queryClient.prefetchQuery({
       queryKey: queryKeysType.newAddedSmartphones,
-      queryFn: () => smartphoneService.getNewAddedSmartphones("?limitNumber=5&sort=desc"),
+      queryFn: async () => await smartphoneService.getNewAddedSmartphones(),
       staleTime: 5 * 60 * 1000,
     })
+    
     
   } catch (error) {
     console.error(error)
   }
-
-  return { accessToken, refreshToken, dehydratedState: dehydrate(queryClient) }
+  return { 
+    accessToken, 
+    refreshToken, 
+    notifData, 
+    dehydratedState: dehydrate(queryClient) 
+  }
 }
 
 export async function action({
@@ -119,14 +133,16 @@ export async function action({
   const currentUrl = new URL(request.url).pathname
   let formData = await request.formData()
   const logout = formData.get("logout") as string
-  const tokens = formData.get("tokenData") as string
-  const parsedTokens = JSON.parse(tokens)
+  // const markReadId = formData.get("markRead") as string
+  const loginTokens = formData.get("tokenData") as string
+  const parsedLoginTokens = JSON.parse(loginTokens)
 
-  if(parsedTokens !== null) {
-    const { accessToken, refreshToken } = parsedTokens 
+  // save the token sent from server(when user login) to session storage
+  if(parsedLoginTokens !== null) {
+    const { accessToken, refreshToken } = parsedLoginTokens 
     session.set("accessToken", accessToken)
     session.set("refreshToken", refreshToken)
-    return redirect(`${currentUrl}`, {
+    return redirect(currentUrl, {
       headers: {
         "Set-Cookie": await commitSession(session)
       },
@@ -181,7 +197,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </PopupButtonProvider>
           </HydrationBoundary>
         </QueryClientProvider>
-        <ScrollRestoration/>
+        <ScrollToTop />
         <Scripts />
       </body>
     </html>
@@ -198,8 +214,8 @@ export default function App() {
     queryFn: async () => await userService.getMe(),
     enabled: !!accessToken && isTokenValid(accessToken)
   })
-  const userRef = useRef(user)
 
+  const userRef = useRef(user)
   useEffect(() => {
     setUser(userRef.current)
   }, [])

@@ -2,11 +2,13 @@ import TopTenSection from '~/components/topTenSection';
 import type { Route } from './+types/smartphones';
 import Pagination from '~/components/pagination';
 import { useState } from 'react';
-import { queryKeysType, type ApiTopDeviceResponse, type SelectedTabType, type TopViewStatsType } from '~/types/globals.type';
+import { queryKeysType, type SelectedTabType, type TopViewStatsType } from '~/types/globals.type';
 import TopTenLayout from '~/components/topTenLayout';
-import { useQuery } from '@tanstack/react-query';
+import { QueryClient, useQuery } from '@tanstack/react-query';
 import { Spinner } from '~/components/spinner';
 import SmartphoneService from '~/services/smartphone.service';
+import { data, useFetcher, type ActionFunctionArgs } from 'react-router';
+import DeviceGridLayout from '~/components/deviceGridLayout';
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -15,30 +17,32 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-
-// export async function loader({request}: Route.LoaderArgs) {
-//     const { topViewed } = await smartphoneService.getTopAllTimeViewedSmartphones("?limitNumber=0&sort=desc") as ApiTopDeviceResponse
-//     const topViewDevices = await smartphoneService.getTopDevicesByViewStats()
-//     if (!topViewed || !topViewed.length || !topViewDevices) {
-//       throw new Error("Failed to fetch devices");
-//     }
-//     return {topViewed, topViewDevices};
-// }
-
 const smartphoneService = new SmartphoneService()
 
+export async function action({request}: ActionFunctionArgs) {
+  const queryClient = new QueryClient();
+  let formData = await request.formData()
+  // action coming from "KebabMenu.tsx" component
+  const pagination = formData.get("pagination") as string
+  const parsedPagination = JSON.parse(pagination) as { take: number, skip: number }
+  let result = null
+  
+  if(parsedPagination) {
+    const data = await queryClient.fetchQuery({
+      queryKey: queryKeysType.topAllTimeViewed,
+      queryFn: async () => await smartphoneService.getTopAllTimeViewedSmartphones(parsedPagination.skip, parsedPagination.take)
+    })
+    result = data
+  }
+
+  return data({ result })
+}
+
 export default function MostViewed() {
-  // const { topViewed, topViewDevices } = useLoaderData<typeof loader>()
   const [selectedTab, setSelectedTab] = useState<SelectedTabType>('Today')
-  const { 
-    data: topAllTimeViewed, 
-    isLoading: topAllTimeViewedIsLoading, 
-    isError: topAllTimeViewedIsError, 
-    error: topAllTimeViewedError 
-  } = useQuery({
-    queryKey: queryKeysType.topAllTimeViewed,
-    queryFn: () => smartphoneService.getTopAllTimeViewedSmartphones("?limitNumber=5&sort=desc"),
-  })
+  const fetcher = useFetcher()
+  const smartphones = fetcher.data?.result.topViewed
+  const totalSmartphones = fetcher.data?.result.totalDocs
 
   const { 
     data: topDevicesByViewStats, 
@@ -50,17 +54,11 @@ export default function MostViewed() {
     queryFn: () => smartphoneService.getTopDevicesByViewStats(),
   })
 
-  const isAnyLoading =
-    topDevicesByViewStatsIsLoading ||
-    topAllTimeViewedIsLoading 
+  const isAnyLoading = topDevicesByViewStatsIsLoading
 
-  const isAnyError =
-    topDevicesByViewStatsIsError ||
-    topAllTimeViewedIsError 
+  const isAnyError = topDevicesByViewStatsIsError
 
-  const error =
-    topDevicesByViewStatsError ||
-    topAllTimeViewedError 
+  const error = topDevicesByViewStatsError 
 
   if (isAnyLoading) {
     return <Spinner spinSize="w-12" />
@@ -70,22 +68,29 @@ export default function MostViewed() {
     return <div className="text-red-500 text-center py-10">{String(error)}</div>
   }
 
-  const allTimeViewed = (topAllTimeViewed?.topViewed ?? []) as ApiTopDeviceResponse["topViewed"]
   const { topToday, topWeek, topMonth } = topDevicesByViewStats as TopViewStatsType 
-  // const { topToday, topWeek, topMonth } = topViewDevices as ApiTopDeviceResponse
 
   return (
     <div className='flex flex-col justify-between lg:flex-row gap-4'>
       {/* Smartphones List */}
-      <Pagination 
-        data={allTimeViewed}
-        title="Smartphones"
-      />
+      <div className="flex flex-col gap-5 w-full">
+        <DeviceGridLayout 
+          items={smartphones}
+          title="Smartphones"
+        />
+
+        <Pagination 
+          totalItems={totalSmartphones}
+          fetcher={fetcher}
+          itemsPerPage={24}
+          action="/most-viewed"
+        />
+      </div>
 
       {/* TOP 10 */}
-      <div className='flex flex-col gap-2 w-1/4'>
+      <div className='flex flex-col gap-2 h-full sm:w-full lg:w-1/2 xl:w-1/3'>
         <TopTenSection selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
-        <div className="mt-4">
+        <div className="border rounded-md">
           {selectedTab === 'Today' && <TopTenLayout smartphones={topToday} /> }
           {selectedTab === 'Week' && <TopTenLayout smartphones={topWeek} /> }
           {selectedTab === 'Month' && <TopTenLayout smartphones={topMonth} /> }

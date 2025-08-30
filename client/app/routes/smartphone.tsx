@@ -3,7 +3,7 @@ import { Card, CardContent } from "../components/ui/card";
 import { Calendar, Smartphone as SmartphoneCard, Camera, Battery, HardDrive, Cpu, Settings } from "lucide-react"; 
 import DeviceSpec from "~/components/deviceSpecs";
 import { queryKeysType, type ApiResponse, type Smartphone, type SmartphoneCommentsDataType, type SmartphoneCommentType, type Smartphone as SmartphoneType } from "~/types/globals.type";
-import { redirect, ScrollRestoration, useFetcher, useLoaderData, type ActionFunctionArgs } from "react-router";
+import { redirect, useFetcher, useLoaderData, type ActionFunctionArgs } from "react-router";
 import { useEffect, useState } from "react";
 import { usePopupButton } from "~/context/popupButtonContext";
 import incrementViewToSmartphone from "~/utils/viewSmartphone";
@@ -27,12 +27,12 @@ type UserLikeResponse = ApiResponse["message"] & {
 }
 
 export function meta({ data }: any) {
-  const smartphone = data.smartphone
-  let titleData = smartphone.name
+  const smartphone = data?.smartphone
+  let titleData = smartphone?.name
   if(smartphone === "No Device found") titleData = "Not Found"
   return [
     { title: `${titleData} – PhoneSpec` },
-    { name: "description", content: smartphone.description }
+    { name: "description", content: smartphone?.description }
   ];
 }
 
@@ -43,7 +43,7 @@ export async function loader({params, request}: Route.LoaderArgs) {
   let smartphone = null
   let isLiked = null
 
-  if(accessToken && !isTokenValid(accessToken)) return { smartphone, isLiked }
+  // if(accessToken && !isTokenValid(accessToken)) return { smartphone, isLiked }
   const userService = new UserService(accessToken)
   const smartphoneService = new SmartphoneService(accessToken)
 

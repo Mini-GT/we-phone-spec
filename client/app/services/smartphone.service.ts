@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance } from 'axios';
-import type { ApiTopDeviceResponse, Smartphone } from '~/types/globals.type';
+import type { ApiTopDeviceResponse, PaginationQuery, Smartphone } from '~/types/globals.type';
 
 class SmartphoneService {
   private api: AxiosInstance;
@@ -40,9 +40,11 @@ class SmartphoneService {
   }
 
   // fetch all smartphones with optional filters
-  async getSmartphones()  {
+  async getSmartphones(take?: number, skip?: number)  {
     try {
-      const { data } = await this.api.get("/smartphones")
+      const { data } = await this.api.get("/smartphones", {
+        params: {skip, take, }
+      })
       return data 
     } catch (error) {
       this.handleError(error);
@@ -89,10 +91,12 @@ async updateSmartphone(id: string, updatedForm: Partial<Smartphone>) {
   }
 
   // get smartphone by brand
-  async getSmartphonesByBrand(brand: string) {
+  async getSmartphonesByBrand(brand: string, take?: number, skip?: number) {
     try {
-      const response = await this.api.get(`/smartphones/brand-list/${brand}`);
-      return response.data.result;
+      const { data } = await this.api.get(`/smartphones/brand-list/${brand}`, {
+        params: { skip, take }
+      });
+      return data;
     } catch (error) {
       this.handleError(error);
     }
@@ -129,27 +133,33 @@ async updateSmartphone(id: string, updatedForm: Partial<Smartphone>) {
     }
   }
   
-  async getTopAllTimeViewedSmartphones(query: string): Promise<ApiTopDeviceResponse | undefined> {
+  async getTopAllTimeViewedSmartphones(skip?: number, take?: number): Promise<ApiTopDeviceResponse | undefined> {
     try {
-      const response = await this.api.get(`/smartphones/views/top${query}`);
+      const response = await this.api.get(`/smartphones/views/top`, {
+        params: { skip, take }
+      });
       return response.data
     } catch (error) {
       this.handleError(error);
     }
   }
   
-  async getTopLikedSmartphones(query: string): Promise<ApiTopDeviceResponse | undefined> {
+  async getTopLikedSmartphones(skip?: number, take?: number): Promise<ApiTopDeviceResponse | undefined> {
     try {
-      const response = await this.api.get(`/smartphones/likes/top${query}`);
+      const response = await this.api.get(`/smartphones/likes/top`, {
+        params: { skip, take }
+      });
       return response.data
     } catch (error) {
       this.handleError(error);
     }
   }
 
-  async getNewAddedSmartphones(query: string): Promise<ApiTopDeviceResponse | undefined> {
+  async getNewAddedSmartphones(skip?: number, take?: number): Promise<ApiTopDeviceResponse | undefined> {
     try {
-      const response = await this.api.get(`/smartphones/new-added${query}`);
+      const response = await this.api.get(`/smartphones/new-added`, {
+        params: { skip, take }
+      });
       return response.data
     } catch (error) {
       this.handleError(error);

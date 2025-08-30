@@ -1,148 +1,121 @@
-import { useState } from 'react';
-import type { Smartphone } from '~/types/globals.type';
-import DeviceGridLayout from './deviceGridLayout';
+import React, { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { type FetcherWithComponents } from 'react-router';
 
 type PaginationProps = {
-  data: Smartphone[];
-  title: string;
-};
+  totalItems: number | undefined
+  fetcher: FetcherWithComponents<any>
+  action: string
+  itemsPerPage?: number
+}
 
 export default function Pagination({
-  data,
-  title
+  totalItems = 0,
+  fetcher,
+  action,
+  itemsPerPage = 5
 }: PaginationProps) {
-  // const data = phones;
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const itemsPerPage = 24;
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const [skip, setSkip] = useState<number>(0)
   
-  // Calculate total pages
-  const totalPages = Math.ceil(data.length / itemsPerPage);
-  
-  // Get current items
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
-  
-  // Change page
-  function paginate(pageNumber: string | number) { 
-    return setCurrentPage(pageNumber as number)
+  const fetchData = async (action: string) => {
+    fetcher.submit(
+      { pagination: JSON.stringify({ take: itemsPerPage, skip }) },
+      { method: "post", action }
+    )
   };
-  
-  // Views
-  const [views, setViews] = useState<number>()
 
-  // Previous page
-  function goToPreviousPage() {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
+  useEffect(() => {
+    const newSkip = (currentPage - 1) * itemsPerPage;
+    setSkip(newSkip);
+  }, [currentPage]);
+
+  useEffect(() => {
+    fetchData(action);
+  }, [skip, action]);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages && page !== currentPage) {
+      setCurrentPage(page);
     }
   };
-  
-  // Next page
-  function goToNextPage() {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-  
-  // Generate page numbers with ellipsis
-  function getPageNumbers() {
-    const pageNumbers = [];
+
+  const generatePageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
     
-    if (totalPages <= 10) {
-      // If 10 or fewer pages, show all
+    if (totalPages <= maxVisiblePages) {
       for (let i = 1; i <= totalPages; i++) {
-        pageNumbers.push(i);
+        pages.push(i);
       }
     } else {
-      // Always show first page
-      pageNumbers.push(1);
-      
       if (currentPage <= 3) {
-        // Near start
-        pageNumbers.push(2, 3, 4, '...', totalPages);
+        pages.push(1, 2, 3, 4, '...', totalPages);
       } else if (currentPage >= totalPages - 2) {
-        // Near end
-        pageNumbers.push('...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+        pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
       } else {
-        // Middle
-        pageNumbers.push(
-          '...',
-          currentPage - 1,
-          currentPage,
-          currentPage + 1,
-          '...',
-          totalPages
-        );
+        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
       }
     }
     
-    return pageNumbers;
+    return pages;
   };
-  
+
   return (
-    <div className="flex flex-col justify-between relative w-full">
-      <DeviceGridLayout
-        items={currentItems}
-        title={title}
-      />
-      <div className="">
-        {/* Pagination */}
-        <div className="flex items-center gap-2 justify-center mt-6">
-          {/* Previous button */}
-          <button
-            onClick={goToPreviousPage}
-            disabled={currentPage === 1}
-            className={`px-3 py-1 rounded-l border ${
-              currentPage === 1 
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                : 'bg-white hover:bg-gray-50 cursor-pointer'
-            }`}
-          >
-            Previous
-          </button>
-          
-          {/* Page numbers */}
-          <div className="flex gap-2">
-            {getPageNumbers().map((number, idx) => (
-              number === '...' ? (
-                <span key={`ellipsis-${idx}`} className="px-3 py-1 border-t border-b">
-                  ...
-                </span>
+    <div className="max-w-5xl w-full rounded-b-md py-2 text-sm md:text-md bg-white">
+      {/* Pagination Controls */}
+      <div className="flex justify-center items-center space-x-2">
+        {/* Previous Button */}
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className={`flex items-center px-1 py-1 rounded-lg transition-colors cursor-pointer ${
+            currentPage === 1
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+          }`}
+        >
+          <ChevronLeft className="h-5 w-5 xl:h-7 xl:w-7" />
+          {/* Previous */}
+        </button>
+
+        {/* Page Numbers */}
+        <div className="flex items-center space-x-1">
+          {generatePageNumbers().map((page, index) => (
+            <React.Fragment key={index}>
+              {page === '...' ? (
+                <span className="text-gray-500">...</span>
               ) : (
                 <button
-                  key={number}
-                  onClick={() => paginate(number)}
-                  className={`px-3 py-1 border-t border-b ${
-                    currentPage === number
-                      ? 'bg-blue-500 text-white cursor-pointer'
-                      : 'bg-white hover:bg-gray-50 cursor-pointer'
+                  onClick={() => handlePageChange(page as number)}
+                  className={`w-7 h-7 xl:w-10 xl:h-10 rounded-full transition-colors cursor-pointer ${
+                    currentPage === page
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
                   }`}
                 >
-                  {number}
+                  {page}
                 </button>
-              )
-            ))}
-          </div>
-          
-          {/* Next button */}
-          <button
-            onClick={goToNextPage}
-            disabled={currentPage === totalPages}
-            className={`px-3 py-1 rounded-r border ${
-              currentPage === totalPages
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-white hover:bg-gray-50 cursor-pointer'
-            }`}
-          >
-            Next
-          </button>
+              )}
+            </React.Fragment>
+          ))}
         </div>
-        
-        <div className="mt-2 text-center text-sm text-gray-500">
-          Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, data.length)} of {data.length} items
-        </div>
+
+        {/* Next Button */}
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className={`flex items-center px-1 py-1 rounded-lg transition-colors cursor-pointer ${
+            currentPage === totalPages
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+          }`}
+        >
+          {/* Next */}
+          <ChevronRight className="h-5 w-5 xl:h-7 xl:w-7" />
+        </button>
       </div>
     </div>
   );
-}
+};
