@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Lock, AlertTriangle, Edit2, UserCheck, UserRound } from 'lucide-react';
 import { toReadableDate } from '~/utils/formatDate';
-import { Form, redirect, useLoaderData, useMatches, useNavigation, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from 'react-router';
+import { Form, redirect, useLoaderData, useNavigation, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from 'react-router';
 import UserMenuNav from '~/components/userMenuNav';
 import { AnimatePresence, motion } from "motion/react"
 import EmailService from '../../services/email.service';
@@ -15,7 +15,7 @@ import { useUser } from '~/context/userContext';
 import { commitSession, destroySession, getSession } from '~/session/sessions.server';
 import UserService from '~/services/user.service';
 import { isTokenValid } from '~/utils/tokenValidator';
-import { QueryClient, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { queryKeysType } from '~/types/globals.type';
 
 export function meta({}: MetaFunction) {

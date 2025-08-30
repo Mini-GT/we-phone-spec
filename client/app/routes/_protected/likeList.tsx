@@ -1,4 +1,4 @@
-import { Link, useLoaderData, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
+import { data, Link, redirect, useFetcher, useLoaderData, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import { Heart } from 'lucide-react';
 import UserMenuNav from "~/components/userMenuNav";
 import { Spinner } from "~/components/spinner";
@@ -7,8 +7,9 @@ import type { ApiResponse, Smartphone } from "~/types/globals.type";
 import userService from "~/services/user.service";
 import KebabMenu from "~/components/ui/kebabMenu";
 import { useUser } from "~/context/userContext";
-import { getSession } from "~/session/sessions.server";
+import { commitSession, destroySession, getSession } from "~/session/sessions.server";
 import UserService from "~/services/user.service";
+import { isTokenValid } from "~/utils/tokenValidator";
 
 export function meta({}: MetaFunction) {
   return [
@@ -27,15 +28,40 @@ type SmartphoneData = ApiResponse["message"] & {
 
 export async function action({request}: ActionFunctionArgs) {
   const session = await getSession(request.headers.get("Cookie"))
-  const accessToken = session.get("accessToken")
+  let accessToken = session.get("accessToken")
+  let refreshToken = session.get("refreshToken")
+  let result = null
+
+  if(refreshToken && !isTokenValid(refreshToken)) {
+    return redirect("/", {
+      headers: {
+        "Set-Cookie": await destroySession(session),
+      }
+    })
+  }
+
+  if (!isTokenValid(accessToken) && isTokenValid(refreshToken)) {
+    const { newAccessToken } = await authService.refresh(refreshToken!)
+    session.set("accessToken", newAccessToken)
+    accessToken = newAccessToken
+  }
+
   const userService = new UserService(accessToken)
   let formData = await request.formData()
   // action coming from "KebabMenu.tsx" component
   const smartphoneId = formData.get("smartphoneId") as string
   if(smartphoneId) {
-    const response = userService.deleteLikedDevice(smartphoneId)
-    // console.log(response)
+    result = await userService.deleteLikedDevice(smartphoneId)
   }
+
+  return data(
+    { result },
+    {
+      headers: {
+      "Set-Cookie": await commitSession(session)
+      }
+    }
+  ) 
 }
 
 export async function loader({request}: LoaderFunctionArgs) {
@@ -57,19 +83,41 @@ export async function loader({request}: LoaderFunctionArgs) {
 export default function LikeList() {
   const smartphones = useLoaderData<typeof loader>();
   const { user } = useUser() 
+  const fetcher = useFetcher()
+
+  // const handleRemove = () => {
+  //   if(setNotifications) {
+  //     setNotifications(prevItems => 
+  //       prevItems
+  //         .map(item => item.globalNotificationId === deviceId ? { ...item, isDeleted: true } : item)
+  //         .filter(item => !item.isDeleted)
+  //     )
+  //   }
+
+  //   fetcher.submit(
+  //     { smartphoneId: deviceId },
+  //     {
+  //       method: "post",
+  //       action
+  //     }
+  //   )
+  // }
+
+
+  console.log(fetcher.data)
   if (!user) {
     return (
       <Spinner spinSize="w-12 h-12" />
     )
   }
   return (
-  <div className="w-full min-h-screen bg-gray-800 bg-opacity-90 flex flex-col items-center py-12 px-4">
+  <div className="w-full min-h-full bg-gray-800 bg-opacity-90 flex flex-col items-center py-12 px-4">
       <UserMenuNav
         tab={"likelist"}
         name={user?.name}
       />
 
-      <div className="w-full max-w-3xl rounded-lg overflow-hidden">
+      <div className="w-full max-w-5xl rounded-lg overflow-hidden">
           <div className="flex p-2 sm:p-8 bg-gray-900 items-center">
             <div className="text-2xl sm:text-3xl font-bold text-white flex items-center">
               {/* <span className="mr-3">👤</span> */}

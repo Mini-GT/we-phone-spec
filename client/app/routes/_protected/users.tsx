@@ -1,5 +1,5 @@
 import { UsersRound } from "lucide-react";
-import { redirect, useLoaderData, type ActionFunctionArgs, type MetaFunction } from "react-router";
+import { data, redirect, useLoaderData, type ActionFunctionArgs, type MetaFunction } from "react-router";
 import UserMenuNav from "~/components/userMenuNav";
 import Unauthorized from "../unauthorized";
 import { ProtectedRoute } from "~/components/protectedRoute";
@@ -24,13 +24,13 @@ export function meta({}: MetaFunction) {
 export async function action({
   request,
 }: ActionFunctionArgs) {
-  const currentUrl = new URL(request.url).pathname
   const session = await getSession(request.headers.get("Cookie"))
   let accessToken = session.get("accessToken")
   let refreshToken = session.get("refreshToken")
   let formData = await request.formData();
   const deleteId = formData.get("deleteUser") as string
   const rawData = formData.get("userFormData") as string
+  let result = null
 
   if(refreshToken && !isTokenValid(refreshToken)) {
     return redirect("/", {
@@ -49,7 +49,7 @@ export async function action({
   const userService = new UserService(accessToken)
   
   if(deleteId) {
-    const deleteResult = await userService.deleteUser(deleteId)
+    result = await userService.deleteUser(deleteId)
   }
 
   if(rawData) {
@@ -62,19 +62,23 @@ export async function action({
       ...body
     } = userFormData
 
-    const updateResult = await userService.updatetUser(body, id)
+    result = await userService.updatetUser(body, id)
   }
 
-  return redirect(`${currentUrl}`, {
-    headers: {
-    "Set-Cookie": await commitSession(session)
+  return data(
+    { result },
+    {
+      headers: {
+      "Set-Cookie": await commitSession(session)
+      }
     }
-  })
+  ) 
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"))
   let accessToken = session.get("accessToken")
+
   if(accessToken && !isTokenValid(accessToken)) return
   const usersService = new UsersService(accessToken)
   try {

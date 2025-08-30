@@ -102,7 +102,9 @@ export default function Devices({
 }: Route.ComponentProps) {
   const { setSmartphoneFormData } = useSmartphone()
   const { user } = useUser()
-  const { phones } = useLoaderData<typeof loader>()
+  const smartphones = useLoaderData<typeof loader>()
+  const phones = smartphones?.phones
+
   useEffect(() => {
     if (actionData) {
       setSmartphoneFormData(actionData);
