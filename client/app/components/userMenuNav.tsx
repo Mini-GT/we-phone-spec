@@ -2,7 +2,7 @@ import { NavLink } from "react-router";
 import type { UserMenuNavProps } from "~/types/globals.type";
 import { ProtectedRoute } from "./protectedRoute";
 import { PERMISSIONS } from "~/utils/permissions";
-import { Heart, SettingsIcon, Smartphone, UserRound, UsersRound } from "lucide-react";
+import { Bell, Heart, SettingsIcon, Smartphone, UserRound, UsersRound } from "lucide-react";
 import { Spinner } from "./spinner";
 
 export default function UserMenuNav({
@@ -83,22 +83,20 @@ export default function UserMenuNav({
           {/* <Heart fill="#e74c3c" strokeWidth={0} className="mr-1 w-5 h-5" />
           <span>Like List</span> */}
         </NavLink>
-        {/* <NavLink 
+        <NavLink 
           to="/user/notification"
-          className={`flex items-center ${tab === "notificaton" ? "text-pink-300" : "text-gray-400" } pb-2 cursor-pointer hover:text-pink-300`}
+          className={`flex items-center ${tab === "notificaton" ? "text-pink-300 border-pink-300 border-b-2 sm:border-none" : "text-gray-400" } pb-1 cursor-pointer hover:text-pink-300`}
         >
           {({ isPending }) => (
-            <div className="flex mr-4">
-              <div className="mr-1">
+            <div className="flex items-center">
                 <Bell fill="yellow" strokeWidth={0} className="w-5 h-5 text-gray-400" />
-              </div>
-                Notification
-              <div className="ml-1 w-5 h-5">
+                <span className="hidden text-nowrap sm:block">Notification</span>
+              <div className="hidden sm:block ml-1 w-5 h-5">
                 {isPending && <Spinner parentClassName="w-full h-full" spinSize="ml-1 w-5 h-5" />}
               </div>
             </div>
           )}
-        </NavLink> */}
+        </NavLink>
         <NavLink 
           to="/user/settings"
           className={`flex items-center ${tab === "settings" ? "text-pink-300 border-pink-300 border-b-2 sm:border-none" : "text-gray-400" } pb-1 cursor-pointer hover:text-pink-300`}

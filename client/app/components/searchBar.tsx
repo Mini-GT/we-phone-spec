@@ -27,7 +27,7 @@ export default function SearchBar() {
   return (
     <div className="w-full mx-auto z-11">
       {/* mobile search bar */}
-      <div className="flex items-center mb-1 sm:hidden border lg:border lg:border-gray-400 focus-within:border-gray-900">
+      <div className="flex items-center justify-between mb-1 sm:hidden border lg:border lg:border-gray-400 focus-within:border-gray-900">
         <input
           type="text"
           className="border-none outline-none px-3 py-2 rounded-l-lg"
@@ -46,7 +46,7 @@ export default function SearchBar() {
       </div>
 
       {/* non mobile searchbar */}
-      <div className="flex items-center w-full hidden sm:block sm:border sm:border-gray-400 rounded-lg focus-within:border-gray-900">
+      <div className="flex items-center justify-center hidden sm:block sm:border sm:border-gray-400 rounded-lg focus-within:border-gray-900">
         <input
           type="text"
           className="border-none outline-none px-3 py-2 rounded-l-lg"

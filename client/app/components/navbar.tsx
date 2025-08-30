@@ -29,8 +29,8 @@ export default function Navbar() {
               <span className="text-indigo-600">PhoneSpec</span>
             </span>
           </NavLink>
-          <nav className="flex flex-col lg:flex-row flex-wrap gap-5 items-center ml-0 ">
-            <div className="relative hidden sm:block">
+          <nav className="flex flex-col w-full lg:flex-row flex-wrap gap-5 items-center ml-0 ">
+            <div className="flex relative items-center justify-center hidden sm:block">
               <SearchBar />
             </div>
             {/* <div className="mr-5 font-medium text-gray-600 hover:text-gray-900">
@@ -74,19 +74,21 @@ export default function Navbar() {
               </NavLink>
             </div>
           </nav>
-          {(user && (user.id !== "")) ? 
-          <UserMenu 
-            name={user.name}
-            email={user.email}
-            profileImage={user.profileImage}
-            role={user.role}
-          /> :
-          <Button 
-            className="cursor-pointer"
-            onClick={handleLoginClick}
-            >
-            Login
-          </Button>}
+          <div className="flex justify-end">
+            {(user && (user.id !== "")) ? 
+            <UserMenu 
+              name={user.name}
+              email={user.email}
+              profileImage={user.profileImage}
+              role={user.role}
+            /> :
+            <Button 
+              className="cursor-pointer"
+              onClick={handleLoginClick}
+              >
+              Login
+            </Button>}
+          </div>
         </div>
       </header>
       <div className="sm:hidden">
