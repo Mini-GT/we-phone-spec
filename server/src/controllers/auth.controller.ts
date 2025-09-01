@@ -9,7 +9,8 @@ import type { DecodedToken } from "@/middlewares/auth.middleware"
 
 const refreshJWTSecretKey = process.env.REFRESH_JWT_SECRET
 const accessJWTSecretKey = process.env.ACCESS_JWT_SECRET
-if(!refreshJWTSecretKey || !accessJWTSecretKey) throw new Error("JWT secret key is empty")
+const socketJWTSecretKey = process.env.SOCKET_JWT_SECRET
+if(!refreshJWTSecretKey || !accessJWTSecretKey || !socketJWTSecretKey) throw new Error("JWT secret key is empty")
 
 type PassportInfo = {
   message: string;
@@ -104,14 +105,20 @@ const login = async (req: Request, res: Response) => {
 
     const refreshToken = signJwt(
       { id: user.id },
-      { expiresIn: "30m" },
-      refreshJWTSecretKey
+      refreshJWTSecretKey,
+      { expiresIn: "7d" }
     )
 
     const accessToken = signJwt(
       { id: user.id },
-      { expiresIn: "10s" },
-      accessJWTSecretKey
+      accessJWTSecretKey,
+      { expiresIn: "15m" }
+    )
+
+    const socketToken = signJwt(
+      { id: user.id },
+      socketJWTSecretKey,
+      { expiresIn: "7d" }
     )
 
     const userData = {
@@ -134,9 +141,15 @@ const login = async (req: Request, res: Response) => {
     //     httpOnly: true,
     //     secure: process.env.NODE_ENV === "production",
     //     sameSite: "strict",
-    //     // maxAge: 10 * 1000
+    //     maxAge: 10 * 1000
     //   })
     res
+      .cookie("socketToken", socketToken, {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000
+      })
       .status(200)
       .json({ accessToken, refreshToken, userData });
   })(req, res)
@@ -165,26 +178,12 @@ const getCurrentUser = async (req: Request, res: Response) => {
 
 const logout = async (req: Request, res: Response) => {
   res.clearCookie("token").json({ message: "Logged out" })
-  // req.logOut((error) => {
-  //   if(error) return res.status(500).json({ message: "Something went wrong" })
-
-      
-  //   req.session?.destroy(() => {
-  //     res.clearCookie("connect.sid", {
-  //       httpOnly: true,
-  //       sameSite: "lax",
-  //       secure: process.env.NODE_ENV === "production",
-  //     });
-
-  //     return res.status(204).send(); // No content
-  //   });
-  // })
 }
 
 const refresh = async (req: Request, res: Response) => {
   const payload = req.headers.authorization
   const refreshToken = payload?.split(" ")[1]
-  // const token = refreshToken?.split("=")[1]
+
   if (!refreshToken) return res.status(401).json({ message: "No refresh token" })
 
   // check if refresh token is still available
@@ -196,87 +195,18 @@ const refresh = async (req: Request, res: Response) => {
 
   const newAccessToken = signJwt(
     { id: user.id },
-    { expiresIn: "10s" },
-    accessJWTSecretKey
+    accessJWTSecretKey,
+    { expiresIn: "15m" }
   )
 
-  res.cookie("accessToken", newAccessToken, { 
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    // maxAge: 10 * 1000,
-  })
+  // res.cookie("accessToken", newAccessToken, { 
+  //   httpOnly: true,
+  //   secure: process.env.NODE_ENV === "production",
+  //   sameSite: "strict",
+  //   maxAge: 10 * 1000,
+  // })
   return res.status(200).json({ newAccessToken })
 }
-
-// const refresh = async (req: Request, res: Response) => {
-//   const cookieHeader = req.headers.cookie;
-  
-//   if (!cookieHeader) {
-//     return res.status(401).json({ message: "No cookies provided" });
-//   }
-
-//   console.log("Cookie header:", cookieHeader);
-
-//   // Extract refresh token from cookie string
-//   const refreshCookie = cookieHeader
-//     .split(";")
-//     .find(c => c.trim().startsWith("refreshToken="));
-
-//   if (!refreshCookie) {
-//     return res.status(401).json({ message: "No refresh token found" });
-//   }
-
-//   const refreshToken = refreshCookie.split("=")[1];
-  
-//   if (!refreshToken) {
-//     return res.status(401).json({ message: "Invalid refresh token format" });
-//   }
-
-//   console.log("Refresh token extracted:", refreshToken.substring(0, 20) + "...");
-
-//   // Verify the refresh token
-//   const decoded = verifyJwt(refreshToken, refreshJWTSecretKey) as DecodedToken;
-  
-//   if (!decoded || !decoded.id) {
-//     return res.status(401).json({ message: "Invalid refresh token" });
-//   }
-
-//   // Find user
-//   const user = await prisma.user.findUnique({ 
-//     where: { id: decoded.id } 
-//   });
-  
-//   if (!user) {
-//     return res.status(401).json({ message: "User not found" });
-//   }
-
-//   // Generate new access token
-//   const newAccessToken = signJwt(
-//     { id: user.id },
-//     { expiresIn: "5m" },
-//     accessJWTSecretKey
-//   );
-
-//   console.log("New access token generated:", newAccessToken.substring(0, 20) + "...");
-
-//   // Set the new access token cookie
-//   res.cookie("accessToken", newAccessToken, { 
-//     httpOnly: true,
-//     secure: process.env.NODE_ENV === "production",
-//     sameSite: "lax",
-//     maxAge: 5 * 60 * 1000, // 5 minutes
-//     path: "/"
-//   });
-
-//   console.log("Access token cookie set successfully");
-
-//   return res.status(200).json({ 
-//     accessToken: newAccessToken,
-//     success: true,
-//     message: "Token refreshed successfully"
-//   });
-// }
 
 export {
   register,

@@ -18,7 +18,7 @@ import http from 'http'
 import { Server, Socket } from 'socket.io'
 import prisma from './prismaClient'
 import type { ServerToClientEvents, SocketData } from './types/types'
-import { jwtDecode } from 'jwt-decode'
+import { Cookie } from 'bun'
 
 export const app = express()
 const server = http.createServer(app)
@@ -26,7 +26,8 @@ const PORT = process.env.PORT || 3000
 const clientUrl = process.env.CLIENT_URL || "http://localhost:5173"
 const refreshSecretKey = process.env.REFRESH_JWT_SECRET
 const accessSecretKey = process.env.ACCESS_JWT_SECRET
-if(!refreshSecretKey || !accessSecretKey) throw new Error("server secret key is empty")
+const socketSecretKey = process.env.SOCKET_JWT_SECRET
+if(!refreshSecretKey || !accessSecretKey || !socketSecretKey) throw new Error("server secret key is empty")
 
 app.use(cors({
   origin: ["http://localhost:5173", clientUrl],
@@ -110,11 +111,13 @@ export const comments = io.of("/comments")
 
 // MIDDLEWARE
 notification.use(async (socket, next) => {
-  const token = socket.handshake.headers.authorization?.split(" ")[1] || ""
+  const cookie = socket.handshake.headers.cookie || ""
+  const token = Cookie.parse(cookie).value
+
   if(!isTokenValid(token)) return
 
   try {
-    const decoded = verifyJwt(token, refreshSecretKey) as DecodedToken
+    const decoded = verifyJwt(token, socketSecretKey) as DecodedToken
 
     const user = await prisma.user.findUnique({ 
       where: { 
@@ -136,7 +139,8 @@ notification.use(async (socket, next) => {
 })
 
 comments.use(async (socket, next) => {
-  const token = socket.handshake.headers.authorization?.split(" ")[1] || ""
+  const cookie = socket.handshake.headers.cookie || ""
+  const token = Cookie.parse(cookie).value
 
   // if empty token, pass socket id so unregistered users can still receive live comments 
   if(!token) {
@@ -146,10 +150,10 @@ comments.use(async (socket, next) => {
   } 
 
   try {
-    const decoded = verifyJwt(token, refreshSecretKey) as DecodedToken
+    const decoded = verifyJwt(token, socketSecretKey) as DecodedToken
     const user = await prisma.user.findUnique({ 
       where: { 
-        id: decoded.id 
+        id: decoded.id
       }, 
       select: { 
         id: true, 

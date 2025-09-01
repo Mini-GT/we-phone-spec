@@ -23,7 +23,7 @@ export default function NotificationBell({
   open,
   setOpen
 }: NotificationBellProps) {
-  const { notifData, refreshToken } = useMatches()[0].data as MatchesNotificationType
+  const { notifData } = useMatches()[0].data as MatchesNotificationType
   const [ notifications, setNotifications ] = useState<NewDeviceNotificationType[]>([])
   const [ unreadCount, setUnreadCount ] = useState<number | null>(null)
   const notificationsData = notifData?.message?.notifications
@@ -58,9 +58,7 @@ export default function NotificationBell({
   
   useEffect(() => {
     const socket = io(import.meta.env.VITE_NOTIFICATION_SOCKET_NAMESPACE, {
-      extraHeaders: {
-        "Authorization": `Bearer ${refreshToken}`
-      }
+      withCredentials: true
     })
 
     // initial load of notification data
@@ -83,7 +81,8 @@ export default function NotificationBell({
     socket.on("newDeviceNotification", async (message: NewDeviceNotificationType) => {
       
       // await notificationService.addNotification(message)
-      // setNotifications((prev) => [message, ...prev])
+      setUnreadCount(prev => prev ? prev + 1 : prev)
+      setNotifications((prev) => [message, ...prev])
     })
 
     return () => {
@@ -92,9 +91,9 @@ export default function NotificationBell({
 
   }, [])
 
-  const handleClick = async (notifId: string) => {
+  const handleClick = async (notifId: NewDeviceNotificationType["globalNotificationId"]) => {
     toggleDropdown()
-    let decremented = false
+    // let decremented = false
 
     // setNotifications((prevNotifs) =>
     //   prevNotifs.map((notif) => {
@@ -107,7 +106,7 @@ export default function NotificationBell({
     // )
 
     fetcher.submit(
-      { markRead: notifId },
+      { markReadId: notifId },
       { method: "post", action: "/" }
     )
 

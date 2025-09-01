@@ -32,7 +32,7 @@ type CommentsType = Omit<SmartphoneCommentType, "deviceId" | "updatedAt">
 const take = 5
 
 export default function CommentsSection({ smartphoneId }: CommentsSectionProps) {
-  const { accessToken } = useMatches()[0].data as MatchesNotificationType
+  const { refreshToken } = useMatches()[0].data as MatchesNotificationType
   const fetcher = useFetcher()
   const { user } = useUser()
   const [sortOrder, setSortOrder] = useState<SortOrderType>("mostLiked");
@@ -44,14 +44,12 @@ export default function CommentsSection({ smartphoneId }: CommentsSectionProps) 
   const [ comments, setComments ] = useState<CommentsType[]>([])
   const [ commentId, setCommentId ] = useState<string | null>(null)
   const [ skip, setSkip ] = useState(5)
-  const commentService = new CommentsService(accessToken)
+  // const commentService = new CommentsService(accessToken)
   useEffect(() => {
-    if (!accessToken || !isTokenValid(accessToken)) return
+    // if (!accessToken || !isTokenValid(accessToken)) return
     
     const socket = io(import.meta.env.VITE_COMMENTS_SOCKET_NAMESPACE, {
-      extraHeaders: {
-        "Authorization": `Bearer ${accessToken}`
-      }
+      withCredentials: true
     })
 
     setNewSocket(socket)
@@ -150,7 +148,7 @@ export default function CommentsSection({ smartphoneId }: CommentsSectionProps) 
     )
   }
     
-  const handleLike = async (id: string) => {
+  const handleLike = async (id: SmartphoneCommentType["id"]) => {
     if(!user || !user.id) {
       setPopupButton(prevState => ({
         ...prevState,
@@ -163,10 +161,14 @@ export default function CommentsSection({ smartphoneId }: CommentsSectionProps) 
         comment.id === id ? { ...comment, likes: comment.likes + 1 } : comment
       )
     )
-    await commentService.addLikeToComment(id)
+    
+    fetcher.submit(
+      { dislikeId: id },
+      { method: "post" }
+    )
   }
 
-  const handleDislike = async (id: string) => {
+  const handleDislike = async (id: SmartphoneCommentType["id"]) => {
     if(!user || !user.id) {
       setPopupButton(prevState => ({
         ...prevState,
@@ -179,7 +181,11 @@ export default function CommentsSection({ smartphoneId }: CommentsSectionProps) 
         comment.id === id ? { ...comment, likes: comment.likes - 1 } : comment
       )
     )
-    await commentService.dislikeToComment(id)
+
+    fetcher.submit(
+      { dislikeId: id },
+      { method: "post" }
+    )
   }
   
   const handleCommentSettings = (id: string) => {
@@ -204,7 +210,7 @@ export default function CommentsSection({ smartphoneId }: CommentsSectionProps) 
   //     )
   //   )
   // }
-  
+
   const handleDelete = async () => {
     // show login modal if there no user
     if(!user || !user.id) {
@@ -225,9 +231,6 @@ export default function CommentsSection({ smartphoneId }: CommentsSectionProps) 
     setComments(prev => prev.filter(comment => !(comment.id === commentId && comment.isDeleted)))
 
     // update deleted comment in server
-    // if(commentId) {
-    //   await commentService.deleteComment(commentId)
-    // }
     fetcher.submit(
       { deleteCommentId: commentId },
       { method: "post" }
