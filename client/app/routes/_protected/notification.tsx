@@ -1,9 +1,9 @@
 import { data, Link, redirect, useFetcher, useMatches, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import UserMenuNav from "~/components/userMenuNav";
-import { Bell } from "lucide-react";
+import { Bell, PackageOpen } from "lucide-react";
 import { Spinner } from "~/components/spinner";
 import authService from "~/services/auth.service";
-import { queryKeysType, type NotificationType } from "~/types/globals.type";
+import { queryKeysType, type NewDeviceNotificationType, type NotificationType } from "~/types/globals.type";
 import { convertToTimeAgo } from "~/utils/formatDate";
 import { commitSession, destroySession, getSession } from "~/session/sessions.server";
 import NotificationService from "~/services/notification.service";
@@ -30,6 +30,7 @@ export async function action({request}: ActionFunctionArgs) {
   let formData = await request.formData()
   // action coming from "KebabMenu.tsx" component
   const notifId = formData.get("smartphoneId") as string
+  const markReadId = formData.get("markReadId") as string
   const pagination = formData.get("pagination") as string
   const parsedPagination = JSON.parse(pagination) as { take: number, skip: number }
   let result = null
@@ -63,6 +64,13 @@ export async function action({request}: ActionFunctionArgs) {
     result = deleteResult.message
   }
 
+  if(markReadId) {
+    queryClient.prefetchQuery({
+      queryKey: queryKeysType.markNotificationAsRead(markReadId),
+      queryFn: async () => await notificationService.markNotificationAsRead(markReadId)
+    })
+  }
+
   return data(
     { result },
     { 
@@ -71,7 +79,6 @@ export async function action({request}: ActionFunctionArgs) {
       }
     }
   )
-
 }
 
 // export async function loader({request}: LoaderFunctionArgs) {
@@ -109,6 +116,13 @@ export default function Notification() {
     )
   }
 
+  const handleClick = async (notifId: NewDeviceNotificationType["globalNotificationId"]) => {
+    fetcher.submit(
+      { markReadId: notifId },
+      { method: "post", action: "/user/notification" }
+    )
+  }
+
   return (
     <div className="min-h-full bg-gray-800 bg-opacity-90 flex flex-col items-center py-12 px-4">
       <UserMenuNav
@@ -131,6 +145,7 @@ export default function Notification() {
             <div className="relative" key={notif.globalNotificationId}>
               <Link
                 to={`/smartphones/${notif.name}-${notif.globalNotificationId}`} 
+                onClick={() => handleClick(notif.globalNotificationId)}
               >
                 <div
                   className={`relative flex items-center cursor-pointer gap-2 rounded-md hover:bg-[#2c2c3e] ${notif.isRead ? "" : ""} transition z-10`}
@@ -163,7 +178,12 @@ export default function Notification() {
                 <KebabMenu action="/user/notification" deviceId={notif.globalNotificationId} fetcher={fetcher} />
               </div>
             </div>
-          )) : null}
+          )) : <>
+            <div className="relative flex flex-col items-center justify-center text-white text-sm sm:text-2xl font-bold w-full col-span-10 row-span-10 py-10">
+              <PackageOpen color="white" size={40} className="col-span-6" />
+              Your notification is empty
+            </div>
+          </>}
         </div>
       </div>
       <Pagination 

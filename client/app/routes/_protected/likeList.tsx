@@ -1,5 +1,5 @@
 import { data, Link, redirect, useFetcher, useLoaderData, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "react-router";
-import { Heart } from 'lucide-react';
+import { Heart, PackageOpen } from 'lucide-react';
 import UserMenuNav from "~/components/userMenuNav";
 import { Spinner } from "~/components/spinner";
 import authService from "~/services/auth.service";
@@ -103,8 +103,6 @@ export default function LikeList() {
   //   )
   // }
 
-
-  console.log(fetcher.data)
   if (!user) {
     return (
       <Spinner spinSize="w-12 h-12" />
@@ -127,7 +125,7 @@ export default function LikeList() {
             </div>
           </div>
 
-          <div className="bg-gray-900 px-2 sm:px-8 sm:pb-8 w-full h-full">
+          <div className="relative bg-gray-900 px-2 sm:px-8 sm:pb-8 w-full h-full">
             <ul className="grid grid-cols-2 sm:grid-cols-5 grid-rows-2 gap-2">
               {Array.isArray(smartphones) && smartphones.length > 0 ? 
               smartphones.map(item => (
@@ -154,10 +152,16 @@ export default function LikeList() {
                     </div>
                   </Link>
                   <div className="absolute right-5 top-1">
-                    <KebabMenu action="/user/like-list" deviceId={item._id} />
+                    <KebabMenu action="/user/like-list" deviceId={item._id} fetcher={fetcher} />
                   </div>
                 </li>
-              )) : null}
+              )) : 
+                <>
+                  <div className="relative flex flex-col items-center justify-center text-white text-sm sm:text-2xl font-bold w-full col-span-10 row-span-10 py-10">
+                    <PackageOpen color="white" size={40} className="col-span-6" />
+                    Your like list is empty
+                  </div>
+                </>}
             </ul>
           </div>
       </div>

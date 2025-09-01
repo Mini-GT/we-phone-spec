@@ -2,7 +2,7 @@ import type { Route } from "./+types/smartphone";
 import { Card, CardContent } from "../components/ui/card";
 import { Calendar, Smartphone as SmartphoneCard, Camera, Battery, HardDrive, Cpu, Settings } from "lucide-react"; 
 import DeviceSpec from "~/components/deviceSpecs";
-import { queryKeysType, type ApiResponse, type Smartphone, type SmartphoneCommentsDataType, type SmartphoneCommentType, type Smartphone as SmartphoneType } from "~/types/globals.type";
+import { queryKeysType, type ApiResponse, type SmartphoneCommentsDataType, type SmartphoneCommentType, type Smartphone as SmartphoneType } from "~/types/globals.type";
 import { redirect, useFetcher, useLoaderData, type ActionFunctionArgs } from "react-router";
 import { useEffect, useState } from "react";
 import { usePopupButton } from "~/context/popupButtonContext";
@@ -48,8 +48,8 @@ export async function loader({params, request}: Route.LoaderArgs) {
   const smartphoneService = new SmartphoneService(accessToken)
 
   // const url = new URL(request.url)
-  const data = params.smartphoneData
-  const id = data?.split("-").pop()
+  const paramsData = params.smartphoneData
+  const id = paramsData?.split("-").pop()
   if(!id) throw new Error("No Id Found")
 
   smartphone = await queryClient.fetchQuery({
@@ -57,7 +57,7 @@ export async function loader({params, request}: Route.LoaderArgs) {
     queryFn: async () => await smartphoneService.getSmartphoneById(id),
     staleTime: 5 * 60 * 1000,
   })
-  
+
   if(accessToken) {
     const result = await userService.getUserLikes()
     const { likedSmartphoneId } = result.message as UserLikeResponse
@@ -93,13 +93,15 @@ export async function action({request}: ActionFunctionArgs) {
   const userService = new UserService(accessToken)
   const commentService = new CommentsService(accessToken)
   let formData = await request.formData()
+
   const smartphoneLikesId = formData.get("smartphoneLikes") as SmartphoneType["_id"]
   const smartphoneViewId = formData.get("smartphoneViewId") as SmartphoneType["_id"]
   const deleteCommentId = formData.get("deleteCommentId") as string
+  const dislikeCommentId = formData.get("deleteCommentId") as string
   const newComment = formData.get("newComment") as string
-  const parsedNewComment = JSON.parse(newComment) as SmartphoneCommentType
   const initialCommentsData = formData.get("initialCommentsData") as string
   const viewMoreCommentsData = formData.get("viewMoreCommentsData") as string
+  const parsedNewComment = JSON.parse(newComment) as SmartphoneCommentType
   const parsedInitialCommentsData = JSON.parse(initialCommentsData) as SmartphoneCommentsDataType
   const parsedViewMoreCommentsData = JSON.parse(viewMoreCommentsData) as SmartphoneCommentsDataType
   if(parsedNewComment?.userId) {
@@ -109,6 +111,10 @@ export async function action({request}: ActionFunctionArgs) {
   
   if(deleteCommentId) {
     await commentService.deleteComment(deleteCommentId)
+  }
+
+  if(dislikeCommentId) {
+    await commentService.dislikeToComment(dislikeCommentId)
   }
   
   if(parsedInitialCommentsData?.smartphoneId) {
@@ -139,7 +145,6 @@ export async function action({request}: ActionFunctionArgs) {
   }
 
   if(smartphoneLikesId) {
-    // if(!token) return { actionError: true, message: "Must be signed in" }
     const result = await userService.addToLikes(smartphoneLikesId)
     return result.message
   }

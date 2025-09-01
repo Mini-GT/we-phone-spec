@@ -1,4 +1,5 @@
 import {
+  data,
   isRouteErrorResponse,
   Links,
   Meta,
@@ -118,22 +119,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
   } catch (error) {
     console.error(error)
   }
-  return { 
-    accessToken, 
-    refreshToken, 
-    notifData, 
-    dehydratedState: dehydrate(queryClient) 
-  }
+  return {  notifData, accessToken, dehydratedState: dehydrate(queryClient) }
 }
 
 export async function action({
   request,
 }: Route.ActionArgs) {
+  const queryClient = new QueryClient()
   const session = await getSession(request.headers.get("Cookie"))
+  let accessToken = session.get("accessToken")
+  let refreshToken = session.get("refreshToken")
   const currentUrl = new URL(request.url).pathname
   let formData = await request.formData()
   const logout = formData.get("logout") as string
-  // const markReadId = formData.get("markRead") as string
+  const markReadId = formData.get("markReadId") as string
   const loginTokens = formData.get("tokenData") as string
   const parsedLoginTokens = JSON.parse(loginTokens)
 
@@ -151,11 +150,44 @@ export async function action({
 
   if(logout) {
     return redirect("/", {
+      headers: [
+        ["Set-Cookie", await destroySession(session)],
+        [
+          "Set-Cookie",
+          "socketToken=; Max-Age=0"
+        ]
+      ]
+    })
+  }
+
+  if(refreshToken && !isTokenValid(refreshToken)) {
+    return redirect("/", {
       headers: {
         "Set-Cookie": await destroySession(session),
       }
     })
   }
+
+  if (!isTokenValid(accessToken) && isTokenValid(refreshToken)) {
+    const { newAccessToken } = await authService.refresh(refreshToken!)
+    session.set("accessToken", newAccessToken)
+    accessToken = newAccessToken
+  }
+
+  const notificationService = new NotificationService(accessToken)
+
+  if(markReadId) {
+    queryClient.prefetchQuery({
+      queryKey: queryKeysType.markNotificationAsRead(markReadId),
+      queryFn: async () => await notificationService.markNotificationAsRead(markReadId)
+    })
+    return data({
+      headers: {
+        "Set-Cookie": await commitSession(session)
+      }
+    })
+  }
+
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -238,7 +270,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let message = "Oops!";
   let details = "An unexpected error occurred.";
   let stack: string | undefined;
-
+  const clientEnv = import.meta.env.VITE_CLIENT_ENV
   if (isRouteErrorResponse(error)) {
     message = error.status === 404 ? "404" : "Error";
     details =
@@ -257,7 +289,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
         details={details}
         message={message}
       />
-      {stack && (
+      {stack && clientEnv !== "production" && (
         <pre className="w-full p-4 overflow-x-auto">
           <code>{stack}</code>
         </pre>
