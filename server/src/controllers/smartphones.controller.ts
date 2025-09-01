@@ -1,13 +1,24 @@
 import type { Request, Response } from "express"
-import { phones } from "mockData";
 import deviceModel from "@/models/device.model";
 import prisma from "@/prismaClient";
 import { notification } from "@/server";
 import { changeDeviceStats } from "@/utils/smartphoneView";
 
 const getAllSmartphones = async (req: Request, res: Response)=> {
-  const smartphones = await deviceModel.find().lean()
-  res.status(200).json({ phones: smartphones })
+  const { skip, take } = req.query
+  const skipNum = Number(skip) || 0
+  const takeNum = Number(take) || 24
+
+  const [smartphones, totalDocs] = await Promise.all([
+    deviceModel.find()
+      .skip(skipNum)
+      .limit(takeNum)
+      .sort({ _id: -1 })
+      .exec(),
+    deviceModel.countDocuments()
+  ])
+
+  res.status(200).json({ phones: smartphones, totalDocs })
 }
 
 const getTopDeviceViewStats = async (req: Request, res: Response) => {
@@ -30,7 +41,6 @@ const getTopDeviceViewStats = async (req: Request, res: Response) => {
 } 
 
 const createSmartphone = async (req: Request, res: Response) => {
-  // console.log(req.body)
   const deviceData = new deviceModel(req.body)
   const newDevice = await deviceData.save()
   
@@ -66,29 +76,38 @@ const searchSmartphone = async (req: Request, res: Response) => {
 
 const getSmartphonesByBrand = async (req: Request, res: Response) => {
   const { brand } = req.params
-  
+  const { skip, take } = req.query
+  const skipNum = Number(skip) || 0
+  const takeNum = Number(take) || 24
+
   if(!brand) {
     return res.json({ msg: "Brand name not provided"})
   }
   
-  const result = await deviceModel.find({ brand: { $regex: `^${brand}$`, $options: "i" } }).exec()
+  const filter = { brand: { $regex: `^${brand}$`, $options: "i" } }
+  const [smartphones, totalDocs] = await Promise.all([
+    deviceModel.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skipNum)
+      .limit(takeNum)
+      .lean()
+      .exec(),
+    deviceModel.countDocuments(filter).lean()
+  ])
   
-  if(!result) {
-    return res.json({ msg: "No Devices found with this brand"})
-  }
-
-  res.json({ result })
+  res.status(200).json({ phones: smartphones , totalDocs })
 }
 
 const getSmartphone = async (req: Request, res: Response) => {
   const { deviceId } = req.params
-  const result = await deviceModel.findById(deviceId).lean().exec()
-  
+
+  const result = await deviceModel.findById(deviceId).lean()
+
   if(!result) {
-    return res.json({ msg: "No Device found"})
+    return res.status(404).json({ msg: "No Device found"})
   }
 
-  res.json({ msg: result })
+  res.status(200).json({ msg: result })
 }
 
 const updateSmartphone = async (req: Request, res: Response) => {
@@ -102,63 +121,69 @@ const updateSmartphone = async (req: Request, res: Response) => {
 }
 
 const getTopViewedSmartphones = async (req: Request, res: Response) => {
-  const limitNumber = parseInt(req.query.limitNumber as string)
-  const sort = req.query.sort as "asc" | "desc"
+  const { skip, take } = req.query
+  const skipNum = Number(skip) || 0
+  const takeNum = Number(take) || 5
 
-  if (isNaN(limitNumber) || !['asc', 'desc'].includes(sort)) {
-    return res.status(400).json({ error: "Invalid query parameters" });
-  }
-  
-  const topViewed = await deviceModel.find()
-    .sort({ views: sort === 'asc' ? 1 : -1 })
-    .limit(limitNumber ?? null)
-    .lean()
+  const [topViewed, totalDocs] = await Promise.all([
+    deviceModel.find()
+      .sort({ views: -1 })
+      .skip(skipNum)
+      .limit(takeNum)
+      .lean()
+      .exec(),
+    deviceModel.countDocuments()
+  ])
 
   if (!topViewed || topViewed.length === 0) {
-    return res.status(404).json({ error: "No top viewed smartphones found" });
+    return res.status(404).json({ result: "failed", topViewed });
   }
 
-  res.status(200).json({ result: "success", topViewed });
+  res.status(200).json({ result: "success", topViewed, totalDocs });
 }
 
 const getTopLikedSmartphones = async (req: Request, res: Response) => {
-  const limitNumber = parseInt(req.query.limitNumber as string)
-  const sort = req.query.sort as "asc" | "desc"
-
-  if (isNaN(limitNumber) || !['asc', 'desc'].includes(sort)) {
-    return res.status(400).json({ error: "Invalid query parameters" });
-  }
+  const { skip, take } = req.query
+  const skipNum = Number(skip) || 0
+  const takeNum = Number(take) || 5
   
-  const topLiked = await deviceModel.find()
-    .sort({ likes: sort === 'asc' ? 1 : -1 })
-    .limit(limitNumber ?? null)
-    .lean()
+  const [topLiked, totalDocs] = await Promise.all([
+    deviceModel.find()
+      .sort({ likes: -1 })
+      .skip(skipNum)
+      .limit(takeNum)
+      .lean()
+      .exec(),
+    deviceModel.countDocuments()
+  ])
 
   if (!topLiked || topLiked.length === 0) {
-    return res.status(404).json({ error: "No top viewed smartphones found" });
+    return res.status(404).json({ result: "failed", topLiked });
   }
 
-  res.status(200).json({ result: "success", topLiked});
+  res.status(200).json({ result: "success", topLiked, totalDocs });
 }
 
 const getNewAddedSmartphones = async (req: Request, res: Response) => {
-  const limitNumber = parseInt(req.query.limitNumber as string)
-  const sort = req.query.sort as "asc" | "desc"
-
-  if (isNaN(limitNumber) || !['asc', 'desc'].includes(sort)) {
-    return res.status(400).json({ error: "Invalid query parameters" });
-  }
+  const { skip, take } = req.query
+  const skipNum = Number(skip) || 0
+  const takeNum = Number(take) || 5
   
-  const newAddedSmartphones = await deviceModel.find()
-    .sort({ createdAt: sort === 'asc' ? 1 : -1 })
-    .limit(limitNumber ?? null)
-    .lean()
+  const [newAddedSmartphones, totalDocs] = await Promise.all([
+    deviceModel.find()
+      .sort({ createdAt: -1 })
+      .skip(skipNum)
+      .limit(takeNum)
+      .lean()
+      .exec(),
+    deviceModel.countDocuments()
+  ])
 
   if (!newAddedSmartphones || newAddedSmartphones.length === 0) {
-    return res.status(404).json({ error: "No top viewed smartphones found" });
+    return res.status(404).json({ result: "failed", newAddedSmartphones });
   }
 
-  res.status(200).json({ result: "success", newAddedSmartphones });
+  res.status(200).json({ result: "success", newAddedSmartphones, totalDocs });
 }
 
 const deleteSmartphone = async (req: Request, res: Response) => {
@@ -178,7 +203,6 @@ const deleteSmartphone = async (req: Request, res: Response) => {
 
 const incrementViewSmartphone = async (req: Request, res: Response) => {
   const { deviceId } = req.params
-  console.log(deviceId)
   if(!deviceId) return res.status(404).json({ error: "Device not found" })
   await changeDeviceStats(deviceId)
   res.sendStatus(200)
