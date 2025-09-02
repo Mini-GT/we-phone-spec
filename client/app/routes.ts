@@ -4,7 +4,6 @@ export default [
   index("routes/home.tsx"),
   route("unauthorized", "routes/unauthorized.tsx"),
   route("about", "routes/about.tsx"),
-  // route("mostpopular", "routes/mostPopular.tsx"),
   route("login", "routes/login.tsx"),
   route("most-viewed", "routes/mostViewed.tsx"),
   route("most-liked", "routes/mostLiked.tsx"),
@@ -12,10 +11,15 @@ export default [
 
   // Protected Routes by role and permission
   route("users", "routes/_protected/users.tsx"),
-
+  
+  ...prefix("email", [
+    route("oauth/callback", "routes/_protected/oauthCallback.tsx"),
+    route("verify-email", "routes/_protected/verifyEmail.tsx"),
+  ]),
+  
   ...prefix("devices", [
     index("routes/_protected/devices.tsx"),
-    route("new", "routes/_protected/addNewDevice.tsx"),
+    route("new", "routes/_protected/addnewdevice.tsx"),
   ]),
 
   ...prefix("brand-list", [

@@ -11,40 +11,52 @@ const updateUserEmailVerification = async (req: Request, res: Response) => {
 
   const user = req.user as User
 
-  const verificationToken = uuidv4()
-  const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-  // const verificationExpiry = new Date(Date.now() + 1 * 60 * 1000) // 1 min
+  const now = new Date()
+  let verficationToken = user.verifyToken
+  let verificationTokenExpiry = user.verifyTokenExpiry
+  const status = user.status
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      status: "pending",
-      verifyToken: verificationToken,
-      verifyTokenExpiry: verificationExpiry,
-    },
-  })
+  if(status === "verified") {
+    res.status(400).json({ message: "user already verified" })
+  }
 
-  await emailService.sendVerificationEmail(user.email, verificationToken)
 
-  res.json({ message: "Email Verification Sent. Please check your inbox/spambox."})
+  if (!verficationToken || !verificationTokenExpiry || verificationTokenExpiry < now) {
+    // generate new token if missing or expired
+    verficationToken = uuidv4();
+    verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        status: "pending",
+        verifyToken: verficationToken,
+        verifyTokenExpiry: verificationTokenExpiry,
+      },
+    })
+  }
+
+  await emailService.sendVerificationEmail(user.email, verficationToken)
+
+  res.status(200).json({ message: "Email Verification Sent. Please check your inbox/spambox."})
 }
 
 const verifyEmail = async (req: Request, res: Response) => {
-  const { token } = req.query;
-  if(!token || typeof token !== 'string') {
-    return res.status(400).json({ error: 'Invalid token' })
+  const { verifyToken } = req.query;
+  if(!verifyToken || typeof verifyToken !== 'string') {
+    return res.status(400).json({ message: 'Invalid token' })
   }
   
   const user = await prisma.user.findFirst({
     where: {
-      verifyToken: token,
+      verifyToken,
       verifyTokenExpiry: { gt: new Date() },
     },
   })
 
 
   if (!user) {
-    return res.status(400).json({ error: 'Invalid or expired token' })
+    return res.status(400).json({ message: 'Invalid or expired token' })
   }
 
   await prisma.user.update({
@@ -56,7 +68,7 @@ const verifyEmail = async (req: Request, res: Response) => {
     },
   })
 
-  res.json({ message: 'Email verified successfully!' })
+  res.status(200).json({ message: 'Email verified successfully!' })
 }
 
 export {

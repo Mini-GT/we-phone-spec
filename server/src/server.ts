@@ -69,20 +69,24 @@ app.use("/api/v1/email", emailRouter)
 app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"], session: false }))
 
 app.get("/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "http://localhost:5173", session: false }),
+  passport.authenticate("google", { failureRedirect: clientUrl, session: false }),
   (req, res) => {
     const user = req.user as User
-    const token = signJwt({ id: user.id }, refreshSecretKey, { expiresIn: "7d" })
-    
-    res.cookie("token", token, {
-      httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production"
-    });
 
-    // success handler
-    res.redirect("http://localhost:5173");
+    const refreshToken = signJwt({ id: user.id }, refreshSecretKey, { expiresIn: "5d" });
+    const accessToken = signJwt({ id: user.id }, accessSecretKey, { expiresIn: "14m" });
+    const socketToken = signJwt({ id: user.id }, socketSecretKey, { expiresIn: "7d" });
+    
+    res
+      .cookie("socketToken", socketToken, {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      .redirect(
+        `${clientUrl}/email/oauth/callback?accessToken=${accessToken}&refreshToken=${refreshToken}}`
+      );
   }
 );
 
