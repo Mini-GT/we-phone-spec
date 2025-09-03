@@ -93,6 +93,22 @@ const updateUser = async (req: Request, res: Response) => {
   res.status(200).json({ result: "success", updatedUser });
 }
 
+const updateProfileImage = async (req: Request, res: Response) => {
+  const { profileImage } = req.body
+  const user = req.user as User
+
+  await prisma.user.update({
+    where: {
+      id: user.id
+    },
+    data: {
+      profileImage
+    }
+  })
+
+  res.status(200).json({ result: "success", message: "Profile image updated" })
+}
+
 const changeName = async (req: Request, res: Response) => {
   const { userId } = req.params
   const { name } = req.body
@@ -249,4 +265,5 @@ export {
   addNewUser,
   changeName,
   changePassword,
+  updateProfileImage,
 }

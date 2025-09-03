@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Lock, AlertTriangle, Edit2, UserCheck, UserRound } from 'lucide-react';
 import { toReadableDate } from '~/utils/formatDate';
-import { Form, redirect, useLoaderData, useNavigation, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from 'react-router';
+import { Form, redirect, useFetcher, useLoaderData, useNavigation, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from 'react-router';
 import UserMenuNav from '~/components/userMenuNav';
 import { AnimatePresence, motion } from "motion/react"
-import EmailService from '../../services/email.service';
 import authService from '~/services/auth.service';
 import { Spinner } from '~/components/spinner';
 import type { Route } from './+types/profile';
@@ -15,8 +14,12 @@ import { useUser } from '~/context/userContext';
 import { commitSession, destroySession, getSession } from '~/session/sessions.server';
 import UserService from '~/services/user.service';
 import { isTokenValid } from '~/utils/tokenValidator';
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
 import { queryKeysType } from '~/types/globals.type';
+import EmailService from '../../services/email.service';
+import EmailVerificationModal from '~/components/emailCardModal';
+import { useToggle } from '~/hooks/useToggle';
+import AvatarPicker from '~/components/avatarPicker';
 
 export function meta({}: MetaFunction) {
   return [
@@ -35,7 +38,7 @@ const defaultFieldErrors = {
   nameError: "",
   currentPasswordError: "",
   newPasswordError: "",
-  confirmPasswordError: "", 
+  confirmPasswordError: "",
 }
 
 export async function action({request}: ActionFunctionArgs) { 
@@ -45,6 +48,7 @@ export async function action({request}: ActionFunctionArgs) {
   let refreshToken = session.get("refreshToken")
   let formData = await request.formData()
   const rawFormData = formData.get("profileFormData") as string
+  const verfifyEmail = formData.get("verifyEmail") as string
   
   if(refreshToken && !isTokenValid(refreshToken)) {
     return redirect("/", {
@@ -61,12 +65,12 @@ export async function action({request}: ActionFunctionArgs) {
   }
 
   const userService = new UserService(accessToken)
+  const emailService = new EmailService(accessToken)
 
   if(rawFormData) {
     const parsedData = JSON.parse(rawFormData)
-    const { id, name, oldName, currentPassword, newPassword, confirmPassword } = parsedData
+    const { id, name, oldName, currentPassword, newPassword, confirmPassword, profileImage, oldProfileImage } = parsedData
     const passwordFieldValid = currentPassword || newPassword || confirmPassword
-
     // validate name input
     const changeNameResult = await changeName.safeParseAsync(name)
     if(!changeNameResult.success) {
@@ -74,12 +78,12 @@ export async function action({request}: ActionFunctionArgs) {
       return { nameError: issue.message }
     }
 
-    // update name only if name is valid and all password field not valid
+    // update name only if name is valid and all password field not valid/empty
     if(name && !passwordFieldValid) {
       // dont update name if there is no change
-      if(name === oldName) return null
+      if(name !== oldName) {
       const result = await userService.changeName(name, id)
-      // console.log(result)
+      }
     }
 
     // update name and password if name is valid and at least 1 password field is valid
@@ -94,10 +98,19 @@ export async function action({request}: ActionFunctionArgs) {
 
         return { currentPasswordError, newPasswordError, confirmPasswordError }
       }
-
+      // save data if all name and passwords are valid
       const result = await userService.changePassword({ currentPassword, newPassword, confirmPassword }, id) 
-      console.log(result)
     }
+
+    if(profileImage) {
+      if(profileImage !== oldProfileImage) {
+        await userService.updateProfileImage(profileImage)
+      }
+    }
+  }
+
+  if(verfifyEmail) {
+    await emailService.sendEmailVerification()
   }
 
   return redirect(`${currentUrl}`, {
@@ -109,10 +122,20 @@ export async function action({request}: ActionFunctionArgs) {
 
 
 export async function loader({request}: LoaderFunctionArgs) {
+  const queryClient = new QueryClient()
   const session = await getSession(request.headers.get("Cookie"))
   const accessToken = session.get("accessToken")
-  if(accessToken && !isTokenValid(accessToken)) return
-  return accessToken
+  if(!accessToken) {
+    return redirect("/")
+  } 
+
+  const userService = new UserService(accessToken)
+
+  const user = await queryClient.fetchQuery({
+    queryKey: queryKeysType.me,
+    queryFn: async () => await userService.getMe(),
+  })
+  return user 
 }
 
 export type MatchesProfileType = {
@@ -122,22 +145,22 @@ export type MatchesProfileType = {
 export default function Profile({
   actionData
 }: Route.ComponentProps) {
-  const { setUser } = useUser()
-  const accessToken = useLoaderData<typeof loader>()
+  const { user: userContext, setUser } = useUser()
+  const user = useLoaderData<typeof loader>()
   const navigation = useNavigation()
   const [showPasswordFields, setShowPasswordFields] = useState(false);
-  const userService = new UserService(accessToken)
-  const { data: user } = useSuspenseQuery({
-    queryKey: queryKeysType.me,
-    queryFn: async () => await userService.getMe()
-  })
+  const fetcher = useFetcher()
+  const emailModalToggle = useToggle()
+  const avatarPickToggle = useToggle()
+
   const [ formData, setFormData ] = useState({
-    id: user?.id,
     name: user?.name,
     oldName: user?.name,
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
+    profileImage: userContext?.profileImage ?? "/userIcon.svg",
+    oldProfileImage: user?.profileImage
   })
 
   const [ fieldError, setFieldError ] = useState<Partial <FieldErrorTypes>>(defaultFieldErrors)
@@ -162,8 +185,15 @@ export default function Profile({
   }, [actionData])
 
   useEffect(() => {
-    setUser(user)
-  }, [user])
+    if (userContext) {
+      setFormData((prev) => ({
+        ...prev,
+        id: user.id ?? "",
+        name: user.name ?? "",
+        profileImage: userContext.profileImage ?? "",
+      }))
+    }
+  }, [userContext])
 
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -172,14 +202,13 @@ export default function Profile({
       [name]: value,
     }));
   };
-
+  
   const sendEmailVerification = async () => {
-    try {
-      const res = await EmailService.sendEmailVerification()
-      console.log(res)
-    } catch (error) {
-      console.error(error)
-    }
+    emailModalToggle.toggle()
+    fetcher.submit(
+      { verifyEmail: true },
+      { method: "post" }
+    )
   }
   
   if (!user) {
@@ -192,7 +221,7 @@ export default function Profile({
     <div className="min-h-screen bg-gray-800 bg-opacity-90 flex flex-col items-center py-12 sm:px-4">
       {/* Header */}
       <UserMenuNav tab={"profile"} name={user.name} />
-
+      {emailModalToggle.isOpen && <EmailVerificationModal onClose={emailModalToggle.toggle} />}
       <div className="w-full max-w-3xl bg-gray-900 rounded-lg overflow-hidden">
         <div className="space-y-6 p-4 sm:p-8">
           <div className="flex items-center">
@@ -207,29 +236,30 @@ export default function Profile({
           <div className="flex flex-col md:flex-row">
             <div className="flex-1 space-y-6 pr-0 md:pr-8">
               {/* Profile Picture */}
-              <div className="sm:mt-8 flex justify-center">
-                <div className="relative">
-                  <div className="relative">
-                    <div className="relative overflow-hidden z-0 w-22 h-22 rounded-full bg-purple-700 flex items-center justify-center border-4 border-purple-600">
-                      <img 
-                        src={user.profileImage || "/userIcon.svg"} 
-                        alt="Profile" 
-                        className="object-cover w-full"
-                      />
-                    </div>
-                    <button className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-lg cursor-pointer hover:opacity-90">
-                      <Edit2 className="h-4 w-4 text-gray-800" />
-                    </button>
-                  </div>
+              <div className="relative sm:mt-8 flex justify-center">
+                <div className="relative w-22 h-22 rounded-full bg-purple-700 flex items-center justify-center border-4 border-purple-600">
+                  <img 
+                    src={userContext?.profileImage || "/userIcon.svg"} 
+                    alt="Profile" 
+                    className="object-cover w-full rounded-full"
+                  />
+                  <button className="absolute -bottom-1 -right-1 bg-white rounded-full shadow-lg cursor-pointer hover:bg-gray-100">
+                  <Edit2 
+                    className="left-0 h-7 w-7 p-2 text-gray-800"
+                    onClick={avatarPickToggle.toggle}
+                  />
+                </button>
                 </div>
+                {avatarPickToggle.isOpen && <AvatarPicker />}
               </div>
+
 
               {/* Email */}
               <div className="mb-6">
                 <FormField 
                   label="Email Address"
                   name="email"
-                  value={user.email}
+                  value={user?.email}
                   labelStyle="block text-gray-400 text-xs font-bold mb-2 uppercase tracking-wide"
                   inputStyle="w-full bg-gray-800 rounded px-4 py-3 text-white focus:outline-none"
                   readOnly={true}
@@ -268,7 +298,7 @@ export default function Profile({
                   <FormField 
                     label="YOUR NAME"
                     name="name"
-                    value={formData.name ?? ""}
+                    value={formData?.name}
                     onChangeEvent={handleChange}
                     labelStyle="block text-gray-400 text-xs font-bold mb-2 uppercase tracking-wide"
                     inputStyle={`w-full bg-gray-800 rounded px-4 py-3 text-white ${fieldError.nameError ? "border border-2 border-red-400 shake" : null }`}
@@ -364,6 +394,7 @@ export default function Profile({
                     value={JSON.stringify(formData)}
                     name="profileFormData"
                     disabled={navigation.formAction === "/user/profile"}
+                    onClick={avatarPickToggle.toggle}
                   >
                     {navigation.formAction === "/user/profile" ? <Spinner parentClassName="w-full h-full" spinSize="ml-1 w-5 h-5" /> : "Save" }
                 </button>

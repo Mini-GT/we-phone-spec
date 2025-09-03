@@ -1,15 +1,12 @@
 import { useState } from "react"
 
 type EmailVerificationModalProps = {
-  isOpen: boolean
   onClose: () => void
 }
 
 export default function EmailVerificationModal({
-  isOpen,
   onClose,
 }: EmailVerificationModalProps) {
-  if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-xs bg-black/50">
