@@ -13,15 +13,12 @@ import { useUser } from "~/context/userContext";
 import { nanoid } from "nanoid"
 import { usePopupButton } from "~/context/popupButtonContext";
 import { convertToTimeAgo } from "~/utils/formatDate";
-import { useFetcher, useMatches } from "react-router";
+import { useFetcher } from "react-router";
 import { Spinner } from "./spinner";
 import { getRoleColor } from "~/utils/statusStyle";
 import { getRole } from "~/utils/role";
 import { hasPermission } from "~/utils/permissions";
 import { getSortQuery } from "~/utils/getSortQuery";
-import type { MatchesNotificationType } from "./ui/notificationBell";
-import CommentsService from "~/services/comment.service";
-import { isTokenValid } from "~/utils/tokenValidator";
 
 type CommentsSectionProps = {
   smartphoneId: Smartphone["_id"]
@@ -32,7 +29,6 @@ type CommentsType = Omit<SmartphoneCommentType, "deviceId" | "updatedAt">
 const take = 5
 
 export default function CommentsSection({ smartphoneId }: CommentsSectionProps) {
-  const { refreshToken } = useMatches()[0].data as MatchesNotificationType
   const fetcher = useFetcher()
   const { user } = useUser()
   const [sortOrder, setSortOrder] = useState<SortOrderType>("mostLiked");
@@ -122,7 +118,7 @@ export default function CommentsSection({ smartphoneId }: CommentsSectionProps) 
         isDeleted: false, 
         user: {
           name: user.name,
-          role: user.role
+          role: user.role,
         }
       }
       setComments((prev) => [newComment, ...prev])
@@ -163,7 +159,7 @@ export default function CommentsSection({ smartphoneId }: CommentsSectionProps) 
     )
     
     fetcher.submit(
-      { dislikeId: id },
+      { like: id },
       { method: "post" }
     )
   }
@@ -178,12 +174,12 @@ export default function CommentsSection({ smartphoneId }: CommentsSectionProps) 
     }
     setComments(prev =>
       prev.map(comment =>
-        comment.id === id ? { ...comment, likes: comment.likes - 1 } : comment
+        comment.id === id ? { ...comment, dislikes: comment.dislikes + 1 } : comment
       )
     )
 
     fetcher.submit(
-      { dislikeId: id },
+      { dislike: id },
       { method: "post" }
     )
   }
@@ -308,7 +304,7 @@ export default function CommentsSection({ smartphoneId }: CommentsSectionProps) 
       <div className="space-y-6">
         {comments?.map((c) => (
           <div key={c.id} className="flex items-start gap-3">
-            <img src="/userIcon.svg" alt="avatar" className="w-10 h-10 rounded-full" />
+            <img src={c.user?.profileImage ?? "/userIcon.svg"} alt="avatar" className="w-10 h-10 rounded-full" />
             <div className="flex-1">
               {/* User Info */}
               <div className="relative flex items-center gap-2 flex-wrap">

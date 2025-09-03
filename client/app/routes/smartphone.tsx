@@ -97,7 +97,8 @@ export async function action({request}: ActionFunctionArgs) {
   const smartphoneLikesId = formData.get("smartphoneLikes") as SmartphoneType["_id"]
   const smartphoneViewId = formData.get("smartphoneViewId") as SmartphoneType["_id"]
   const deleteCommentId = formData.get("deleteCommentId") as string
-  const dislikeCommentId = formData.get("deleteCommentId") as string
+  const dislikeCommentId = formData.get("dislike") as string
+  const likeCommentId = formData.get("like") as string
   const newComment = formData.get("newComment") as string
   const initialCommentsData = formData.get("initialCommentsData") as string
   const viewMoreCommentsData = formData.get("viewMoreCommentsData") as string
@@ -115,6 +116,10 @@ export async function action({request}: ActionFunctionArgs) {
 
   if(dislikeCommentId) {
     await commentService.dislikeToComment(dislikeCommentId)
+  }
+
+  if(likeCommentId) {
+    await commentService.addLikeToComment(likeCommentId)
   }
   
   if(parsedInitialCommentsData?.smartphoneId) {
