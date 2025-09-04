@@ -1,4 +1,4 @@
-import { updateUserEmailVerification, verifyEmail } from "@/controllers/email.controller"
+import { forgotPassword, resetPassword, updateUserEmailVerification, verifyEmail } from "@/controllers/email.controller"
 import { asyncWrapper } from "@/middlewares/asyncWrapper.middleware"
 import { requireAuth } from "@/middlewares/auth.middleware"
 import express from "express"
@@ -10,5 +10,11 @@ router.route("/send-email-verification")
 
 router.route("/verify-email")
 .get(asyncWrapper(requireAuth), asyncWrapper(verifyEmail))
+
+router.route("/forgot-password")
+.get(asyncWrapper(forgotPassword))
+
+router.route("/reset-password")
+.patch(asyncWrapper(resetPassword))
 
 export default router

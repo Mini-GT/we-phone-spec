@@ -12,13 +12,33 @@ class EmailService {
 });
 
   async sendVerificationEmail(email: string, token: string): Promise<void> {
-    const verificationUrl = `${process.env.CLIENT_URL}/email/verify-email?verifyToken=${token}`;
+    const verificationUrl = `${process.env.CLIENT_URL}/email/verify-email?verifyToken=${encodeURIComponent(token)}`;
 
     await this.transporter.sendMail({
       from: `${process.env.TRANSPORT_FROM_EMAIL} <${process.env.TRANSPORT_FROM_NAME}>`,
       to: email,
       subject: 'Verify Your Email',
-      html: `Click <a href="${verificationUrl}">here</a> to verify your email.`,
+      html: `Click <a href="${verificationUrl}">here</a> to verify your email. *If you didn\'t request this, just ignore it.*`,
+    });
+  }
+
+  async sendEmailResetPassword(email: string, token: string): Promise<void> {
+    const verificationUrl = `${process.env.CLIENT_URL}/password/reset?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
+
+    await this.transporter.sendMail({
+      from: `${process.env.TRANSPORT_FROM_EMAIL} <${process.env.TRANSPORT_FROM_NAME}>`,
+      to: email,
+      subject: 'Reset Password',
+      html: `
+        <p>
+          Click <a href="${verificationUrl}">here</a> to reset your password (expires in 1hr). 
+        </p>
+        <p>
+          <i style="font-style: italic;">
+            If you didn\'t request this, please ignore it.
+          </i>
+        </p>
+      `,
     });
   }
 }
