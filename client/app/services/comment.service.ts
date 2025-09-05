@@ -1,10 +1,21 @@
 import axios, { type AxiosInstance } from "axios";
-import type { SmartphoneCommentsDataType, SmartphoneCommentType } from "~/types/globals.type";
+import type { SmartphoneCommentsDataType } from "~/types/globals.type";
 
 class CommentsService {
-  private api: AxiosInstance = axios.create({
-    baseURL: `${import.meta.env.VITE_SMARTPHONE_API_URL}/comments`,
-    withCredentials: true,  });
+  private api: AxiosInstance;
+
+  constructor(accessToken?: string) {
+    this.api = axios.create({
+      baseURL: `${import.meta.env.VITE_SMARTPHONE_API_URL}/comments`,
+    });
+
+    this.api.interceptors.request.use((config) => {
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
+      return config;
+    });
+  }
   
   private handleError(error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -50,7 +61,7 @@ class CommentsService {
       })
       return response.data
     } catch (error) {
-      this.handleError(error);
+      return this.handleError(error);
     }
   }
 
@@ -59,7 +70,7 @@ class CommentsService {
       const response = await this.api.get(`/like/${commentId}`)
       return response.data
     } catch (error) {
-      this.handleError(error);
+      return this.handleError(error);
     }
   }
 
@@ -68,7 +79,7 @@ class CommentsService {
       const response = await this.api.get(`/dislike/${commentId}`)
       return response.data
     } catch (error) {
-      this.handleError(error);
+      return this.handleError(error);
     }
   }
 
@@ -79,16 +90,25 @@ class CommentsService {
       })
       return response.data
     } catch (error) {
-      this.handleError(error);
+      return this.handleError(error);
+    }
+  }
+
+  async addNewCommet(newComment: object) {
+    try {
+      const response = await this.api.post(`/new`, newComment)
+      return response.data
+    } catch (error) {
+      return this.handleError(error);
     }
   }
 
   async deleteComment(commentId: string) {
     try {
       const response = await this.api.delete(`/${commentId}`)
-      return response.data
+      return response
     } catch (error) {
-      this.handleError(error);
+      return this.handleError(error);
     }
   }
 
@@ -97,11 +117,11 @@ class CommentsService {
       const response = await this.api.get(`/sort/${sortOrder}`)
       return response.data
     } catch (error) {
-      this.handleError(error);
+      return this.handleError(error);
     }
   }
 
 
 }
 
-export default new CommentsService();
+export default CommentsService;

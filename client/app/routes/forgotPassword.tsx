@@ -1,11 +1,18 @@
 import { useEffect, useState } from "react";
-import { Form, useNavigation, type ActionFunctionArgs } from "react-router";
+import { Form, useNavigation, type ActionFunctionArgs, type MetaFunction } from "react-router";
 import { email } from "~/schema/email.schema";
 import z from "zod";
 import type { Route } from "./+types/forgotPassword";
 import EmailService from "~/services/email.service";
 import EmailVerificationModal from "~/components/emailCardModal";
 import { useToggle } from "~/hooks/useToggle";
+
+export function meta({}: MetaFunction) {
+  return [
+    { title: "Forgot Password - WePhoneSpec" },
+    { name: "description", content: "Forgot Password" },
+  ];
+}
 
 const emailService = new EmailService()
 

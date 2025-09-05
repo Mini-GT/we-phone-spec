@@ -6,6 +6,7 @@ import passport from "../services/passport"
 import type { User } from "@prisma/client"
 import { signJwt, verifyJwt } from "@/utils/jwt"
 import type { DecodedToken } from "@/middlewares/auth.middleware"
+import z from "zod"
 
 const refreshJWTSecretKey = process.env.REFRESH_JWT_SECRET
 const accessJWTSecretKey = process.env.ACCESS_JWT_SECRET
@@ -70,11 +71,11 @@ const register = async (req: Request, res: Response) => {
 
 const login = async (req: Request, res: Response) => {
   const result = await loginSchema.safeParseAsync(req.body)
-
   if (!result.success) {
-    console.error(result.error.format())
+    const flattened = z.flattenError(result.error)
+    console.log(flattened.fieldErrors)
     return res.status(400).json({
-      message: "Incorrect email or password"
+      message: flattened.fieldErrors
     });
   }
 
@@ -112,7 +113,7 @@ const login = async (req: Request, res: Response) => {
     const accessToken = signJwt(
       { id: user.id },
       accessJWTSecretKey,
-      { expiresIn: "15m" }
+      { expiresIn: "15s" }
     )
 
     const socketToken = signJwt(
@@ -127,7 +128,8 @@ const login = async (req: Request, res: Response) => {
       email: user.email,
       profileImage: user.profileImage,
       status: user.status,
-      role: user.role
+      role: user.role,
+      createdAt: user.createdAt,
     } 
 
     // res
@@ -196,7 +198,7 @@ const refresh = async (req: Request, res: Response) => {
   const newAccessToken = signJwt(
     { id: user.id },
     accessJWTSecretKey,
-    { expiresIn: "15m" }
+    { expiresIn: "15s" }
   )
 
   // res.cookie("accessToken", newAccessToken, { 

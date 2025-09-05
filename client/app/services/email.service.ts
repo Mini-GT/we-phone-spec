@@ -46,7 +46,7 @@ class EmailService {
       const response = await this.api.post("/send-email-verification");
       return response.data;
     } catch (error) {
-      this.handleError(error) 
+      return this.handleError(error) 
     }
   }
   
@@ -57,31 +57,32 @@ class EmailService {
       })
       return response.data
     } catch (error) {
-      this.handleError(error)
+      return this.handleError(error)
     }
   }
 
-  async resetPassword(password: string, confirmPassword: string, email: string) {
+  async resetPassword(password: string, confirmPassword: string, email: string, resetToken: string) {
     try {
       const response = await this.api.patch("/reset-password", {
         password, 
         confirmPassword,
-        email
+        email,
+        resetToken
       })
       return response.data
     } catch (error) {
-      this.handleError(error)
+      return this.handleError(error)
     }
   }
 
-  async verifyEmail(verifyToken: string) {
+  async verifyEmail(emailVerifyToken: string) {
     try {
       const response = await this.api.get("/verify-email", {
-        params: { verifyToken }
+        params: { emailVerifyToken }
       });
       return response
     } catch (error) {
-      this.handleError(error) 
+      return this.handleError(error) 
     }
   }
 }
