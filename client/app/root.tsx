@@ -53,6 +53,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const currentUrl = new URL(request.url).pathname
   let accessToken = session.get("accessToken")
   const refreshToken = session.get("refreshToken")
+  
   if(refreshToken && !isTokenValid(refreshToken)) {
     return redirect("/", {
       headers: {
@@ -61,10 +62,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     })
   }
 
-  if (!isTokenValid(accessToken) && isTokenValid(refreshToken)) {
+  if (!isTokenValid(accessToken) && refreshToken) {
     const { newAccessToken } = await authService.refresh(refreshToken!)
     session.set("accessToken", newAccessToken)
-    // accessToken = newAccessToken
     return redirect(currentUrl, {
       headers: {
       "Set-Cookie": await commitSession(session)
@@ -76,11 +76,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const smartphoneService = new SmartphoneService()
   const notificationService = new NotificationService(accessToken)
   let notifData = null
-  // console.log("root:", accessToken)
-    
+  let user = null
   try {
-    if(isTokenValid(accessToken)) {
-      await queryClient.fetchQuery({
+    if(accessToken) {
+      user = await queryClient.fetchQuery({
         queryKey: queryKeysType.me,
         queryFn: async () => await userService.getMe(),
       })
@@ -119,7 +118,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   } catch (error) {
     console.error(error)
   }
-  return {  notifData, accessToken, dehydratedState: dehydrate(queryClient) }
+  return { user, notifData, accessToken, dehydratedState: dehydrate(queryClient) }
 }
 
 export async function action({

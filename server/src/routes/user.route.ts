@@ -1,4 +1,4 @@
-import { addNewUser, changeName, changePassword, deleteUser, getMe, getUserById, updateUser } from "@/controllers/user.controller"
+import { addNewUser, changeName, changePassword, deleteUser, getMe, getUserById, updateProfileImage, updateUser } from "@/controllers/user.controller"
 import { addToLikes, deleteLikeDevice, getUserLikeListSmartphones, getUserLikes } from "@/controllers/userLike.controller"
 import { addNotificationToUser, deleteNotification, getUserNotifications, markNotificationAsRead } from "@/controllers/userNotification.controller"
 import { asyncWrapper } from "@/middlewares/asyncWrapper.middleware"
@@ -15,6 +15,9 @@ router.route("/new")
 
 router.route("/likes")
 .get(asyncWrapper(requireAuth), asyncWrapper(getUserLikes))
+
+router.route("/update-profile-image")
+.patch(asyncWrapper(requireAuth), asyncWrapper(updateProfileImage))
 
 router.route("/like-list")
 .post(asyncWrapper(requireAuth), asyncWrapper(getUserLikeListSmartphones))

@@ -42,7 +42,7 @@ export default function Home() {
     error: topAllTimeViewedError 
   } = useQuery({
     queryKey: queryKeysType.topAllTimeViewed,
-    queryFn: () => smartphoneService.getTopAllTimeViewedSmartphones("?limitNumber=5&sort=desc"),
+    queryFn: () => smartphoneService.getTopAllTimeViewedSmartphones(),
   })
 
   const { 
@@ -52,7 +52,7 @@ export default function Home() {
     error: topAllTimeLikedError 
   } = useQuery({
     queryKey: queryKeysType.topAllTimeLiked,
-    queryFn: () => smartphoneService.getTopLikedSmartphones("?limitNumber=5&sort=desc"),
+    queryFn: () => smartphoneService.getTopLikedSmartphones(),
   })
 
   const { 
@@ -62,7 +62,7 @@ export default function Home() {
     error: newAddedSmartphonesError 
   } = useQuery({
     queryKey: queryKeysType.newAddedSmartphones,
-    queryFn: () => smartphoneService.getNewAddedSmartphones("?limitNumber=5&sort=desc"),
+    queryFn: () => smartphoneService.getNewAddedSmartphones(),
   })
 
   const isAnyLoading =

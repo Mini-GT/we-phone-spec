@@ -84,7 +84,10 @@ export async function loader({ request }: Route.LoaderArgs) {
   const queryClient = new QueryClient();
   const session = await getSession(request.headers.get("Cookie"))
   let accessToken = session.get("accessToken")
-  if(accessToken && !isTokenValid(accessToken)) return
+
+  if(!accessToken) {
+    return redirect("/")
+  }
 
   const smartphoneService = new SmartphoneService()
   

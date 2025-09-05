@@ -145,7 +145,7 @@ export type MatchesProfileType = {
 export default function Profile({
   actionData
 }: Route.ComponentProps) {
-  const { user: userContext, setUser } = useUser()
+  const { user: userContext } = useUser()
   const user = useLoaderData<typeof loader>()
   const navigation = useNavigation()
   const [showPasswordFields, setShowPasswordFields] = useState(false);
@@ -394,14 +394,16 @@ export default function Profile({
                     value={JSON.stringify(formData)}
                     name="profileFormData"
                     disabled={navigation.formAction === "/user/profile"}
-                    onClick={avatarPickToggle.toggle}
+                    onClick={() => {
+                        avatarPickToggle.close
+                        setFormData(prev => ({...prev, currentPassword: "", newPassword: "", confirmPassword: ""}))
+                      }
+                    }
                   >
                     {navigation.formAction === "/user/profile" ? <Spinner parentClassName="w-full h-full" spinSize="ml-1 w-5 h-5" /> : "Save" }
                 </button>
               </Form>
             </div>
-
-            
           </div>
         </div>
       </div>

@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { queryKeysType, type LoginRegisterFormProps } from "~/types/globals.type";
+import { type LoginRegisterFormProps } from "~/types/globals.type";
 import authService from "~/services/auth.service";
 import { usePopupButton } from "~/context/popupButtonContext";
-import { AxiosError } from 'axios';
-import { Form, useFetcher, useNavigate, useNavigation } from "react-router";
+import { Form, NavLink, redirect, useFetcher, useNavigate, useNavigation, useRevalidator } from "react-router";
 import { CardContent } from "../ui/card";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
@@ -16,8 +15,8 @@ export default function LoginForm({ handleAuthMode }: LoginRegisterFormProps) {
     password: "",
   });
   const [error, setError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
   const { setPopupButton } = usePopupButton()
-  const navigate = useNavigate()
   const navigation = useNavigation()
   const { setUser } = useUser()
   const fetcher = useFetcher()
@@ -25,42 +24,39 @@ export default function LoginForm({ handleAuthMode }: LoginRegisterFormProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-
-    try {
-      const { accessToken, refreshToken, userData } = await authService.login({ ...loginFormData });
+    const res = await authService.login({ ...loginFormData });
+    if(res.status === 400) {
+      setError(res.message.message.password[0])
+      setEmailError(res.message.message.email[1] ?? res.message.message.email[0])
+    } 
+    else if(res.status === 401) {
+      setError(res.message.message)
+    } 
+    else {
+      const { accessToken, refreshToken, userData } = res
       fetcher.submit(
-        { tokenData: JSON.stringify({accessToken, refreshToken})},
+        { tokenData: JSON.stringify({accessToken, refreshToken })},
         { action: "/", method: "post" }
       )
       setUser(userData)
-      // fetcher.submit(
-      //   { tokenData: JSON.stringify(loginFormData) },
-      //   { action: "/", method: "post" }
-      // )
       setPopupButton(prevState => ({
         ...prevState,
         isLoginClicked: false,
       }))
-
       setLoginFormData({ email: "", password: "" });
-      // navigate("/");
-    } catch (error) {
-      if(error instanceof AxiosError) {
-        setError(error.response?.data.message)
-      }
-      console.error(error)
+      redirect("/")
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLoginFormData({ ...loginFormData, [e.target.name]: e.target.value });
   };
-
   useEffect(() => {
     if (error) {
       const timer = setTimeout(() => {
-        setError("");
-      }, 3000);
+        setError(null);
+        setEmailError(null)
+      }, 2000);
   
       return () => clearTimeout(timer)
     }
@@ -69,8 +65,8 @@ export default function LoginForm({ handleAuthMode }: LoginRegisterFormProps) {
   return (
     <CardContent>
       <h2 className="text-2xl font-bold text-center text-gray-900">Login</h2>
-      <Form method="POST" action="/" onSubmit={handleSubmit} className="mt-4">
-        <div className="mb-4">
+      <Form method="POST" onSubmit={handleSubmit} className="mt-4">
+        <div className="relative mb-4">
           <Label htmlFor="email" className="block text-sm font-medium text-gray-700">
             Email
           </Label>
@@ -84,8 +80,9 @@ export default function LoginForm({ handleAuthMode }: LoginRegisterFormProps) {
             className="w-full mt-1"
             placeholder="name@email.com"
           />
+          {emailError && <p className="absolute text-[red] text-xs">{emailError}</p>}
         </div>
-        <div className="mb-4">
+        <div className="relative mb-4">
           <Label htmlFor="password" className="block text-sm font-medium text-gray-700">
             Password
           </Label>
@@ -99,18 +96,25 @@ export default function LoginForm({ handleAuthMode }: LoginRegisterFormProps) {
             className="w-full mt-1"
             placeholder="Password"
           />
+          {error && <p className="absolute text-[red] text-xs">{error}</p>}
         </div>
         <div className="flex justify-between items-center text-sm mb-4">
-          <a href="#" className="text-blue-600 hover:underline">
+          <NavLink 
+            to="/password/forgot" 
+            className="text-blue-600 hover:underline"
+            onClick={() => setPopupButton(prevState => ({
+              ...prevState,
+              isLoginClicked: false,
+            }))}
+          >
             Forgot Password?
-          </a>
+          </NavLink>
         </div>
-        {error && <p className="text-[red] text-sm ">{error}</p>}
         <Button
           type="submit" 
           className="w-full mb-4 cursor-pointer"
         >
-          {navigation.formAction === "/"
+          {navigation.state === "loading"
           ? "Submitting..."
           : "Submit"}
           {/* Login */}

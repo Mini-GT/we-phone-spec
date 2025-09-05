@@ -1,21 +1,22 @@
-import { useState } from "react"
-
 type EmailVerificationModalProps = {
+  message?: string
+  details?: string
   onClose: () => void
 }
 
 export default function EmailVerificationModal({
+  message = "Email Verification Sent",
+  details = "Please check your email inbox or spam folder to verify your account.",
   onClose,
 }: EmailVerificationModalProps) {
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-xs bg-black/50">
       <div className="bg-white rounded-2xl shadow-lg max-w-sm w-[80vw] p-6 text-center">
         <h2 className="text-lg font-semibold text-gray-900">
-          Email Verification Sent
+          {message}
         </h2>
         <p className="mt-2 text-sm text-gray-600">
-          Please check your email inbox or spam folder to verify your account.
+          {details}
         </p>
         <div className="mt-4">
           <button

@@ -23,9 +23,11 @@ class EmailService {
   private handleError(error: unknown) {
     if (axios.isAxiosError(error)) {
       if (error.response) {
-        return {
-          status: error.response.status,
-          message: error.response.data || 'An error occurred',
+        return { 
+          data: {
+            status: error.response.status,
+            message: error.response.data || 'An error occurred',
+          }
         };
       } else if (error.request) {
         return {

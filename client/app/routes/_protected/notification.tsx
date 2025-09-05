@@ -81,20 +81,13 @@ export async function action({request}: ActionFunctionArgs) {
   )
 }
 
-// export async function loader({request}: LoaderFunctionArgs) {
-//   const queryClient = new QueryClient();
-//   const session = await getSession(request.headers.get("Cookie"))
-//   let accessToken = session.get("accessToken")
-//   if(accessToken && !isTokenValid(accessToken)) return
-//   const notificationService = new NotificationService(accessToken)
-//   const notifications = await queryClient.fetchQuery({
-//     queryKey: queryKeysType.notifications,
-//     queryFn: () => notificationService.getNotifications()
-//   })
-//   // const notifications = (notification.message as NotificationType).notifications
-//   // console.log("notif:", notifications)
-//   // return notifications
-// }
+export async function loader({request}: LoaderFunctionArgs) {
+  const session = await getSession(request.headers.get("Cookie"))
+  let accessToken = session.get("accessToken")
+  if(!accessToken) {
+    return redirect("/")
+  }
+}
 
 export default function Notification() {
   const matches = useMatches()[0].data as MatchesNotificationType

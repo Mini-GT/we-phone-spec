@@ -79,7 +79,10 @@ export async function loader({ request }: Route.LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"))
   let accessToken = session.get("accessToken")
 
-  if(accessToken && !isTokenValid(accessToken)) return
+  if(!accessToken) {
+    return redirect("/")
+  } 
+
   const usersService = new UsersService(accessToken)
   try {
     const response = await usersService.getUsers()

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { NavLink, useFetcher, useNavigate } from "react-router";
+import { NavLink, redirect, useFetcher, useNavigate } from "react-router";
 import { ProtectedRoute } from "./protectedRoute";
 import { PERMISSIONS } from "~/utils/permissions";
 import type { DropDownProps, UserType } from "~/types/globals.type";
@@ -17,17 +17,15 @@ export default function UserMenu({
   });
   const menuRef = useRef<HTMLDivElement>(null);
   const fetcher = useFetcher()
-  const navigate = useNavigate()
   // const { handleLogout } = useAuth();
   const { setUser } = useUser()
-
   const handleLogout = () => {
-    navigate("/")
-    setUser(null)
     fetcher.submit(
       { logout: true }, 
       { action: "/", method: "post"}
     )
+    setUser(null)
+    redirect("/")
   }
   
   // Handle clicks outside of the dropdown
@@ -74,6 +72,7 @@ export default function UserMenu({
               src={profileImage ?? "/userIcon.svg"}
               alt="User Avatar"
               className="w-full h-full rounded-full object-cover border-1 border-gray-600"
+              loading="lazy"
             />
           </button>
         </div>
@@ -122,13 +121,13 @@ export default function UserMenu({
             >
               Like List
             </NavLink>
-            {/* <NavLink
+            <NavLink
               to="/user/notification"
               className="flex text-left px-4 py-2 rounded hover:bg-gray-700 text-white"
               onClick={() => setOpen(prev => ({...prev, isProfileMenu: false}))} // Close the dropdown when navigating
             >
               Notification
-            </NavLink> */}
+            </NavLink>
             <NavLink
               to="/user/settings"
               className="text-left px-4 py-2 rounded hover:bg-gray-700 text-white"

@@ -1,5 +1,6 @@
 import type { AxiosInstance } from "axios";
 import axios from "axios";
+import type { AvatarTypes } from "~/components/avatarPicker";
 import type { ApiResponse, ChangePasswordType, Smartphone, UserType } from "~/types/globals.type";
 
 class UserService {
@@ -137,6 +138,20 @@ class UserService {
   async getUserLikeListSmartphoneData(smartphoneIds: string[]): Promise<ApiResponse> {
     try {
       const response = await this.api.post("/like-list", { smartphoneIds });
+
+      const result = {
+        statusCode: response.status,
+        message: response.data
+      }
+      return result;
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  async updateProfileImage(profileImage: AvatarTypes): Promise<ApiResponse> {
+    try {
+      const response = await this.api.patch("/update-profile-image", { profileImage });
 
       const result = {
         statusCode: response.status,

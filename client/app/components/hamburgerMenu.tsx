@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, Menu, Home, User, Settings, Smartphone, Info } from 'lucide-react';
 import type { UserType } from '~/types/globals.type';
 import { NavLink } from 'react-router';
+import { useUser } from '~/context/userContext';
 
 type HamburgerMenuProps = {
   name: UserType["name"] | undefined
@@ -13,6 +14,7 @@ export default function HamburgerMenu({
   email
 }: HamburgerMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const {user} = useUser()
 
   const toggleMenu = () => setIsOpen(!isOpen)
 
@@ -73,6 +75,7 @@ export default function HamburgerMenu({
           <ul className="space-y-2">
             {menuItems.map((item, index) => {
               const IconComponent = item.icon;
+              if(["profile", "settings"].includes(item.label.toLowerCase()) && !name) return // dont render these if there is no user
               return (
                 <li key={index}>
                   <NavLink
@@ -91,17 +94,17 @@ export default function HamburgerMenu({
           </ul>
 
           {/* Menu Footer */}
-          <div className="mt-12 pt-6 border-t border-gray-200">
+          {name && <div className="mt-12 pt-6 border-t border-gray-200">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-white" />
+                <img src={user?.profileImage} alt="user image" />
               </div>
               <div>
                 <p className="font-medium text-gray-800">{name}</p>
                 <p className="text-sm text-gray-600">{email}</p>
               </div>
             </div>
-          </div>
+          </div>}
         </div>
       </nav>
     </div>

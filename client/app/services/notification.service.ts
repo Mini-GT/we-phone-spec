@@ -19,7 +19,6 @@ class NotificationService {
     });
   }
 
-
   private handleError(error: unknown) {
     if (axios.isAxiosError(error)) {
       if (error.response) {

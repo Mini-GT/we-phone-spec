@@ -4,7 +4,6 @@ import type { ContextProviderProps, UserType } from "~/types/globals.type";
 type UserContextType = {
   user: UserType | null
   setUser: Dispatch<SetStateAction<UserType | null>>
-
 }
 
 export const UserContext = createContext<UserContextType | undefined>(undefined)

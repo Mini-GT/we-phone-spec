@@ -67,6 +67,11 @@ export async function action({request}: ActionFunctionArgs) {
 export async function loader({request}: LoaderFunctionArgs) {
   const session = await getSession(request.headers.get("Cookie"))
   const accessToken = session.get("accessToken")
+
+  if(!accessToken) {
+    return redirect("/")
+  }
+
   const userService = new UserService(accessToken)
   // get user liked smartphones Id/s 
   const data = await userService.getUserLikes()

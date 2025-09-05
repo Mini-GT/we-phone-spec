@@ -1,6 +1,6 @@
 import { ProtectedRoute } from "~/components/protectedRoute";
 import Unauthorized from "../unauthorized";
-import { Form, useNavigation, type ActionFunctionArgs } from "react-router";
+import { Form, redirect, useNavigation, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
 import { Spinner } from "~/components/spinner";
 import AddUserForm from "~/components/dashboard/usersManagement/addUserForm";
 import { useUser } from "~/context/userContext";
@@ -28,6 +28,14 @@ export async function action({
   }
   const result = await userService.addNewUser(userData)
   console.log(result.details)
+}
+
+export async function loader({request}: LoaderFunctionArgs) {
+  const session = await getSession(request.headers.get("Cookie"))
+  let accessToken = session.get("accessToken")
+  if(!accessToken) {
+    return redirect("/")
+  }
 }
 
 export default function AddNewUser() {

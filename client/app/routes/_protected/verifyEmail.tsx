@@ -5,7 +5,6 @@ import { commitSession, destroySession, getSession } from "~/session/sessions.se
 import { isTokenValid } from "~/utils/tokenValidator";
 import { useEffect, useState } from "react";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
-import type { AxiosResponse } from "axios";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
@@ -14,7 +13,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   let refreshToken = session.get("refreshToken")
   const verifyToken = url.searchParams.get("verifyToken")
   const hasRequested =  session.get("hasRequestedVerification")
-  console.log(hasRequested)
   if(!refreshToken || !accessToken || !verifyToken || hasRequested) {
     return redirect("/")
   }
@@ -52,9 +50,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export default function VerifyEmail() {
   const { emailData } = useLoaderData<typeof loader>()
   const navigate = useNavigate()
-
   const [status] = useState<number | undefined>(emailData?.status);
-  const [message, setMessage] = useState("Verifying your email...");
+  const [message, setMessage] = useState("Verifying...");
 
   useEffect(() => {
     if(status === 200) {
@@ -68,7 +65,7 @@ export default function VerifyEmail() {
     }
 
     if (status === 400) {
-      setMessage(emailData?.data.error || "Invalid or expired token.");
+      setMessage(emailData?.data.message || "Invalid or expired token.");
     }
 
     if (status === 500) {

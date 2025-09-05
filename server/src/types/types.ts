@@ -32,8 +32,9 @@ type NewDeviceNotificationType = {
 
 type SmartphoneCommentType = {
   id: string
-  name: string
   userId: string
+  deviceId: string
+  name: string
   message: string
   createdAt: Date
   updatedAt?: Date

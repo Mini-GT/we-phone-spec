@@ -1,6 +1,6 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react'
 import { BellIcon } from 'lucide-react'
-import { type ApiResponse, type DropDownProps, type NewDeviceNotificationType, type NotificationType } from '~/types/globals.type'
+import { type ApiResponse, type DropDownProps, type NewDeviceNotificationType, type NotificationType, type UserType } from '~/types/globals.type'
 import { io } from "socket.io-client";
 import { Link, NavLink, useFetcher, useMatches, useRevalidator } from 'react-router'
 import KebabMenu from './kebabMenu';
@@ -15,6 +15,7 @@ type NotificationBellProps = {
 export type MatchesNotificationType = {
   accessToken: string
   refreshToken: string
+  user: UserType
   notifData?: ApiResponse & {
     message: NotificationType
   }

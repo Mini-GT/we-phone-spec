@@ -1,4 +1,4 @@
-import { NavLink } from "react-router"
+import { NavLink, useMatches } from "react-router"
 import { Button } from "./ui/button"
 import { usePopupButton } from "~/context/popupButtonContext"
 import UserMenu from "./userMenu"
@@ -6,30 +6,33 @@ import SearchBar from "./searchBar"
 import { useUser } from "~/context/userContext"
 import HamburgerMenu from "./hamburgerMenu"
 import ProgressBar from "./progressBar"
+import type { MatchesNotificationType } from "./ui/notificationBell"
 
 export default function Navbar() {
+  const { user: userMatchesData } = useMatches()[0].data as MatchesNotificationType
+  const { user: userContext } = useUser()
+  const user = userMatchesData ?? userContext
+
   const { setPopupButton } = usePopupButton()
-  const { user } = useUser()
   async function handleLoginClick() {
     setPopupButton(prevState => ({
       ...prevState,
       isLoginClicked: !prevState.isLoginClicked,
     }))
   }
-
   
   return (
     <>
       <header className="w-full text-gray-700 bg-white border-b-1">
-        <div className="w-full flex md:flex-row sm:py-2 items-center gap-6">
+        <div className="w-full h-15 flex md:flex-row sm:py-2 items-center gap-6">
           <HamburgerMenu name={user?.name} email={user?.email} />
-          <NavLink to="/" className="flex items-center">
-            <span className="flex flex-col sm:flex-row text-xl sm:text-2xl items-center justify-center font-black text-gray-900 select-none">
-              <span>We</span>
-              <span className="text-indigo-600">PhoneSpec</span>
-            </span>
+          {/* <NavLink to="/" className="flex items-center"> */}
+          <NavLink to="/" className="flex flex-wrap flex-shrink-1 sm:flex-shrink-0 gap-2 text-xl sm:text-2xl items-center justify-center font-black text-gray-900 select-none">
+            <span>We</span>
+            <span className="text-indigo-600">PhoneSpec</span>
           </NavLink>
-          <nav className="flex flex-col w-full lg:flex-row flex-wrap gap-5 items-center ml-0 ">
+          {/* </NavLink> */}
+          <nav className="sm:flex hidden sm:w-full sm:block gap-6 items-center ml-0 ">
             <div className="flex relative items-center justify-center hidden sm:block">
               <SearchBar />
             </div>
@@ -74,7 +77,7 @@ export default function Navbar() {
               </NavLink>
             </div>
           </nav>
-          <div className="flex justify-end">
+          <div className="flex w-auto ml-auto">
             {(user && (user.id !== "")) ? 
             <UserMenu 
               name={user.name}

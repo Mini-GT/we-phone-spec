@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { useFetcher, useNavigation } from "react-router";
-import type { KebabMenuProps } from "~/types/globals.type";
+import { useNavigation } from "react-router";
+import { type KebabMenuProps } from "~/types/globals.type";
 
-export default function KebabMenu({ deviceId, action, setNotifications }: KebabMenuProps) {
+export default function KebabMenu({ deviceId, action, setNotifications, fetcher }: KebabMenuProps) {
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  const fetcher = useFetcher()
   const navigation = useNavigation()
-
+  // console.log(fetcher.data)
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -29,7 +28,7 @@ export default function KebabMenu({ deviceId, action, setNotifications }: KebabM
       )
     }
 
-    fetcher.submit(
+    fetcher?.submit(
       { smartphoneId: deviceId },
       {
         method: "post",

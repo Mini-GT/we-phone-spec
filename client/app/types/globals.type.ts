@@ -1,5 +1,5 @@
-import type { SomeObject } from "node_modules/zod/v4/core/util.cjs";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
+import type { FetcherWithComponents } from "react-router";
 import type { Permission } from "~/utils/permissions";
 
 type LoginRegisterFormProps = {
@@ -123,6 +123,11 @@ type ApiResponse = {
   }
 }
 
+type PaginationQuery = {
+  skip: number
+  take: number
+}
+
 type ApiTopDeviceResponse = {
   result: "success" | "failed"
   topToday: Smartphone[]
@@ -141,7 +146,7 @@ type UserType = {
   id?: string;
   name: string;
   email: string;
-  profileImage?: string;
+  profileImage: string;
   createdAt?: Date;
   status: UserStatus;
   role: UserRole;
@@ -150,7 +155,7 @@ type UserType = {
 type UserStatus = 'verified' | 'unverified' | 'banned' | 'pending' | 'suspended'
 
 type DeviceGridLayoutProps = {
-  items: Smartphone[];
+  items: Smartphone[] | undefined;
   title: string;
 }
 
@@ -239,6 +244,7 @@ type KebabMenuProps = {
   deviceId: string 
   action: string
   setNotifications?: Dispatch<SetStateAction<NewDeviceNotificationType[]>>
+  fetcher?: FetcherWithComponents<any>
 }
 
 type DropDownProps = {
@@ -248,13 +254,15 @@ type DropDownProps = {
 
 type NotificationType = ApiResponse["message"] & {
   notifications: NewDeviceNotificationType[]
+  unreadCount: number
+  totalNotifications: number
 }
 
 type SmartphoneCommentType = {
   id: string 
-  name: string
   userId?: string
   deviceId?: string
+  name: string
   message: string
   createdAt: Date
   updatedAt?: Date
@@ -264,6 +272,7 @@ type SmartphoneCommentType = {
   user?: {
     name: string
     role: UserRole
+    profileImage?: UserType["profileImage"]
   }
 }
 
@@ -296,7 +305,9 @@ export const queryKeysType = {
   topAllTimeViewed: ["smartphones", "topAllTimeViewed"] as const,
   topAllTimeLiked: ["smartphones", "topAllTimeLiked"] as const,
   newAddedSmartphones: ["smartphones", "newAddedSmartphones"] as const,
-  smartphonesByBrand: ["smartphones", "byBrand"] as const, 
+  smartphonesByBrand: (brandName: Smartphone["brand"]) => ["smartphones", brandName] as const, 
+  notifications: ["notifications"] as const, 
+  markNotificationAsRead: (notificationId: NewDeviceNotificationType["globalNotificationId"]) => ["smartphones", notificationId] as const, 
 }
 
 export type {
@@ -333,4 +344,5 @@ export type {
   SmartphoneCommentsDataType,
   TopViewStatsType,
   SortOrderType,
+  PaginationQuery,
 }

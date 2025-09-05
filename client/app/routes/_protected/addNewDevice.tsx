@@ -1,7 +1,7 @@
 import AddDeviceForm from "~/components/dashboard/deviceManagement.tsx/addDeviceForm";
 import { ProtectedRoute } from "~/components/protectedRoute";
 import { useSmartphone } from "~/context/smartphoneContext";
-import { Form, redirect, useLocation, useNavigation, type ActionFunctionArgs } from "react-router";
+import { Form, redirect, useLocation, useNavigation, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
 import { Spinner } from "~/components/spinner";
 import authService from "~/services/auth.service";
 import { commitSession, destroySession, getSession } from "~/session/sessions.server";
@@ -45,6 +45,14 @@ export async function action({
     "Set-Cookie": await commitSession(session)
     }
   })
+}
+
+export async function loader({request}: LoaderFunctionArgs) {
+  const session = await getSession(request.headers.get("Cookie"))
+  let accessToken = session.get("accessToken")
+  if(!accessToken) {
+    return redirect("/")
+  }
 }
 
 export default function AddNewDevice() {
