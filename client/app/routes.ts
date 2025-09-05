@@ -16,6 +16,11 @@ export default [
     route("oauth/callback", "routes/_protected/oauthCallback.tsx"),
     route("verify-email", "routes/_protected/verifyEmail.tsx"),
   ]),
+
+  ...prefix("password", [
+    route("forgot", "routes/forgotPassword.tsx"),
+    route("reset", "routes/_protected/resetPassword.tsx"),
+  ]),
   
   ...prefix("devices", [
     index("routes/_protected/devices.tsx"),
