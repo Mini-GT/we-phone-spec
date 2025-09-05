@@ -43,6 +43,7 @@ const getSmartphoneComments = async (req: Request, res: Response)=> {
         select: {
           name: true, 
           role: true,
+          profileImage: true
         }
       }
     }

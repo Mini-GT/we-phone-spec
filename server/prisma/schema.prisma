@@ -8,21 +8,23 @@ datasource db {
 }
 
 model User {
-  id                 String               @id @default(cuid())
-  googleId           String?              @unique
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @default(now()) @updatedAt
-  email              String               @unique
-  status             Status               @default(unverified)
-  verifyToken        String?
-  verifyTokenExpiry  DateTime?
-  role               Role                 @default(USER)
-  name               String?
-  password           String?
-  profileImage       String?
-  SmartphoneComments SmartphoneComments[]
-  userNotifications  UserNotification[]
-  likedSmartphones   UserSmartphoneLike[]
+  id                     String               @id @default(cuid())
+  googleId               String?              @unique
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @default(now()) @updatedAt
+  email                  String               @unique
+  status                 Status               @default(unverified)
+  emailVerifyToken       String?
+  emailVerifyTokenExpiry DateTime?
+  forgotPassVerifyToken  String?
+  forgotPassTokenExpiry  DateTime?
+  role                   Role                 @default(USER)
+  name                   String?
+  password               String?
+  profileImage           String?
+  SmartphoneComments     SmartphoneComments[]
+  userNotifications      UserNotification[]
+  likedSmartphones       UserSmartphoneLike[]
 }
 
 model UserSmartphoneLike {

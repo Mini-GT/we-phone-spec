@@ -5,9 +5,8 @@ import emailService from "@/services/email.service";
 import type { User } from "@prisma/client";
 import { email } from "@/schemas/email.schema";
 import z from "zod";
-import { signJwt } from "@/utils/jwt";
 import { resetPasswordSchema } from "@/schemas/resetPassword.schema";
-
+import bcrypt from "bcryptjs";
 
 const resetPassJWTSecretKey = process.env.RESET_PASSWORD_JWT_SECRET
 if(!resetPassJWTSecretKey) throw new Error("JWT secret key is empty")
@@ -20,8 +19,8 @@ const updateUserEmailVerification = async (req: Request, res: Response) => {
   const user = req.user as User
 
   const now = new Date()
-  let verficationToken = user.verifyToken
-  let verificationTokenExpiry = user.verifyTokenExpiry
+  let verficationToken = user.emailVerifyToken
+  let verificationTokenExpiry = user.emailVerifyTokenExpiry
   const status = user.status
 
   if(status === "verified") {
@@ -38,8 +37,8 @@ const updateUserEmailVerification = async (req: Request, res: Response) => {
       where: { id: user.id },
       data: {
         status: "pending",
-        verifyToken: verficationToken,
-        verifyTokenExpiry: verificationTokenExpiry,
+        emailVerifyToken: verficationToken,
+        emailVerifyTokenExpiry: verificationTokenExpiry,
       },
     })
   }
@@ -50,15 +49,15 @@ const updateUserEmailVerification = async (req: Request, res: Response) => {
 }
 
 const verifyEmail = async (req: Request, res: Response) => {
-  const { verifyToken } = req.query;
-  if(!verifyToken || typeof verifyToken !== 'string') {
+  const { emailVerifyToken } = req.query;
+  if(!emailVerifyToken || typeof emailVerifyToken !== 'string') {
     return res.status(400).json({ message: 'Invalid token' })
   }
   
   const user = await prisma.user.findFirst({
     where: {
-      verifyToken,
-      verifyTokenExpiry: { gt: new Date() },
+      emailVerifyToken,
+      emailVerifyTokenExpiry: { gt: new Date() },
     },
   })
 
@@ -70,8 +69,8 @@ const verifyEmail = async (req: Request, res: Response) => {
     where: { id: user.id },
     data: {
       status: "verified",
-      verifyToken: null,
-      verifyTokenExpiry: null,
+      emailVerifyToken: null,
+      emailVerifyTokenExpiry: null,
     },
   })
 
@@ -99,30 +98,46 @@ const forgotPassword = async (req: Request, res: Response) => {
     return res.status(400).json({ message: "Reset password sent unsuccessful" })
   }
 
-  const resetToken = signJwt(
-    { id: user.id },
-    resetPassJWTSecretKey,
-    { expiresIn: "1h" }
-  )
+  const now = new Date()
+  let forgotPasswordVerifyToken = user.forgotPassVerifyToken
+  let forgotPasswordTokenExpiry = user.forgotPassTokenExpiry
 
-  await emailService.sendEmailResetPassword(user.email, resetToken)
+  if (!forgotPasswordVerifyToken || !forgotPasswordTokenExpiry || forgotPasswordTokenExpiry < now) {
+    // generate new token if missing or expired
+    forgotPasswordVerifyToken = uuidv4();
+    forgotPasswordTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        forgotPassVerifyToken: forgotPasswordVerifyToken,
+        forgotPassTokenExpiry: forgotPasswordTokenExpiry,
+      },
+    })
+  }
+
+  await emailService.sendEmailForgotPassword(user.email, forgotPasswordVerifyToken)
 
   res.status(200).json({ message: "Reset password sent successfully" })
 }
 
 const resetPassword = async (req: Request, res: Response) => {
-  const { password, confirmPassword, email } = req.body;
+  const { password, confirmPassword, email, resetToken } = req.body;
 
   const result = await resetPasswordSchema.safeParseAsync({
-    password: password,
-    confirmPassword: confirmPassword 
+    password,
+    confirmPassword,
+    email,
+    resetToken
   })
 
   if(!result.success) {
     const flattened = z.flattenError(result.error)
     return res.status(400).json({ 
       passErr: flattened.fieldErrors.password, 
-      confirmErr: flattened.fieldErrors.confirmPassword 
+      confirmErr: flattened.fieldErrors.confirmPassword ,
+      emailErr: flattened.fieldErrors.email,
+      resetTokenErr: flattened.fieldErrors.resetToken,
     })
   }
 
@@ -132,20 +147,26 @@ const resetPassword = async (req: Request, res: Response) => {
 
   const user = await prisma.user.findUnique({
     where: {
-      email
+      email: email,
+      forgotPassVerifyToken: resetToken,
+      forgotPassTokenExpiry: { gt: new Date() }
     }
   })
-  
+
   if(!user) {
-    return res.status(400).json({ message: "Cannot reset password" })
+    return res.status(400).json("Couldn\'t reset password please try again later")
   }
+
+  const hashedPassword = await bcrypt.hash(result.data.password, 8)
 
   await prisma.user.update({
     where: {
       email
     }, 
     data: {
-      password: result.data.password,
+      password: hashedPassword,
+      forgotPassVerifyToken: null,
+      forgotPassTokenExpiry: null,
     }
   })
 

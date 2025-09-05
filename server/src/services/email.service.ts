@@ -22,7 +22,7 @@ class EmailService {
     });
   }
 
-  async sendEmailResetPassword(email: string, token: string): Promise<void> {
+  async sendEmailForgotPassword(email: string, token: string): Promise<void> {
     const verificationUrl = `${process.env.CLIENT_URL}/password/reset?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
 
     await this.transporter.sendMail({
@@ -31,7 +31,7 @@ class EmailService {
       subject: 'Reset Password',
       html: `
         <p>
-          Click <a href="${verificationUrl}">here</a> to reset your password (expires in 1hr). 
+          Click <a href="${verificationUrl}">here</a> to reset your password (expires in 24hrs). 
         </p>
         <p>
           <i style="font-style: italic;">
