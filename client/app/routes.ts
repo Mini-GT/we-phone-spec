@@ -24,7 +24,7 @@ export default [
   
   ...prefix("devices", [
     index("routes/_protected/devices.tsx"),
-    route("new", "routes/_protected/addnewdevice.tsx"),
+    route("new", "routes/_protected/addNewDevice.tsx"),
   ]),
 
   ...prefix("brand-list", [

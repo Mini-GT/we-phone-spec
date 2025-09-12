@@ -14,14 +14,14 @@ model User {
   updatedAt              DateTime             @default(now()) @updatedAt
   email                  String               @unique
   status                 Status               @default(unverified)
-  emailVerifyToken       String?
-  emailVerifyTokenExpiry DateTime?
-  forgotPassVerifyToken  String?
-  forgotPassTokenExpiry  DateTime?
   role                   Role                 @default(USER)
   name                   String?
   password               String?
   profileImage           String?
+  emailVerifyToken       String?
+  emailVerifyTokenExpiry DateTime?
+  forgotPassTokenExpiry  DateTime?
+  forgotPassVerifyToken  String?
   SmartphoneComments     SmartphoneComments[]
   userNotifications      UserNotification[]
   likedSmartphones       UserSmartphoneLike[]
@@ -66,7 +66,6 @@ model UserNotification {
 model SmartphoneComments {
   userId    String
   deviceId  String
-  createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
   likes     Int      @default(0)
   dislikes  Int      @default(0)
@@ -74,6 +73,7 @@ model SmartphoneComments {
   message   String
   id        String   @id
   name      String
+  createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
 }
 

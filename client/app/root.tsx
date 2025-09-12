@@ -118,6 +118,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   } catch (error) {
     console.error(error)
   }
+  // return { user, notifData, accessToken }
   return { user, notifData, accessToken, dehydratedState: dehydrate(queryClient) }
 }
 
@@ -269,7 +270,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let message = "Oops!";
   let details = "An unexpected error occurred.";
   let stack: string | undefined;
-  const clientEnv = import.meta.env.VITE_CLIENT_ENV
+  const clientEnv = import.meta.env.VITE_NODE_ENV
   if (isRouteErrorResponse(error)) {
     message = error.status === 404 ? "404" : "Error";
     details =

@@ -9,7 +9,7 @@ import ProgressBar from "./progressBar"
 import type { MatchesNotificationType } from "./ui/notificationBell"
 
 export default function Navbar() {
-  const { user: userMatchesData } = useMatches()[0].data as MatchesNotificationType
+  const { user: userMatchesData } = useMatches()[0].loaderData as MatchesNotificationType
   const { user: userContext } = useUser()
   const user = userMatchesData ?? userContext
 

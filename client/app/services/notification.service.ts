@@ -6,8 +6,10 @@ class NotificationService {
   private api: AxiosInstance;
 
   constructor(accessToken?: string) {
+    const isServer = typeof window === 'undefined'
+    const baseURL = isServer ? process.env.SMARTPHONE_API_URL : import.meta.env.VITE_SMARTPHONE_API_URL
     this.api = axios.create({
-      baseURL: `${import.meta.env.VITE_SMARTPHONE_API_URL}/user`,
+      baseURL: `${baseURL}/user`,
       withCredentials: true,
     });
 
@@ -19,24 +21,15 @@ class NotificationService {
     });
   }
 
-  private handleError(error: unknown) {
+  private handleError(error: unknown): never {
     if (axios.isAxiosError(error)) {
       if (error.response) {
-        return {
-          statusCode: error.response.status,
-          message: error.response.data || 'An error occurred',
-        };
+        throw new Error(`API Error ${error.response.status}: ${error.response.data || 'An error occurred'}`);
       } else if (error.request) {
-        return {
-          statusCode: 0,
-          message: 'No response from server'
-        };
+        throw new Error('No response from server');
       }
     }
-    return {
-      statusCode: 500,
-      message: 'Unexpected error occurred'
-    };
+    throw new Error('Unexpected error occurred');
   }
 
   async addNotification(notification: NewDeviceNotificationType): Promise<ApiResponse> {

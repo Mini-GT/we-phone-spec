@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "bun ./src/server.ts",
+    "start": "bun --watch --env-file=.env ./src/server.ts",
     "dev": "bun --watch --env-file=.env ./src/server.ts",
     "test": "bun test",
     "pvalid": "bunx prisma validate",

@@ -5,7 +5,7 @@ class UsersService {
 
   constructor(accessToken?: string) {
     this.api = axios.create({
-      baseURL: `${import.meta.env.VITE_SMARTPHONE_API_URL}`,
+      baseURL: `${process.env.SMARTPHONE_API_URL || import.meta.env.VITE_SMARTPHONE_API_URL}`,
       withCredentials: true,
     });
 

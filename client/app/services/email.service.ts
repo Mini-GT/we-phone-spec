@@ -8,8 +8,11 @@ class EmailService {
   private api: AxiosInstance;
 
   constructor(accessToken?: string) {
+    const isServer = typeof window === 'undefined'
+    const baseURL = isServer ? process.env.SMARTPHONE_API_URL : import.meta.env.VITE_SMARTPHONE_API_URL
     this.api = axios.create({
-      baseURL: `${import.meta.env.VITE_SMARTPHONE_API_URL}/email`,
+      baseURL: `${baseURL}/email`,
+      withCredentials: true,
     });
 
     this.api.interceptors.request.use((config) => {
@@ -20,26 +23,15 @@ class EmailService {
     });
   }
 
-  private handleError(error: unknown) {
+  private handleError(error: unknown): never {
     if (axios.isAxiosError(error)) {
       if (error.response) {
-        return { 
-          data: {
-            status: error.response.status,
-            message: error.response.data || 'An error occurred',
-          }
-        };
+        throw new Error(`API Error ${error.response.status}: ${error.response.data || 'An error occurred'}`);
       } else if (error.request) {
-        return {
-          status: 0,
-          message: 'No response from server'
-        };
+        throw new Error('No response from server');
       }
     }
-    return {
-      status: 500,
-      message: 'Unexpected error occurred'
-    };
+    throw new Error('Unexpected error occurred');
   }
 
   // get current user

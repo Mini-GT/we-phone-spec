@@ -7,8 +7,10 @@ class UserService {
   private api: AxiosInstance;
 
   constructor(accessToken?: string) {
+    const isServer = typeof window === 'undefined'
+    const baseURL = isServer ? process.env.SMARTPHONE_API_URL : import.meta.env.VITE_SMARTPHONE_API_URL
     this.api = axios.create({
-      baseURL: `${import.meta.env.VITE_SMARTPHONE_API_URL}/user`,
+      baseURL: `${baseURL}/user`,
       withCredentials: true,
     });
 

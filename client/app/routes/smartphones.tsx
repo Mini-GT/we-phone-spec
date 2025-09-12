@@ -7,8 +7,10 @@ import TopTenLayout from '~/components/topTenLayout';
 import { QueryClient, useQuery } from '@tanstack/react-query';
 import { Spinner } from '~/components/spinner';
 import SmartphoneService from '~/services/smartphone.service';
-import { data, useFetcher, type ActionFunctionArgs } from 'react-router';
+import { data, redirect, useFetcher, useLoaderData, type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router';
 import DeviceGridLayout from '~/components/deviceGridLayout';
+// import { getSession } from '~/session/sessions.server';
+import UserService from '~/services/user.service';
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -17,29 +19,58 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
+
 const smartphoneService = new SmartphoneService()
 
 export async function action({request}: ActionFunctionArgs) {
   const queryClient = new QueryClient();
   let formData = await request.formData()
-  // action coming from "KebabMenu.tsx" component
   const pagination = formData.get("pagination") as string
   const parsedPagination = JSON.parse(pagination) as { take: number, skip: number }
   let result = null
   
   if(parsedPagination) {
-    const data = await queryClient.fetchQuery({
-      queryKey: queryKeysType.smartphones,
-      queryFn: async () => await smartphoneService.getSmartphones(parsedPagination.take, parsedPagination.skip)
-    })
+    const data = await smartphoneService.getSmartphones(parsedPagination.take, parsedPagination.skip)
+    // const data = await queryClient.fetchQuery({
+    //   queryKey: queryKeysType.smartphones,
+    //   queryFn: async () => await smartphoneService.getSmartphones(parsedPagination.take, parsedPagination.skip)
+    // })
     result = data
   }
 
   return data({ result })
 }
 
+// export async function loader({ request }: LoaderFunctionArgs) {
+//   const queryClient = new QueryClient()
+  // const session = await getSession(request.headers.get("Cookie"))
+  // let accessToken = session.get("accessToken")
+
+  // if(!accessToken) {
+  //   return redirect("/")
+  // } 
+
+  // const userService = new UserService(accessToken)
+  // const smartphoneService = new SmartphoneService()
+
+  // try {
+    // const response = await userService.getMe()
+    // const user = await queryClient({
+      
+    // })
+    // const smartphones = await smartphoneService.getSmartphones()
+    // const users = response?.data
+    // return { smartphones }
+  // } catch (error) {
+    // console.error(error)
+  // } 
+  // return { users, smartphones }
+// }
+
 export default function Smartphones() {
   const [selectedTab, setSelectedTab] = useState<SelectedTabType>('Today')
+  // const { users, smartphones } = useLoaderData<typeof loader>()
+  // console.log(smartphones)
   const fetcher = useFetcher()
   const smartphones = fetcher.data?.result.phones
   const totalSmartphones = fetcher.data?.result.totalDocs

@@ -119,6 +119,7 @@ export default function CommentsSection({ smartphoneId }: CommentsSectionProps) 
         user: {
           name: user.name,
           role: user.role,
+          profileImage: user.profileImage
         }
       }
       setComments((prev) => [newComment, ...prev])

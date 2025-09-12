@@ -2,29 +2,24 @@ import axios, { type AxiosInstance } from "axios";
 import type { loginFormType, RegisterFormType } from "~/types/globals.type";
 
 class AuthService {
+  isServer = typeof window === 'undefined'
+  baseURL = this.isServer ? process.env.SMARTPHONE_API_URL : import.meta.env.VITE_SMARTPHONE_API_URL
+  // baseURL = import.meta.env.VITE_SMARTPHONE_API_URL
+
   private api: AxiosInstance = axios.create({
-    baseURL: `${import.meta.env.VITE_SMARTPHONE_API_URL}/auth`,
-    withCredentials: true, // if using cookies
+    baseURL: `${this.baseURL}/auth`,
+    withCredentials: true,
   });
 
-  private handleError(error: unknown) {
+  private handleError(error: unknown): never {
     if (axios.isAxiosError(error)) {
       if (error.response) {
-        return {
-          status: error.response.status,
-          message: error.response.data || 'An error occurred',
-        };
+        throw new Error(`API Error ${error.response.status}: ${error.response.data || 'An error occurred'}`);
       } else if (error.request) {
-        return {
-          status: 0,
-          message: 'No response from server'
-        };
+        throw new Error('No response from server');
       }
     }
-    return {
-      statusCode: 500,
-      message: 'Unexpected error occurred'
-    };
+    throw new Error('Unexpected error occurred');
   }
 
   async login(loginFormData: loginFormType) {

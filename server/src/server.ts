@@ -24,19 +24,20 @@ export const app = express()
 const server = http.createServer(app)
 const PORT = process.env.PORT || 3000
 const clientUrl = process.env.CLIENT_URL || "http://localhost:5173"
+const productionUrl = process.env.SERVER_PRODUCTION_URL 
 const refreshSecretKey = process.env.REFRESH_JWT_SECRET
 const accessSecretKey = process.env.ACCESS_JWT_SECRET
 const socketSecretKey = process.env.SOCKET_JWT_SECRET
-if(!refreshSecretKey || !accessSecretKey || !socketSecretKey) throw new Error("server secret key is empty")
+if(!refreshSecretKey || !accessSecretKey || !socketSecretKey || !productionUrl) throw new Error("server secret key is empty")
 
 app.use(cors({
-  origin: ["http://localhost:5173", clientUrl],
+  origin: [clientUrl, "http://localhost:5173", productionUrl],
   credentials: true,   
 }))
 
 export const io = new Server<SocketData, ServerToClientEvents>(server, {
   cors: {
-    origin: ["http://localhost:5173", clientUrl],
+    origin: [clientUrl, "http://localhost:5173", productionUrl],
     methods: ['GET', 'POST'],
     credentials: true
   }
@@ -143,7 +144,8 @@ notification.use(async (socket, next) => {
 })
 
 comments.use(async (socket, next) => {
-  const cookie = socket.handshake.headers.cookie || ""
+  const cookie = socket.handshake.headers.cookie || "" 
+  // if(!cookie) return // dont listen to live comments if user in not registered
   const token = Cookie.parse(cookie).value
 
   // if empty token, pass socket id so unregistered users can still receive live comments 
