@@ -1,11 +1,11 @@
-FROM oven/bun:latest
+FROM oven/bun:1.2-alpine
 
 WORKDIR /app
 
-RUN apt-get update -y && apt-get install -y openssl \
-    ca-certificates \
-    unzip \
-    && rm -rf /var/lib/apt/lists/*
+# RUN apt-get update -y && apt-get install -y openssl \
+#     ca-certificates \
+#     unzip \
+#     && rm -rf /var/lib/apt/lists/*
 
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
