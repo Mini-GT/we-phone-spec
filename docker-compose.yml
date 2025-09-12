@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:17
+    container_name: postgres-db
+    restart: unless-stopped
+    env_file:
+      - ./server/.env
+    networks:
+      - app-network 
+    volumes:
+      - ./DB_dump:/docker-entrypoint-initdb.d
+
+  server:
+    build: ./server
+    depends_on:
+      - db 
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./server/.env
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  client:
+    build: ./client
+    ports:
+      - "8080:8080"
+    depends_on:
+      - server
+    networks:
+      - app-network
+    env_file:
+      - ./client/.env
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
