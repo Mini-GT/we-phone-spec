@@ -28,7 +28,19 @@ const productionUrl = process.env.SERVER_PRODUCTION_URL
 const refreshSecretKey = process.env.REFRESH_JWT_SECRET
 const accessSecretKey = process.env.ACCESS_JWT_SECRET
 const socketSecretKey = process.env.SOCKET_JWT_SECRET
-if(!refreshSecretKey || !accessSecretKey || !socketSecretKey || !productionUrl) throw new Error("server secret key is empty")
+const notifSocket = process.env.NOTIFICATION_SOCKET_NAMESPACE
+const commentSocket = process.env.COMMENTS_SOCKET_NAMESPACE
+const serverProdUrl = process.env.SERVER_PRODUCTION_URL
+
+if(
+  !refreshSecretKey || 
+  !accessSecretKey || 
+  !socketSecretKey || 
+  !productionUrl ||
+  !notifSocket ||
+  !commentSocket ||
+  !serverProdUrl
+) throw new Error("server secret key is empty")
 
 app.use(cors({
   origin: [clientUrl, "http://localhost:5173", productionUrl],
@@ -37,7 +49,7 @@ app.use(cors({
 
 export const io = new Server<SocketData, ServerToClientEvents>(server, {
   cors: {
-    origin: [clientUrl, "http://localhost:5173", productionUrl],
+    origin: [clientUrl, notifSocket, commentSocket, serverProdUrl],
     methods: ['GET', 'POST'],
     credentials: true
   }

@@ -24,7 +24,7 @@ export default function NotificationBell({
   open,
   setOpen
 }: NotificationBellProps) {
-  const { notifData } = useMatches()[0].data as MatchesNotificationType
+  const { notifData } = useMatches()[0].loaderData as MatchesNotificationType
   const [ notifications, setNotifications ] = useState<NewDeviceNotificationType[]>([])
   const [ unreadCount, setUnreadCount ] = useState<number | null>(null)
   const notificationsData = notifData?.message?.notifications
