@@ -28,7 +28,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
   // check if token is expired
   if(exp * 1000 <= Date.now()) {
     // if expired clear token to logout user
-    return res.status(401).clearCookie("token").json({ message: "Token expired" });
+    return res.status(401).clearCookie("socketToken").json({ message: "Token expired" });
   }
 
   // verify token

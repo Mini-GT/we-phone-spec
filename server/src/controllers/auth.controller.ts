@@ -179,7 +179,7 @@ const getCurrentUser = async (req: Request, res: Response) => {
 }
 
 const logout = async (req: Request, res: Response) => {
-  res.clearCookie("token").json({ message: "Logged out" })
+  res.clearCookie("socketToken").json({ message: "Logged out" })
 }
 
 const refresh = async (req: Request, res: Response) => {

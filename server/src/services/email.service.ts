@@ -1,3 +1,4 @@
+import { productionUrl } from "@/server";
 import nodemailer from "nodemailer";
 
 class EmailService {
@@ -12,7 +13,7 @@ class EmailService {
 });
 
   async sendVerificationEmail(email: string, token: string): Promise<void> {
-    const verificationUrl = `${process.env.CLIENT_URL}/email/verify-email?verifyToken=${encodeURIComponent(token)}`;
+    const verificationUrl = `${productionUrl}/email/verify-email?verifyToken=${encodeURIComponent(token)}`;
 
     await this.transporter.sendMail({
       from: `${process.env.TRANSPORT_FROM_EMAIL} <${process.env.TRANSPORT_FROM_NAME}>`,
@@ -23,7 +24,7 @@ class EmailService {
   }
 
   async sendEmailForgotPassword(email: string, token: string): Promise<void> {
-    const verificationUrl = `${process.env.CLIENT_URL}/password/reset?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
+    const verificationUrl = `${productionUrl}/password/reset?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
 
     await this.transporter.sendMail({
       from: `${process.env.TRANSPORT_FROM_EMAIL} <${process.env.TRANSPORT_FROM_NAME}>`,

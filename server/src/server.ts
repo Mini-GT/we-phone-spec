@@ -24,13 +24,12 @@ export const app = express()
 const server = http.createServer(app)
 const PORT = process.env.PORT || 3000
 const clientUrl = process.env.CLIENT_URL || "http://localhost:5173"
-const productionUrl = process.env.SERVER_PRODUCTION_URL 
+export const productionUrl = process.env.SERVER_PRODUCTION_URL
 const refreshSecretKey = process.env.REFRESH_JWT_SECRET
 const accessSecretKey = process.env.ACCESS_JWT_SECRET
 const socketSecretKey = process.env.SOCKET_JWT_SECRET
 const notifSocket = process.env.NOTIFICATION_SOCKET_NAMESPACE
 const commentSocket = process.env.COMMENTS_SOCKET_NAMESPACE
-const serverProdUrl = process.env.SERVER_PRODUCTION_URL
 
 if(
   !refreshSecretKey || 
@@ -38,18 +37,17 @@ if(
   !socketSecretKey || 
   !productionUrl ||
   !notifSocket ||
-  !commentSocket ||
-  !serverProdUrl
+  !commentSocket 
 ) throw new Error("server secret key is empty")
 
 app.use(cors({
-  origin: [clientUrl, "http://localhost:5173", productionUrl],
+  origin: [clientUrl, productionUrl],
   credentials: true,   
 }))
 
 export const io = new Server<SocketData, ServerToClientEvents>(server, {
   cors: {
-    origin: [clientUrl, notifSocket, commentSocket, serverProdUrl],
+    origin: [clientUrl, notifSocket, commentSocket, productionUrl],
     methods: ['GET', 'POST'],
     credentials: true
   }
@@ -82,7 +80,7 @@ app.use("/api/v1/email", emailRouter)
 app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"], session: false }))
 
 app.get("/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: clientUrl, session: false }),
+  passport.authenticate("google", { failureRedirect: productionUrl, session: false }),
   (req, res) => {
     const user = req.user as User
 
@@ -98,7 +96,7 @@ app.get("/auth/google/callback",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       })
       .redirect(
-        `${clientUrl}/email/oauth/callback?accessToken=${accessToken}&refreshToken=${refreshToken}}`
+        `${productionUrl}/email/oauth/callback?accessToken=${accessToken}&refreshToken=${refreshToken}}`
       );
   }
 );

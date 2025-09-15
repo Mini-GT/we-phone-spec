@@ -48,7 +48,15 @@ const getSmartphoneComments = async (req: Request, res: Response)=> {
       }
     }
   })
-  return res.status(200).json({ comments })
+
+  const totalComments = await prisma.smartphoneComments.count({
+    where: {
+      deviceId: smartphoneId as string,
+      isDeleted: false
+    }
+  });
+
+  return res.status(200).json({ comments, totalComments })
 }
 
 // const getoreSmartphoneComments = async (req: Request, res: Response)=> {

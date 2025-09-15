@@ -8,9 +8,10 @@ import path from "path"
 import { v4 as uuidv4 } from "uuid"
 import type { User } from "@prisma/client"
 
+const googleCallback = process.env.GOOGLE_CALLBACK
 const googleClientId = process.env.GOOGLE_CLIENT_ID
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET
-if(!googleClientId || !googleClientSecret) throw new Error("Google client credential is missing")
+if(!googleClientId || !googleClientSecret || !googleCallback) throw new Error("Google client credential is missing")
 
 passport.use(new LocalStrategy({
   usernameField: "email", 
@@ -38,7 +39,7 @@ async (email, password, done) => {
 passport.use(new GoogleStrategy({
   clientID: googleClientId,
   clientSecret: googleClientSecret,
-  callbackURL: "http://localhost:3000/auth/google/callback"
+  callbackURL: `${googleCallback}/auth/google/callback`
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     const email = profile.emails?.[0]?.value
