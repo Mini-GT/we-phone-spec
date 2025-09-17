@@ -85,7 +85,7 @@ app.get("/auth/google/callback",
     const user = req.user as User
 
     const refreshToken = signJwt({ id: user.id }, refreshSecretKey, { expiresIn: "5d" });
-    const accessToken = signJwt({ id: user.id }, accessSecretKey, { expiresIn: "14m" });
+    const accessToken = signJwt({ id: user.id }, accessSecretKey, { expiresIn: "15m" });
     const socketToken = signJwt({ id: user.id }, socketSecretKey, { expiresIn: "7d" });
     
     res

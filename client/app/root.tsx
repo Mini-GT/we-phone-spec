@@ -149,15 +149,13 @@ export async function action({
   }
 
   if(logout) {
+    
     return redirect("/", {
       headers: [
         ["Set-Cookie", await destroySession(session)],
-        [
-          "Set-Cookie",
-          "socketToken=; Max-Age=0"
-        ]
+        ["Set-Cookie", "socketToken=; Max-Age=0"]
       ]
-    })
+    });
   }
 
   if(refreshToken && !isTokenValid(refreshToken)) {

@@ -113,7 +113,7 @@ const login = async (req: Request, res: Response) => {
     const accessToken = signJwt(
       { id: user.id },
       accessJWTSecretKey,
-      { expiresIn: "15s" }
+      { expiresIn: "15m" }
     )
 
     const socketToken = signJwt(
@@ -198,7 +198,7 @@ const refresh = async (req: Request, res: Response) => {
   const newAccessToken = signJwt(
     { id: user.id },
     accessJWTSecretKey,
-    { expiresIn: "15s" }
+    { expiresIn: "15m" }
   )
 
   // res.cookie("accessToken", newAccessToken, { 
