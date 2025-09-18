@@ -83,7 +83,7 @@ The frontend is built with **React 19** and **React Router v7**, styled with **T
   - Local signup/login with hashed passwords
   - Google OAuth 2.0 integration
   - Session + JWT support
-  - Access token and Refresh token cycle
+  - Access token cycle and Refresh token
 - 🗄️ **Database**:
   - PostgreSQL via Prisma (structured data, users, auth)
   - MongoDB via Mongoose (smartphones data)
