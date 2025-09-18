@@ -101,18 +101,18 @@ The frontend is built with **React 19** and **React Router v7**, styled with **T
 
 ## 🚀 Deployment
 
---- CURRENT USE ---
+~ CURRENT USE
 ### 🔹 Server (Backend)
 - **Runtime**: Bun.js
 - **Hosting**: AWS EC2 t2.micro
 - **Containerization**: Docker  
 - **Reverse Proxy**: Nginx
 
---- CURRENT USE ---
+### 🔹 Client (Frontend)
 - **Runtime**: Bun.js
 - **Hosting**: Vercel
 
---- NOT USED AS AWS EC2 IS ONLY USING t2.micro (Crashes in a couple of hours as it's too heavy. Migrated to vercel) ---
+~ NOT USED AS AWS EC2 IS ONLY USING t2.micro (Crashes in a couple of hours as it's too heavy. Migrated to vercel)
 ### 🔹 Client (Frontend)
 - **Runtime**: Bun.js
 - **Hosting**: AWS EC2 
