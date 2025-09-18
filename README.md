@@ -107,6 +107,7 @@ The frontend is built with **React 19** and **React Router v7**, styled with **T
 - **Hosting**: AWS EC2 t2.micro
 - **Containerization**: Docker  
 - **Reverse Proxy**: Nginx
+- **SSL Certification**: Let's Encrypt with Certbot
 
 ### 🔹 Client (Frontend)
 - **Runtime**: Bun.js
