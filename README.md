@@ -10,8 +10,9 @@ The project follows a **client–server architecture**:
 - **Server**: Bun.js/Express backend with PostgreSQL + MongoDB for data persistence.
 
 ---
-```bash
+
 ## 📂 Project Structure
+```bash
 root/
 │── client/ # Frontend (React + Vite/React Router(framework) + TailwindCSS)
 │── server/ # Backend (Bun.js + Express + Prisma + PostgreSQL + MongoDB + Mongoose)
