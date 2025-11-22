@@ -41,13 +41,13 @@ if(
 ) throw new Error("server secret key is empty")
 
 app.use(cors({
-  origin: [clientUrl, productionUrl, "https://www.wephonespec.site"],
+  origin: [clientUrl, productionUrl],
   credentials: true,   
 }))
 
 export const io = new Server<SocketData, ServerToClientEvents>(server, {
   cors: {
-    origin: [clientUrl, notifSocket, commentSocket, productionUrl, "https://www.wephonespec.site"],
+    origin: [clientUrl, notifSocket, commentSocket, productionUrl],
     methods: ['GET', 'POST'],
     credentials: true
   }
@@ -80,7 +80,7 @@ app.use("/api/v1/email", emailRouter)
 app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"], session: false }))
 
 app.get("/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: productionUrl, session: false }),
+  passport.authenticate("google", { failureRedirect: clientUrl, session: false }),
   (req, res) => {
     const user = req.user as User
 
@@ -96,7 +96,7 @@ app.get("/auth/google/callback",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       })
       .redirect(
-        `${productionUrl}/email/oauth/callback?accessToken=${accessToken}&refreshToken=${refreshToken}}`
+        `${productionUrl}/email/oauth/callback?accessToken=${accessToken}&refreshToken=${refreshToken}`
       );
   }
 );
