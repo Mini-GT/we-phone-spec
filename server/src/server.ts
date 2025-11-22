@@ -41,13 +41,13 @@ if(
 ) throw new Error("server secret key is empty")
 
 app.use(cors({
-  origin: [clientUrl, productionUrl],
+  origin: [clientUrl, productionUrl, "https://www.wephonespec.site"],
   credentials: true,   
 }))
 
 export const io = new Server<SocketData, ServerToClientEvents>(server, {
   cors: {
-    origin: [clientUrl, notifSocket, commentSocket, productionUrl],
+    origin: [clientUrl, notifSocket, commentSocket, productionUrl, "https://www.wephonespec.site"],
     methods: ['GET', 'POST'],
     credentials: true
   }
