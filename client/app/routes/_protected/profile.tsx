@@ -48,7 +48,7 @@ export async function action({request}: ActionFunctionArgs) {
   let refreshToken = session.get("refreshToken")
   let formData = await request.formData()
   const rawFormData = formData.get("profileFormData") as string
-  const verfifyEmail = formData.get("verifyEmail") as string
+  const verifyEmail = formData.get("verifyEmail") as string
   
   if(refreshToken && !isTokenValid(refreshToken)) {
     return redirect("/", {
@@ -109,7 +109,7 @@ export async function action({request}: ActionFunctionArgs) {
     }
   }
 
-  if(verfifyEmail) {
+  if(verifyEmail) {
     await emailService.sendEmailVerification()
   }
 

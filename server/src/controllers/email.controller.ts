@@ -17,9 +17,8 @@ const updateUserEmailVerification = async (req: Request, res: Response) => {
   }
 
   const user = req.user as User
-
   const now = new Date()
-  let verficationToken = user.emailVerifyToken
+  let verificationToken = user.emailVerifyToken
   let verificationTokenExpiry = user.emailVerifyTokenExpiry
   const status = user.status
 
@@ -27,23 +26,26 @@ const updateUserEmailVerification = async (req: Request, res: Response) => {
     res.status(400).json({ message: "user already verified" })
   }
 
-
-  if (!verficationToken || !verificationTokenExpiry || verificationTokenExpiry < now) {
+  if (!verificationToken || !verificationTokenExpiry || verificationTokenExpiry < now) {
     // generate new token if missing or expired
-    verficationToken = uuidv4();
+    verificationToken = uuidv4();
     verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
 
     await prisma.user.update({
       where: { id: user.id },
       data: {
         status: "pending",
-        emailVerifyToken: verficationToken,
+        emailVerifyToken: verificationToken,
         emailVerifyTokenExpiry: verificationTokenExpiry,
       },
     })
   }
 
-  await emailService.sendVerificationEmail(user.email, verficationToken)
+  const result = await emailService.sendVerificationEmail(user.email, verificationToken)
+
+  if(!result) {
+    return res.status(401).json({ success: false, message: "Something went wrong"})
+  }
 
   res.status(200).json({ message: "Email Verification Sent. Please check your inbox/spambox."})
 }

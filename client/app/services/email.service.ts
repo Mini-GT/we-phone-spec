@@ -23,10 +23,10 @@ class EmailService {
     });
   }
 
-  private handleError(error: unknown): never {
+  private handleError(error: unknown) {
     if (axios.isAxiosError(error)) {
       if (error.response) {
-        throw new Error(`API Error ${error.response.status}: ${error.response.data || 'An error occurred'}`);
+        return error.response.data
       } else if (error.request) {
         throw new Error('No response from server');
       }

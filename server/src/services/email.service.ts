@@ -12,15 +12,18 @@ class EmailService {
   },
 });
 
-  async sendVerificationEmail(email: string, token: string): Promise<void> {
+  async sendVerificationEmail(email: string, token: string): Promise<boolean | undefined> {
     const verificationUrl = `${productionUrl}/email/verify-email?verifyToken=${encodeURIComponent(token)}`;
-
-    await this.transporter.sendMail({
+    try {
+      await this.transporter.sendMail({
       from: `${process.env.TRANSPORT_FROM_EMAIL} <${process.env.TRANSPORT_FROM_NAME}>`,
       to: email,
       subject: 'Verify Your Email',
       html: `Click <a href="${verificationUrl}">here</a> to verify your email. *If you didn\'t request this, just ignore it.*`,
-    });
+    });     
+    } catch (error) {
+      return false
+    }
   }
 
   async sendEmailForgotPassword(email: string, token: string): Promise<void> {
