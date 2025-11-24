@@ -110,9 +110,7 @@ const forgotPassword = async (req: Request, res: Response) => {
   });
 
   if (!user) {
-    return res
-      .status(400)
-      .json({ message: "Reset password sent unsuccessful" });
+    return res.status(400).json({ message: "Couldn't find email provided" });
   }
 
   const now = new Date();
@@ -126,7 +124,7 @@ const forgotPassword = async (req: Request, res: Response) => {
   ) {
     // generate new token if missing or expired
     forgotPasswordVerifyToken = uuidv4();
-    forgotPasswordTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+    forgotPasswordTokenExpiry = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hour
 
     await prisma.user.update({
       where: { id: user.id },
@@ -137,12 +135,22 @@ const forgotPassword = async (req: Request, res: Response) => {
     });
   }
 
-  await emailService.sendEmailForgotPassword(
+  const forgotResult = await emailService.sendEmailForgotPassword(
+    user.name,
     user.email,
     forgotPasswordVerifyToken
   );
 
-  res.status(200).json({ message: "Reset password sent successfully" });
+  if (!forgotResult) {
+    return res.status(401).json({
+      success: false,
+      message: "Couldn't send password reset verification",
+    });
+  }
+
+  res
+    .status(200)
+    .json({ success: true, message: "Reset password sent successfully" });
 };
 
 const resetPassword = async (req: Request, res: Response) => {

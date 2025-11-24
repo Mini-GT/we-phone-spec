@@ -6,11 +6,19 @@ import path from "path";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// email verification
 const emailTemplatePath = path.join(
   __dirname,
   "../templates/verificationEmail.html"
 );
 const emailTemplate = fs.readFileSync(emailTemplatePath, "utf-8");
+
+// reset password
+const resetPassTemplatePath = path.join(
+  __dirname,
+  "../templates/resetPasswordEmail.html"
+);
+const resetPassTemplate = fs.readFileSync(resetPassTemplatePath, "utf-8");
 
 class EmailService {
   private transporter = nodemailer.createTransport({
@@ -27,7 +35,7 @@ class EmailService {
     username: string | null,
     email: string,
     token: string
-  ) {
+  ): Promise<boolean> {
     const verificationUrl = `${productionUrl}/email/verify-email?verifyToken=${encodeURIComponent(
       token
     )}`;
@@ -55,26 +63,35 @@ class EmailService {
     return true;
   }
 
-  async sendEmailForgotPassword(email: string, token: string): Promise<void> {
-    const verificationUrl = `${productionUrl}/password/reset?token=${encodeURIComponent(
+  async sendEmailForgotPassword(
+    username: string | null,
+    email: string,
+    token: string
+  ): Promise<boolean> {
+    const resetUrl = `${productionUrl}/password/reset?token=${encodeURIComponent(
       token
     )}&email=${encodeURIComponent(email)}`;
 
-    await this.transporter.sendMail({
-      from: `${process.env.TRANSPORT_FROM_EMAIL} <${process.env.TRANSPORT_FROM_NAME}>`,
+    const htmlContent = resetPassTemplate
+      .replace(/John Doe/g, username || "user")
+      .replace(
+        /https:\/\/yourapp\.com\/reset-password\?token=abc123xyz/g,
+        resetUrl
+      )
+      .replace(/abc123xyz789/g, token);
+
+    const { error } = await resend.emails.send({
+      from: "WePhoneSpec <noreply@wephonespec.site>",
       to: email,
       subject: "Reset Password",
-      html: `
-        <p>
-          Click <a href="${verificationUrl}">here</a> to reset your password (expires in 24hrs). 
-        </p>
-        <p>
-          <i style="font-style: italic;">
-            If you didn\'t request this, please ignore it.
-          </i>
-        </p>
-      `,
+      html: htmlContent,
     });
+
+    if (error) {
+      return false;
+    }
+
+    return true;
   }
 }
 
