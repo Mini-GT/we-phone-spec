@@ -11,6 +11,8 @@ The project follows a **client–server architecture**:
 
 ---
 
+<img width="1904" height="910" alt="image" src="https://github.com/user-attachments/assets/680219b2-55f7-4aa5-9adf-3623b720a60d" />
+
 ## 📂 Project Structure
 ```bash
 root/
